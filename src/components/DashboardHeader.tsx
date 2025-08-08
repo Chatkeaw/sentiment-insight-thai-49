@@ -2,6 +2,8 @@ import React from "react";
 import { RefreshCw, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { UserProfile } from "@/components/layout/UserProfile";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DashboardHeaderProps {
   lastUpdate?: string;
@@ -12,6 +14,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   lastUpdate,
   onRefresh
 }) => {
+  const { state } = useAuth();
   const getCurrentDateTime = () => {
     const now = new Date();
     const day = now.getDate().toString().padStart(2, '0');
@@ -71,14 +74,19 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle className="text-header-sub">
-                  เกี่ยวกับ Dashboard
+                  เกี่ยวกับระบบ
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4 text-body">
                 <div>
-                  <h3 className="font-semibold mb-2">Version</h3>
-                  <p className="text-muted-foreground">Dashboard v1.0.0</p>
+                  <h3 className="font-semibold mb-2">Customer Feedback Management System</h3>
+                  <p className="text-muted-foreground">Version 2.1.0</p>
                   <p className="text-muted-foreground">สร้างเมื่อ: มกราคม 2025</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">ผู้ใช้งานปัจจุบัน</h3>
+                  <p className="text-muted-foreground">{state.user?.fullName}</p>
+                  <p className="text-muted-foreground">{state.user?.department}</p>
                 </div>
                 <div>
                   <h3 className="font-semibold mb-2">หน่วยงานผู้พัฒนา</h3>
@@ -93,6 +101,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               </div>
             </DialogContent>
           </Dialog>
+
+          {/* User Profile */}
+          <UserProfile />
         </div>
       </div>
     </header>

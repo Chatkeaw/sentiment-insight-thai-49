@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { OverviewPage } from "./OverviewPage";
@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { FeedbackPage } from "./FeedbackPage";
 import { ComplaintsPage } from "./ComplaintsPage";
 import { AIAgentPage } from "./AIAgentPage";
+import { UserManagementPage } from "./UserManagementPage";
+import { AIModelManagementPage } from "./AIModelManagementPage";
 
 const Index = () => {
   const [activePage, setActivePage] = useState("overview");
@@ -82,6 +84,18 @@ const Index = () => {
         );
       case "ai-agent":
         return <AIAgentPage />;
+      case "user-management":
+        return <UserManagementPage />;
+      case "ai-models":
+        return <AIModelManagementPage />;
+      case "activity-logs":
+        return (
+          <div className="space-y-6">
+            <h1 className="text-2xl font-bold">บันทึกการใช้งาน</h1>
+            <p className="text-muted-foreground">ประวัติการใช้งานระบบและการเปลี่ยนแปลงข้อมูล</p>
+            {/* Activity logs content would go here */}
+          </div>
+        );
       default:
         return <OverviewPage timeFilter={timeFilter} onTimeFilterChange={setTimeFilter} />;
     }
