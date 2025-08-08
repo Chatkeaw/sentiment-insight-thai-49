@@ -88,6 +88,46 @@ const Index = () => {
         return <UserManagementPage />;
       case "ai-models":
         return <AIModelManagementPage />;
+      case "export-data":
+        return (
+          <div className="space-y-6">
+            <h1 className="text-2xl font-bold">ส่งออกข้อมูล</h1>
+            <p className="text-muted-foreground">ส่งออกรายงานและข้อมูลในรูปแบบต่างๆ</p>
+            {/* Export data content would go here */}
+          </div>
+        );
+      case "notifications":
+        return (
+          <div className="space-y-6">
+            <h1 className="text-2xl font-bold">การแจ้งเตือน</h1>
+            <p className="text-muted-foreground">การแจ้งเตือนสำหรับความคิดเห็นร้ายแรงและเหตุการณ์สำคัญ</p>
+            {/* Notifications content would go here */}
+          </div>
+        );
+      case "system-updates":
+        return (
+          <div className="space-y-6">
+            <h1 className="text-2xl font-bold">อัพเดทระบบ</h1>
+            <p className="text-muted-foreground">จัดการการอัพเดทและเวอร์ชันของระบบ</p>
+            {/* System updates content would go here */}
+          </div>
+        );
+      case "integrations":
+        return (
+          <div className="space-y-6">
+            <h1 className="text-2xl font-bold">การเชื่อมต่อ API</h1>
+            <p className="text-muted-foreground">จัดการการเชื่อมต่อกับระบบภายนอก AWS, Webhook, API</p>
+            {/* Integrations content would go here */}
+          </div>
+        );
+      case "automation":
+        return (
+          <div className="space-y-6">
+            <h1 className="text-2xl font-bold">ระบบอัตโนมัติ</h1>
+            <p className="text-muted-foreground">จัดการ Trigger และการทำงานอัตโนมัติของระบบ</p>
+            {/* Automation content would go here */}
+          </div>
+        );
       case "activity-logs":
         return (
           <div className="space-y-6">

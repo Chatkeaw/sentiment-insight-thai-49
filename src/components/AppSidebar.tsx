@@ -34,7 +34,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ activePage, onPageChange
   const { state } = useAnalytics();
   const { state: authState, hasPermission } = useAuth();
 
-  const dashboardItems = [
+  const mainMenuItems = [
     { id: 'overview', title: 'สรุปภาพรวม Dashboard', icon: BarChart3 },
     { id: 'regional', title: 'ศักยภาพรายพื้นที่', icon: MapPin },
     { 
@@ -48,7 +48,22 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ activePage, onPageChange
     { id: 'ai-agent', title: 'AI AGENT', icon: Bot },
   ];
 
-  const managementItems = [
+  const hrMenuItems = [
+    { 
+      id: 'export-data', 
+      title: 'ส่งออกข้อมูล', 
+      icon: TrendingUp,
+      permission: 'export_data'
+    },
+    { 
+      id: 'notifications', 
+      title: 'การแจ้งเตือน', 
+      icon: AlertTriangle,
+      permission: 'view_notifications'
+    },
+  ];
+
+  const adminMenuItems = [
     { 
       id: 'user-management', 
       title: 'จัดการผู้ใช้งาน', 
@@ -56,28 +71,48 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ activePage, onPageChange
       permission: 'manage_users'
     },
     { 
-      id: 'ai-models', 
-      title: 'จัดการโมเดล AI', 
-      icon: Settings,
-      permission: 'manage_ai'
-    },
-    { 
       id: 'activity-logs', 
       title: 'บันทึกการใช้งาน', 
       icon: Activity,
       permission: 'view_logs'
+    },
+    { 
+      id: 'system-updates', 
+      title: 'อัพเดทระบบ', 
+      icon: Settings,
+      permission: 'system_updates'
+    },
+  ];
+
+  const systemMenuItems = [
+    { 
+      id: 'ai-models', 
+      title: 'จัดการโมเดล AI', 
+      icon: Bot,
+      permission: 'manage_ai'
+    },
+    { 
+      id: 'integrations', 
+      title: 'การเชื่อมต่อ API', 
+      icon: Settings,
+      permission: 'manage_integrations'
+    },
+    { 
+      id: 'automation', 
+      title: 'ระบบอัตโนมัติ', 
+      icon: Settings,
+      permission: 'technical_monitoring'
     },
   ];
 
   return (
     <Sidebar className="border-r border-border/50 bg-gradient-to-b from-pink-50/50 to-white/50">
       <SidebarContent>
-        {/* Dashboard Section */}
+        {/* Main Dashboard Section */}
         <SidebarGroup>
-          <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2 p-4">
-              {dashboardItems.map((item) => (
+              {mainMenuItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
                     onClick={() => !item.disabled && onPageChange(item.id)}
@@ -103,18 +138,86 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ activePage, onPageChange
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Management Section - Only for authorized users */}
-        {managementItems.some(item => hasPermission(item.permission)) && (
+        {/* HR Tools Section */}
+        {authState.user?.role === 'hr' && hrMenuItems.some(item => hasPermission(item.permission)) && (
           <SidebarGroup>
             <SidebarGroupLabel className="flex items-center">
-              การจัดการระบบ
-              <Badge variant="outline" className="ml-2 text-xs">
-                {authState.user?.role === 'system_admin' ? 'System' : 'Admin'}
-              </Badge>
+              เครื่องมือ HR
+              <Badge variant="secondary" className="ml-2 text-xs">HR</Badge>
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-2 p-4">
-                {managementItems
+                {hrMenuItems
+                  .filter(item => hasPermission(item.permission))
+                  .map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => onPageChange(item.id)}
+                        className={`
+                          w-full justify-start text-left p-4 rounded-lg transition-all duration-200
+                          ${activePage === item.id 
+                            ? 'bg-primary/20 text-primary border-l-4 border-primary font-medium' 
+                            : 'text-primary/70 hover:bg-primary/10 hover:text-primary'
+                          }
+                        `}
+                      >
+                        <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
+                        <span className="text-sm font-medium leading-tight">
+                          {item.title}
+                        </span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Business Admin Section */}
+        {authState.user?.role === 'business_admin' && adminMenuItems.some(item => hasPermission(item.permission)) && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="flex items-center">
+              การจัดการธุรกิจ
+              <Badge variant="default" className="ml-2 text-xs">Admin</Badge>
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-2 p-4">
+                {adminMenuItems
+                  .filter(item => hasPermission(item.permission))
+                  .map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => onPageChange(item.id)}
+                        className={`
+                          w-full justify-start text-left p-4 rounded-lg transition-all duration-200
+                          ${activePage === item.id 
+                            ? 'bg-primary/20 text-primary border-l-4 border-primary font-medium' 
+                            : 'text-primary/70 hover:bg-primary/10 hover:text-primary'
+                          }
+                        `}
+                      >
+                        <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
+                        <span className="text-sm font-medium leading-tight">
+                          {item.title}
+                        </span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* System Admin Section */}
+        {authState.user?.role === 'system_admin' && systemMenuItems.some(item => hasPermission(item.permission)) && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="flex items-center">
+              การจัดการระบบ
+              <Badge variant="destructive" className="ml-2 text-xs">System</Badge>
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-2 p-4">
+                {systemMenuItems
                   .filter(item => hasPermission(item.permission))
                   .map((item) => (
                     <SidebarMenuItem key={item.id}>
