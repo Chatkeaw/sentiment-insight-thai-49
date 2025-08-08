@@ -6,38 +6,60 @@
 
 @layer base {
   :root {
-    --background: 250 50% 98%;
-    --foreground: 340 80% 25%;
-    --card: 0 0% 100%;
+    /* Pink Theme Colors - ธีมสีชมพูตามข้อกำหนด */
+    --background: 0 0% 97.3%; /* #F8F8F8 สีเทาอ่อน */
+    --foreground: 340 80% 25%; /* สีข้อความหลัก */
+    
+    --card: 0 0% 100%; /* พื้นหลัง container */
     --card-foreground: 340 80% 25%;
+    
     --popover: 0 0% 100%;
     --popover-foreground: 340 80% 25%;
-    --primary: 333 85% 55%;  /* #F13596 */
+    
+    /* Primary - ชมพูเข้ม #F97AB6 */
+    --primary: 330 85% 72%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 320 100% 95%;
+    
+    /* Secondary - ชมพูกลาง #FD85D7 */
+    --secondary: 318 98% 76%;
     --secondary-foreground: 340 80% 25%;
-    --muted: 0 0% 97.3%;
-    --muted-foreground: 340 20% 45%;
-    --accent: 318 85% 75%;  /* #FD85D7 */
+    
+    /* Accent - ชมพูอ่อน #FFA0E2 */
+    --accent: 309 100% 88%;
     --accent-foreground: 340 80% 25%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --success: 142 76% 36%;
+    
+    --muted: 0 0% 97.3%; /* #F8F8F8 */
+    --muted-foreground: 340 20% 45%;
+    
+    /* Sentiment Colors */
+    --success: 142 76% 36%; /* เขียวสำหรับ sentiment บวก */
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%; /* แดงสำหรับ sentiment ลบ */
+    --destructive-foreground: 0 0% 100%;
+    --warning: 48 96% 53%; /* เหลืองสำหรับ sentiment ผสม */
+    --warning-foreground: 340 80% 25%;
+    --neutral: 0 0% 85%; /* เทาสำหรับ sentiment เป็นกลาง */
+    --neutral-foreground: 340 80% 25%;
+    
     --border: 320 20% 85%;
     --input: 320 20% 85%;
-    --ring: 333 85% 55%;
+    --ring: 330 85% 72%;
     --radius: 0.5rem;
-    --sidebar-background: 320 50% 96%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(330, 85%, 72%), hsl(318, 98%, 76%));
+    --gradient-soft: linear-gradient(135deg, hsl(0, 0%, 100%), hsl(309, 100%, 98%));
+    --gradient-container: linear-gradient(135deg, hsl(0, 0%, 100%) 0%, hsl(309, 50%, 97%) 100%);
+    
+    /* Sidebar */
+    --sidebar-background: 309 50% 96%;
     --sidebar-foreground: 340 80% 25%;
-    --sidebar-primary: 333 85% 55%;
+    --sidebar-primary: 330 85% 72%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 318 85% 75%;
+    --sidebar-accent: 318 98% 76%;
     --sidebar-accent-foreground: 340 80% 25%;
     --sidebar-border: 320 20% 85%;
-    --sidebar-ring: 333 85% 55%;
+    --sidebar-ring: 330 85% 72%;
   }
 
   .dark {
@@ -81,7 +103,8 @@
   }
   body {
     @apply bg-background text-foreground font-sarabun;
-    background: linear-gradient(135deg, hsl(320, 50%, 96%) 0%, hsl(0, 0%, 100%) 50%);
+    background: linear-gradient(135deg, hsl(309, 50%, 97%) 0%, hsl(318, 30%, 95%) 30%, hsl(0, 0%, 98%) 100%);
+    font-size: 14px; /* เนื้อความ 14pt ตามข้อกำหนด */
   }
 }
 

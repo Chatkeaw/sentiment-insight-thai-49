@@ -5,7 +5,8 @@ import { OverviewPage } from "./OverviewPage";
 import { RegionalPage } from "./RegionalPage";
 import { AnalyticsPage } from "./AnalyticsPage";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
-import { Header } from "@/components/Header";
+import DashboardHeader from "@/components/DashboardHeader";
+import GlobalFilters from "@/components/GlobalFilters";
 import { TimeFilter as TimeFilterType } from "@/types/dashboard";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,8 @@ import { AIAgentPage } from "./AIAgentPage";
 const Index = () => {
   const [activePage, setActivePage] = useState("overview");
   const [timeFilter, setTimeFilter] = useState<TimeFilterType['value']>("1month");
+  const [lastUpdate, setLastUpdate] = useState<string>("");
+  const [globalFilters, setGlobalFilters] = useState<any>({});
 
   const handlePageChange = (page: string) => {
     setActivePage(page);
@@ -27,6 +30,21 @@ const Index = () => {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleRefreshData = () => {
+    const now = new Date();
+    const day = now.getDate().toString().padStart(2, '0');
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const year = now.getFullYear();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    setLastUpdate(`${day}-${month}-${year} ${hours}:${minutes}`);
+  };
+
+  const handleFiltersChange = (filters: any) => {
+    setGlobalFilters(filters);
+    setTimeFilter(filters.timeRange || "1month");
   };
 
   const renderContent = () => {
@@ -71,27 +89,35 @@ const Index = () => {
 
   return (
     <AnalyticsProvider>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-pink-50/30 to-background">
-          <AppSidebar activePage={activePage} onPageChange={handlePageChange} />
+      <div className="min-h-screen w-full bg-gradient-to-br from-background via-pink-50/30 to-background">
+        {/* Dashboard Header - Top Sticky (96px ตามข้อกำหนด) */}
+        <DashboardHeader 
+          lastUpdate={lastUpdate}
+          onRefresh={handleRefreshData}
+        />
+        
+        {/* Main Content */}
+        <main className="w-full">
+          {/* Global Filters */}
+          <div className="container mx-auto px-6 pt-6">
+            <GlobalFilters onFiltersChange={handleFiltersChange} />
+          </div>
           
-          <main className="flex-1 flex flex-col">
-            <Header />
-            <div className="flex-1 p-6 overflow-auto">
-              {renderContent()}
-            </div>
-          </main>
+          {/* Dashboard Content */}
+          <div className="container mx-auto px-6 pb-6">
+            {renderContent()}
+          </div>
+        </main>
 
-          {/* Scroll to Top Button */}
-          <Button
-            onClick={scrollToTop}
-            className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0 shadow-lg bg-primary hover:bg-primary/90 z-50"
-            aria-label="กลับสู่ด้านบน"
-          >
-            <ArrowUp className="w-5 h-5" />
-          </Button>
-        </div>
-      </SidebarProvider>
+        {/* Scroll to Top Button - ปุ่มมุมขวาล่าง Fix Location */}
+        <Button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0 shadow-lg bg-primary hover:bg-primary/90 z-50 transition-all duration-300 hover:scale-110"
+          aria-label="กลับสู่ด้านบน"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </Button>
+      </div>
     </AnalyticsProvider>
   );
 };

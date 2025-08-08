@@ -28,10 +28,10 @@ export default {
 				'body': ['14px', { lineHeight: '1.4', fontWeight: '400' }],
 			},
 			colors: {
-				'pink-deep': '#F13596',
-				'pink-medium': '#FD85D7', 
-				'pink-light': '#FFA0E2',
-				'gray-light': '#F8F8F8',
+				'pink-deep': '#F97AB6',    // ชมพูเข้ม ตามข้อกำหนด
+				'pink-medium': '#FD85D7',  // ชมพูกลาง ตามข้อกำหนด
+				'pink-light': '#FFA0E2',   // ชมพูอ่อน ตามข้อกำหนด
+				'gray-light': '#F8F8F8',   // เทาอ่อน ตามข้อกำหนด
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -56,6 +56,10 @@ export default {
 				warning: {
 					DEFAULT: 'hsl(var(--warning))',
 					foreground: 'hsl(var(--warning-foreground))'
+				},
+				neutral: {
+					DEFAULT: 'hsl(var(--neutral))',
+					foreground: 'hsl(var(--neutral-foreground))'
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
