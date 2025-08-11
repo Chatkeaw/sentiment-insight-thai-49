@@ -55,26 +55,26 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ activePage, onPageChange
           ${!isOpen && 'lg:w-16'}
         `}
       >
-        {/* Hamburger Button - Fixed at top */}
+        {/* Home Icon Button - Fixed at top */}
         <div className="absolute top-4 left-4 z-50">
           <button
             onClick={onToggle}
-            className="w-10 h-10 bg-white rounded-xl shadow-lg border border-pink-200/50 
+            className="w-12 h-12 bg-white rounded-xl shadow-lg border border-pink-200/50 
                        flex items-center justify-center hover:bg-pink-50 hover:border-pink-300 
-                       transition-all duration-200 hover:scale-105"
+                       transition-all duration-300 hover:scale-105 p-2"
             aria-label="Toggle sidebar"
             aria-expanded={isOpen}
             aria-controls="sidebar"
           >
-            <Menu className="w-5 h-5 text-pink-600" />
+            <Home className="w-6 h-6 text-pink-600" />
           </button>
         </div>
 
         {/* Header - with top margin to avoid overlap */}
-        <div className="mt-16 p-4 border-b border-pink-200/50">
+        <div className="mt-20 p-4 border-b border-pink-200/50">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Home className="w-4 h-4 text-white" />
+              <BarChart3 className="w-4 h-4 text-white" />
             </div>
             <div className={`transition-all duration-300 ${isOpen ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}>
               <div className="font-semibold text-pink-800">เมนูหลัก</div>
