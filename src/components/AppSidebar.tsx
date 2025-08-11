@@ -49,95 +49,75 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ activePage, onPageChange
       <aside
         id="sidebar"
         className={`
-          fixed left-0 top-0 h-full bg-gradient-to-b from-pink-50/90 to-white/90 backdrop-blur-md
-          border-r border-pink-200/50 shadow-xl z-40 transition-all duration-300 ease-in-out
-          ${isOpen ? 'w-60 translate-x-0' : 'w-16 -translate-x-0 lg:translate-x-0'}
-          ${!isOpen && 'lg:w-16'}
+          fixed left-0 top-0 h-screen bg-gradient-to-b from-rose-50 to-pink-50 
+          rounded-3xl shadow-[0_6px_30px_rgba(236,72,153,0.12)] z-40 
+          transition-all duration-300 ease-out px-3 pt-4 pb-6
+          ${isOpen ? 'w-[256px]' : 'w-[72px]'}
+          ${!isOpen && 'lg:w-[72px]'}
         `}
       >
-        {/* Home Icon Button - Fixed at top */}
-        <div className="absolute top-4 left-4 z-50">
+        {/* Home Icon Button - Top */}
+        <div className="sticky top-4 z-40 mb-6">
           <button
             onClick={onToggle}
-            className="w-12 h-12 bg-white rounded-xl shadow-lg border border-pink-200/50 
-                       flex items-center justify-center hover:bg-pink-50 hover:border-pink-300 
-                       transition-all duration-300 hover:scale-105 p-2"
+            className="w-12 h-12 bg-white rounded-2xl shadow-lg grid place-items-center 
+                       hover:scale-105 transition-all duration-300 mx-auto"
             aria-label="Toggle sidebar"
             aria-expanded={isOpen}
             aria-controls="sidebar"
           >
-            <Home className="w-6 h-6 text-pink-600" />
+            <Home className="w-6 h-6 text-[#E91E63]" />
           </button>
         </div>
 
-        {/* Header - with top margin to avoid overlap */}
-        <div className="mt-20 p-4 border-b border-pink-200/50">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
-              <BarChart3 className="w-4 h-4 text-white" />
+        {/* Header Section */}
+        {isOpen && (
+          <div className="mb-4 px-2">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-rose-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <BarChart3 className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <div className="font-semibold text-pink-700 text-sm">เมนูหลัก</div>
+                <div className="text-xs text-pink-600/70">Dashboard System</div>
+              </div>
             </div>
-            <div className={`transition-all duration-300 ${isOpen ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}>
-              <div className="font-semibold text-pink-800">เมนูหลัก</div>
-              <div className="text-xs text-pink-600/70">Dashboard System</div>
-            </div>
+            {/* Divider */}
+            <div className="my-4 h-px bg-white/60"></div>
           </div>
-        </div>
+        )}
         
         {/* Menu Items */}
-        <nav className="p-3 space-y-2">
-          {menuItems.map((item) => {
+        <nav className="flex flex-col items-center space-y-4">
+          {menuItems.slice(0, -1).map((item) => {
             const isActive = activePage === item.id;
             const menuButton = (
               <button
                 onClick={() => !item.disabled && onPageChange(item.id)}
                 disabled={item.disabled}
                 className={`
-                  w-full flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 group relative
+                  w-11 h-11 rounded-2xl transition-all duration-300 grid place-items-center
                   ${isActive 
-                    ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg shadow-pink-500/25 scale-105' 
+                    ? 'bg-gradient-to-b from-pink-500 to-rose-500 text-white shadow-md scale-[1.02]' 
                     : item.disabled 
-                      ? 'text-gray-400 cursor-not-allowed opacity-50' 
-                      : 'text-pink-800 hover:bg-pink-100/80 hover:scale-105 hover:shadow-md'
+                      ? 'bg-white/70 opacity-40 pointer-events-none' 
+                      : 'bg-white/70 hover:bg-white shadow-sm backdrop-blur hover:scale-105'
                   }
-                  ${!isOpen && 'justify-center'}
                 `}
                 aria-label={item.title}
               >
-                {/* Icon Container */}
-                <div className={`
-                  w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 relative
+                <item.icon className={`
+                  w-5 h-5 transition-colors duration-300
                   ${isActive 
-                    ? 'bg-white/20' 
+                    ? 'text-white' 
                     : item.disabled 
-                      ? 'bg-gray-100' 
-                      : 'bg-pink-200/50 group-hover:bg-pink-300/50'
+                      ? 'text-gray-400' 
+                      : 'text-[#D81B60]'
                   }
-                `}>
-                  <item.icon className={`
-                    w-4 h-4 transition-colors duration-200
-                    ${isActive 
-                      ? 'text-white' 
-                      : item.disabled 
-                        ? 'text-gray-400' 
-                        : 'text-pink-600 group-hover:text-pink-700'
-                    }
-                  `} />
-                  {item.disabled && (
-                    <Lock className="w-3 h-3 text-gray-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-                  )}
-                </div>
-                
-                {/* Text and Badge */}
-                <div className={`flex-1 flex items-center justify-between transition-all duration-300 min-w-0 ${isOpen ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}>
-                  <span className="text-sm font-medium leading-tight truncate">
-                    {item.title}
-                  </span>
-                  {item.badge && (
-                    <Badge className="ml-2 text-xs bg-pink-600/20 text-pink-800 border-pink-300 hover:bg-pink-600/30 flex-shrink-0">
-                      {item.badge}
-                    </Badge>
-                  )}
-                </div>
+                `} />
+                {item.disabled && (
+                  <Lock className="w-3 h-3 text-gray-400 absolute" />
+                )}
               </button>
             );
 
@@ -150,9 +130,52 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ activePage, onPageChange
                   </TooltipTrigger>
                   <TooltipContent side="right" className="bg-pink-800 text-white border-pink-600">
                     {item.title}
-                    {item.badge && (
+                  </TooltipContent>
+                </Tooltip>
+              );
+            }
+
+            return (
+              <div key={item.id} className="flex items-center gap-3 w-full">
+                {menuButton}
+                <span className={`text-sm font-medium text-pink-700 transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                  {item.title}
+                </span>
+              </div>
+            );
+          })}
+
+          {/* AI AGENT - Special bottom button */}
+          {(() => {
+            const aiAgent = menuItems[menuItems.length - 1];
+            const isActive = activePage === aiAgent.id;
+            const aiButton = (
+              <button
+                onClick={() => onPageChange(aiAgent.id)}
+                className={`
+                  w-12 h-14 rounded-2xl transition-all duration-300 grid place-items-center mt-6
+                  ${isActive 
+                    ? 'bg-gradient-to-b from-pink-500 to-rose-500 text-white shadow-[0_10px_30px_rgba(236,72,153,0.35)] scale-[1.02]' 
+                    : 'bg-gradient-to-b from-pink-500 to-rose-500 text-white shadow-[0_10px_30px_rgba(236,72,153,0.35)] hover:scale-105'
+                  }
+                `}
+                aria-label={aiAgent.title}
+              >
+                <aiAgent.icon className="w-6 h-6 text-white" />
+              </button>
+            );
+
+            if (!isOpen) {
+              return (
+                <Tooltip key={aiAgent.id}>
+                  <TooltipTrigger asChild>
+                    {aiButton}
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-pink-800 text-white border-pink-600">
+                    {aiAgent.title}
+                    {aiAgent.badge && (
                       <Badge className="ml-2 text-xs bg-pink-600 text-white">
-                        {item.badge}
+                        {aiAgent.badge}
                       </Badge>
                     )}
                   </TooltipContent>
@@ -161,11 +184,21 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ activePage, onPageChange
             }
 
             return (
-              <div key={item.id}>
-                {menuButton}
+              <div key={aiAgent.id} className="flex items-center gap-3 w-full mt-6">
+                {aiButton}
+                <div className={`flex items-center gap-2 transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                  <span className="text-sm font-medium text-pink-700">
+                    {aiAgent.title}
+                  </span>
+                  {aiAgent.badge && (
+                    <Badge className="text-xs bg-pink-600/20 text-pink-800 border-pink-300">
+                      {aiAgent.badge}
+                    </Badge>
+                  )}
+                </div>
               </div>
             );
-          })}
+          })()}
         </nav>
       </aside>
     </TooltipProvider>

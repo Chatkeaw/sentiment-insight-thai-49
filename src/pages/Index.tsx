@@ -132,7 +132,7 @@ const Index = () => {
         />
         
         {/* Main Content */}
-        <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'lg:ml-60' : 'lg:ml-16'}`}>
+        <main className={`flex-1 transition-all duration-300 ease-out ${isSidebarOpen ? 'lg:ml-[256px]' : 'lg:ml-[72px]'} mr-4`}>
           
           {/* Dashboard Header */}
           <header className="flex items-center gap-2 px-4 py-4 pl-16 border-b bg-white/80 backdrop-blur-sm sticky top-0 z-40">
