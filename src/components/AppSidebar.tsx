@@ -57,11 +57,11 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ activePage, onPageChange
         `}
       >
         {/* Home Icon Button - Top */}
-        <div className="sticky top-4 z-40 mb-6">
+        <div className="flex items-center justify-center mb-6">
           <button
             onClick={onToggle}
-            className="w-12 h-12 bg-white rounded-2xl shadow-lg grid place-items-center 
-                       hover:scale-105 transition-all duration-300 mx-auto"
+            className="w-11 h-11 bg-white rounded-2xl shadow-lg flex items-center justify-center
+                       hover:scale-105 transition-all duration-300"
             aria-label="Toggle sidebar"
             aria-expanded={isOpen}
             aria-controls="sidebar"
