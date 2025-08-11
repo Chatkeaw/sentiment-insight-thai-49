@@ -128,20 +128,11 @@ const Index = () => {
           activePage={activePage} 
           onPageChange={handlePageChange}
           isOpen={isSidebarOpen}
+          onToggle={toggleSidebar}
         />
         
         {/* Main Content */}
         <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'lg:ml-60' : 'lg:ml-16'}`}>
-          {/* Hamburger Button - Always Visible */}
-          <Button
-            onClick={toggleSidebar}
-            className="fixed top-4 left-4 z-50 w-10 h-10 p-0 rounded-lg bg-white/90 backdrop-blur-sm border border-pink-200 shadow-lg hover:bg-pink-50 hover:border-pink-300 transition-all duration-200"
-            aria-label="Toggle sidebar"
-            aria-expanded={isSidebarOpen}
-            aria-controls="sidebar"
-          >
-            <Menu className="w-5 h-5 text-pink-600" />
-          </Button>
           
           {/* Dashboard Header */}
           <header className="flex items-center gap-2 px-4 py-4 pl-16 border-b bg-white/80 backdrop-blur-sm sticky top-0 z-40">
