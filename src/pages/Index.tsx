@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import React, { useState, useEffect } from "react";
+import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { OverviewPage } from "./OverviewPage";
 import { RegionalPage } from "./RegionalPage";
@@ -17,14 +17,24 @@ import { UserManagementPage } from "./UserManagementPage";
 import { AIModelManagementPage } from "./AIModelManagementPage";
 
 const Index = () => {
-  const [activePage, setActivePage] = useState("overview");
+  const [activePage, setActivePage] = useState(() => {
+    // Restore active page from localStorage
+    return localStorage.getItem('selectedMenuItem') || "overview";
+  });
   const [timeFilter, setTimeFilter] = useState<TimeFilterType['value']>("1month");
   const [lastUpdate, setLastUpdate] = useState<string>("");
   const [globalFilters, setGlobalFilters] = useState<any>({});
 
   const handlePageChange = (page: string) => {
     setActivePage(page);
+    // Store selected menu item in localStorage
+    localStorage.setItem('selectedMenuItem', page);
   };
+
+  // Update localStorage whenever activePage changes
+  useEffect(() => {
+    localStorage.setItem('selectedMenuItem', activePage);
+  }, [activePage]);
 
   const handleBackToOverview = () => {
     setActivePage("overview");
@@ -143,35 +153,47 @@ const Index = () => {
 
   return (
     <AnalyticsProvider>
-      <div className="min-h-screen w-full bg-gradient-to-br from-background via-pink-50/30 to-background">
-        {/* Dashboard Header - Top Sticky (96px ตามข้อกำหนด) */}
-        <DashboardHeader 
-          lastUpdate={lastUpdate}
-          onRefresh={handleRefreshData}
-        />
-        
-        {/* Main Content */}
-        <main className="w-full">
-          {/* Global Filters */}
-          <div className="container mx-auto px-6 pt-6">
-            <GlobalFilters onFiltersChange={handleFiltersChange} />
-          </div>
+      <SidebarProvider>
+        <div className="min-h-screen w-full bg-gradient-to-br from-background via-pink-50/30 to-background flex">
+          {/* Sidebar */}
+          <AppSidebar activePage={activePage} onPageChange={handlePageChange} />
           
-          {/* Dashboard Content */}
-          <div className="container mx-auto px-6 pb-6">
-            {renderContent()}
-          </div>
-        </main>
+          {/* Main Content */}
+          <SidebarInset className="flex-1">
+            {/* Dashboard Header with Hamburger Toggle */}
+            <header className="flex items-center gap-2 px-4 py-4 border-b bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+              <SidebarTrigger className="h-7 w-7" />
+              <div className="flex-1">
+                <DashboardHeader 
+                  lastUpdate={lastUpdate}
+                  onRefresh={handleRefreshData}
+                />
+              </div>
+            </header>
+            
+            <main className="flex-1">
+              {/* Global Filters */}
+              <div className="container mx-auto px-6 pt-6">
+                <GlobalFilters onFiltersChange={handleFiltersChange} />
+              </div>
+              
+              {/* Dashboard Content */}
+              <div className="container mx-auto px-6 pb-6">
+                {renderContent()}
+              </div>
+            </main>
+          </SidebarInset>
 
-        {/* Scroll to Top Button - ปุ่มมุมขวาล่าง Fix Location */}
-        <Button
-          onClick={scrollToTop}
-          className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0 shadow-lg bg-primary hover:bg-primary/90 z-50 transition-all duration-300 hover:scale-110"
-          aria-label="กลับสู่ด้านบน"
-        >
-          <ArrowUp className="w-5 h-5" />
-        </Button>
-      </div>
+          {/* Scroll to Top Button */}
+          <Button
+            onClick={scrollToTop}
+            className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0 shadow-lg bg-primary hover:bg-primary/90 z-50 transition-all duration-300 hover:scale-110"
+            aria-label="กลับสู่ด้านบน"
+          >
+            <ArrowUp className="w-5 h-5" />
+          </Button>
+        </div>
+      </SidebarProvider>
     </AnalyticsProvider>
   );
 };
