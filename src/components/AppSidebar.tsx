@@ -29,14 +29,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       icon: BarChart3
     },
     {
-      id: 'regional',
-      title: 'ศักยภาพรายพื้นที่',
-      icon: MapPin
-    },
-    {
       id: 'analytics',
       title: 'ติดตามผลดำเนินงาน',
       icon: TrendingUp
+    },
+    {
+      id: 'regional',
+      title: 'ศักยภาพรายพื้นที่',
+      icon: MapPin
     },
     {
       id: 'feedback',
