@@ -250,7 +250,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               <div key={aiAgentItem.id} className="flex items-center gap-3 w-full mt-6">
                 {aiButton}
                 <div className={`flex items-center gap-2 transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                  <span className="text-sm font-medium text-pink-700">
+                  <span className="text-sm font-medium text-pink-700 leading-none">
                     {aiAgentItem.title}
                   </span>
                   {aiAgentItem.badge && (
