@@ -161,7 +161,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             <>
               <div className="my-4 h-px bg-white/60 w-full"></div>
               <div className="px-2 w-full">
-                <div className="font-semibold text-pink-700 text-xs">การจัดการระบบ</div>
+                <div className="font-semibold text-pink-700 text-sm">การจัดการระบบ</div>
               </div>
             </>
           )}
