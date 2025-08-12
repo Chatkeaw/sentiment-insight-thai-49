@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
+
 const DashboardPage = () => {
   const stats = [{
     title: "ลูกค้าตอบแบบประเมิน",
@@ -39,7 +41,17 @@ const DashboardPage = () => {
     color: "bg-green-50",
     iconColor: "text-green-600"
   }];
-  return <div className="space-y-6 animate-fade-in">
+
+  // Generate month options from มกราคม 2567 to สิงหาคม 2568
+  const monthOptions = [
+    "มกราคม 2567", "กุมภาพันธ์ 2567", "มีนาคม 2567", "เมษายน 2567", "พฤษภาคม 2567", "มิถุนายน 2567",
+    "กรกฎาคม 2567", "สิงหาคม 2567", "กันยายน 2567", "ตุลาคม 2567", "พฤศจิกายน 2567", "ธันวาคม 2567",
+    "มกราคม 2568", "กุมภาพันธ์ 2568", "มีนาคม 2568", "เมษายน 2568", "พฤษภาคม 2568", "มิถุนายน 2568",
+    "กรกฎาคม 2568", "สิงหาคม 2568"
+  ];
+
+  return (
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -47,7 +59,11 @@ const DashboardPage = () => {
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">เลือกเดือน:</span>
             <select className="px-3 py-1 border rounded-md bg-background text-foreground">
-              <option>มิถุนายน 2568</option>
+              {monthOptions.map((month, index) => (
+                <option key={index} value={month}>
+                  {month}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -55,7 +71,8 @@ const DashboardPage = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {stats.map((stat, index) => <Card key={index} className="relative overflow-hidden border-0 shadow-lg">
+        {stats.map((stat, index) => (
+          <Card key={index} className="relative overflow-hidden border-0 shadow-lg">
             <CardContent className={`p-6 ${stat.color}`}>
               <div className="flex items-start justify-between">
                 <div className="space-y-3">
@@ -78,8 +95,11 @@ const DashboardPage = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>)}
+          </Card>
+        ))}
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default DashboardPage;

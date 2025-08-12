@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,9 +7,11 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 interface GlobalFiltersProps {
   onFiltersChange?: (filters: FilterState) => void;
 }
+
 interface FilterState {
   serviceTypes: string[];
   region: string;
@@ -16,6 +19,7 @@ interface FilterState {
   branch: string;
   timeRange: string;
 }
+
 const GlobalFilters: React.FC<GlobalFiltersProps> = ({
   onFiltersChange
 }) => {
@@ -35,6 +39,7 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({
     value: `ภาค ${i + 1}`,
     label: `ภาค ${i + 1}`
   }));
+
   const getDistrictsForRegion = (region: string) => {
     if (!region || region === "All") return [];
     // Mock districts for selected region
@@ -45,6 +50,7 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({
       label: `เขต ${i + 1}`
     }));
   };
+
   const getBranchesForDistrict = (district: string) => {
     if (!district || district === "All") return [];
     // Mock branches for selected district
@@ -55,6 +61,7 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({
       label: `สาขา ${i + 1}`
     }));
   };
+
   const timeRanges = [{
     value: "1day",
     label: "วันนี้"
@@ -74,6 +81,7 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({
     value: "1year",
     label: "1 ปีล่าสุด"
   }];
+
   const updateFilters = (newFilters: Partial<FilterState>) => {
     const updatedFilters = {
       ...filters,
@@ -82,6 +90,7 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({
     setFilters(updatedFilters);
     onFiltersChange?.(updatedFilters);
   };
+
   const handleRegionChange = (value: string) => {
     updateFilters({
       region: value,
@@ -89,31 +98,46 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({
       branch: ""
     });
   };
+
   const handleDistrictChange = (value: string) => {
     updateFilters({
       district: value,
       branch: ""
     });
   };
+
   const handleServiceTypeToggle = (serviceType: string) => {
-    const newServiceTypes = filters.serviceTypes.includes(serviceType) ? filters.serviceTypes.filter(type => type !== serviceType) : [...filters.serviceTypes, serviceType];
+    const newServiceTypes = filters.serviceTypes.includes(serviceType) 
+      ? filters.serviceTypes.filter(type => type !== serviceType) 
+      : [...filters.serviceTypes, serviceType];
     updateFilters({
       serviceTypes: newServiceTypes
     });
   };
+
   const handleSelectAllServiceTypes = () => {
-    const newServiceTypes = filters.serviceTypes.length === serviceTypes.length ? [] : [...serviceTypes];
+    const newServiceTypes = filters.serviceTypes.length === serviceTypes.length 
+      ? [] 
+      : [...serviceTypes];
     updateFilters({
       serviceTypes: newServiceTypes
     });
   };
+
   const removeServiceType = (serviceType: string) => {
     updateFilters({
       serviceTypes: filters.serviceTypes.filter(type => type !== serviceType)
     });
   };
+
   const districts = getDistrictsForRegion(filters.region);
   const branches = getBranchesForDistrict(filters.district);
-  return;
+
+  return (
+    <div className="space-y-4">
+      {/* This component is currently incomplete but the structure is here */}
+    </div>
+  );
 };
+
 export default GlobalFilters;
