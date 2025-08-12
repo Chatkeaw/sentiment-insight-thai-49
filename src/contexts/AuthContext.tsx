@@ -64,11 +64,21 @@ const mockUsers: User[] = [
   },
   {
     id: '2',
-    username: 'admin',
+    username: 'business_admin',
     email: 'admin@bank.com',
-    role: 'admin',
+    role: 'business_admin',
     fullName: 'สมชาย บริหาร',
-    department: 'ฝ่ายบริหาร',
+    department: 'ฝ่ายธุรกิจ',
+    lastLogin: new Date().toISOString(),
+    isActive: true
+  },
+  {
+    id: '3',
+    username: 'system_admin',
+    email: 'sysadmin@bank.com',
+    role: 'system_admin',
+    fullName: 'สมหมาย เทคโนโลยี',
+    department: 'ฝ่ายเทคโนโลยีสารสนเทศ',
     lastLogin: new Date().toISOString(),
     isActive: true
   }
@@ -76,7 +86,8 @@ const mockUsers: User[] = [
 
 const rolePermissions = {
   hr: ['view_dashboard', 'export_data', 'manage_feedback', 'view_notifications'],
-  admin: ['view_dashboard', 'export_data', 'manage_feedback', 'view_notifications', 'manage_users', 'view_logs', 'system_updates', 'manage_ai', 'manage_integrations', 'technical_monitoring']
+  business_admin: ['view_dashboard', 'export_data', 'manage_feedback', 'view_notifications', 'manage_users', 'view_logs', 'system_updates'],
+  system_admin: ['view_dashboard', 'export_data', 'manage_feedback', 'view_notifications', 'manage_users', 'view_logs', 'system_updates', 'manage_ai', 'manage_integrations', 'technical_monitoring']
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
