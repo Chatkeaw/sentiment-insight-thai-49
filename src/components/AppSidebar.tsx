@@ -113,20 +113,17 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             const menuButton = (
               <button 
                 onClick={() => onPageChange(item.id)} 
-                disabled={item.disabled} 
                 className={`
                   w-11 h-11 rounded-2xl transition-all duration-300 grid place-items-center
                   ${isActive 
                     ? 'bg-gradient-to-b from-pink-500 to-rose-500 text-white shadow-md scale-[1.02]' 
-                    : item.disabled 
-                      ? 'bg-white/70 opacity-40 pointer-events-none' 
-                      : 'bg-white/70 hover:bg-white shadow-sm backdrop-blur hover:scale-105'}
+                    : 'bg-white/70 hover:bg-white shadow-sm backdrop-blur hover:scale-105'}
                 `} 
                 aria-label={item.title}
               >
                 <item.icon className={`
                   w-5 h-5 transition-colors duration-300
-                  ${isActive ? 'text-white' : item.disabled ? 'text-gray-400' : 'text-[#D81B60]'}
+                  ${isActive ? 'text-white' : 'text-[#D81B60]'}
                 `} />
               </button>
             );
