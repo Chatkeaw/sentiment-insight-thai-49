@@ -27,7 +27,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-50 w-full h-24 bg-white/95 backdrop-blur-sm border-b border-border/30 shadow-sm">
-      <div className="container mx-auto px-6 h-full flex items-center justify-between">
+      <div>
         {/* ด้านซ้าย - หัวข้อ Dashboard */}
         <div className="flex-1">
           <h1 className="text-header-main text-foreground leading-tight">
