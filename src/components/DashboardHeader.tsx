@@ -26,10 +26,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full h-24 bg-white/95 backdrop-blur-sm border-b border-border/30 shadow-sm">
+    <header>
       <div>
         {/* ด้านซ้าย - หัวข้อ Dashboard */}
-        <div className="flex-1">
+        <div>
           <h1 className="text-header-main text-foreground leading-tight">
             Dashboard ข้อเสนอแนะ ข้อร้องเรียน การใช้บริการสาขา (Mockup)
           </h1>
