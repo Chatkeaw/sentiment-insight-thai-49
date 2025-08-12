@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { AnalyticsProvider } from '@/contexts/AnalyticsContext';
 import { AppSidebar } from '@/components/AppSidebar';
-import { Header } from '@/components/layout/Header';
+import { Header } from '@/components/Header';
 import { OverviewPage } from './OverviewPage';
 import { RegionalPage } from './RegionalPage';
 import { AnalyticsPage } from './AnalyticsPage';
@@ -11,9 +12,11 @@ import { AIAgentPage } from './AIAgentPage';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserManagementPage } from './UserManagementPage';
 import { SystemManagementPage } from './SystemManagementPage';
+import { TimeFilter as TimeFilterType } from '@/types/dashboard';
 
 const Index = () => {
   const [activePage, setActivePage] = useState('overview');
+  const [timeFilter, setTimeFilter] = useState<TimeFilterType['value']>('1month');
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('sidebar_open');
     return saved ? JSON.parse(saved) : true;
@@ -27,6 +30,10 @@ const Index = () => {
 
   const handleToggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleBackToOverview = () => {
+    setActivePage('overview');
   };
 
   const renderContent = () => {
@@ -48,15 +55,15 @@ const Index = () => {
 
     switch (activePage) {
       case 'overview':
-        return <OverviewPage />;
+        return <OverviewPage timeFilter={timeFilter} onTimeFilterChange={setTimeFilter} />;
       case 'regional':
         return <RegionalPage />;
       case 'analytics':
-        return <AnalyticsPage />;
+        return <AnalyticsPage onBack={handleBackToOverview} timeFilter={timeFilter} onTimeFilterChange={setTimeFilter} />;
       case 'feedback':
-        return <FeedbackPage />;
+        return <FeedbackPage timeFilter={timeFilter} onTimeFilterChange={setTimeFilter} />;
       case 'complaints':
-        return <ComplaintsPage />;
+        return <ComplaintsPage timeFilter={timeFilter} onTimeFilterChange={setTimeFilter} />;
       case 'ai-agent':
         return <AIAgentPage />;
       case 'user-management':
@@ -64,7 +71,7 @@ const Index = () => {
       case 'system-management':
         return <SystemManagementPage />;
       default:
-        return <OverviewPage />;
+        return <OverviewPage timeFilter={timeFilter} onTimeFilterChange={setTimeFilter} />;
     }
   };
 
