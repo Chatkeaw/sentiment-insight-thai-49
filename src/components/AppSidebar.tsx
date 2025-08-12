@@ -90,7 +90,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         <div className="flex items-center justify-center mb-6">
           <button onClick={onToggle} className="w-11 h-11 bg-white rounded-2xl shadow-lg flex items-center justify-center
                        hover:scale-105 transition-all duration-300" aria-label="Toggle sidebar" aria-expanded={isOpen} aria-controls="sidebar">
-            <Home className="w-6 h-6 text-[#E91E63]" />
+            <Home className="w-5 h-5 text-[#E91E63]" />
           </button>
         </div>
 
@@ -217,14 +217,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               <button 
                 onClick={() => onPageChange(aiAgentItem.id)} 
                 className={`
-                  w-12 h-14 rounded-2xl transition-all duration-300 grid place-items-center mt-6
+                  w-11 h-11 rounded-2xl transition-all duration-300 grid place-items-center mt-6
                   ${isActive 
                     ? 'bg-gradient-to-b from-pink-500 to-rose-500 text-white shadow-[0_10px_30px_rgba(236,72,153,0.35)] scale-[1.02]' 
                     : 'bg-gradient-to-b from-pink-500 to-rose-500 text-white shadow-[0_10px_30px_rgba(236,72,153,0.35)] hover:scale-105'}
                 `} 
                 aria-label={aiAgentItem.title}
               >
-                <aiAgentItem.icon className="w-6 h-6 text-white" />
+                <aiAgentItem.icon className="w-5 h-5 text-white" />
               </button>
             );
 
