@@ -1,9 +1,20 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
 
 const DashboardPage = () => {
+  // Generate month options from มกราคม 2567 to สิงหาคม 2568
+  const monthOptions = [
+    "มกราคม 2567", "กุมภาพันธ์ 2567", "มีนาคม 2567", "เมษายน 2567", "พฤษภาคม 2567", "มิถุนายน 2567",
+    "กรกฎาคม 2567", "สิงหาคม 2567", "กันยายน 2567", "ตุลาคม 2567", "พฤศจิกายน 2567", "ธันวาคม 2567",
+    "มกราคม 2568", "กุมภาพันธ์ 2568", "มีนาคม 2568", "เมษายน 2568", "พฤษภาคม 2568", "มิถุนายน 2568",
+    "กรกฎาคม 2568", "สิงหาคม 2568"
+  ];
+
+  // State to manage selected month
+  const [selectedMonth, setSelectedMonth] = useState("มิถุนายน 2568");
+
   const stats = [{
     title: "ลูกค้าตอบแบบประเมิน",
     value: "3,245",
@@ -42,23 +53,23 @@ const DashboardPage = () => {
     iconColor: "text-green-600"
   }];
 
-  // Generate month options from มกราคม 2567 to สิงหาคม 2568
-  const monthOptions = [
-    "มกราคม 2567", "กุมภาพันธ์ 2567", "มีนาคม 2567", "เมษายน 2567", "พฤษภาคม 2567", "มิถุนายน 2567",
-    "กรกฎาคม 2567", "สิงหาคม 2567", "กันยายน 2567", "ตุลาคม 2567", "พฤศจิกายน 2567", "ธันวาคม 2567",
-    "มกราคม 2568", "กุมภาพันธ์ 2568", "มีนาคม 2568", "เมษายน 2568", "พฤษภาคม 2568", "มิถุนายน 2568",
-    "กรกฎาคม 2568", "สิงหาคม 2568"
-  ];
+  const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedMonth(event.target.value);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-foreground">สรุปภาพรวมประจำเดือน มิถุนายน 2568</h1>
+          <h1 className="text-3xl font-bold text-foreground">สรุปภาพรวมประจำเดือน {selectedMonth}</h1>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">เลือกเดือน:</span>
-            <select className="px-3 py-1 border rounded-md bg-background text-foreground">
+            <select 
+              className="px-3 py-1 border rounded-md bg-background text-foreground"
+              value={selectedMonth}
+              onChange={handleMonthChange}
+            >
               {monthOptions.map((month, index) => (
                 <option key={index} value={month}>
                   {month}
