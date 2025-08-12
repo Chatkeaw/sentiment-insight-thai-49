@@ -29,11 +29,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     <header>
       <div>
         {/* ด้านซ้าย - หัวข้อ Dashboard */}
-        <div>
-          <h1 className="text-header-main text-foreground leading-tight">
+        <div className="flex-1">
+          <h1 className="text-header-main >
             Dashboard ข้อเสนอแนะ ข้อร้องเรียน การใช้บริการสาขา (Mockup)
           </h1>
-          <h2 className="text-header-sub text-muted-foreground mt-1">
+          <h2 className="text-header-sub text-muted-foreground ">
             ระบบติดตามและวิเคราะห์ข้อร้องเรียนลูกค้าธนาคารออมสิน
           </h2>
         </div>
