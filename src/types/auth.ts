@@ -1,8 +1,9 @@
+
 export interface User {
   id: string;
   username: string;
   email: string;
-  role: 'hr' | 'business_admin' | 'system_admin';
+  role: 'hr' | 'admin';
   fullName: string;
   department?: string;
   lastLogin: string;
@@ -31,6 +32,5 @@ export interface ActivityLog {
 
 export const USER_ROLES = {
   hr: 'HR User',
-  business_admin: 'Business Admin',
-  system_admin: 'System Admin'
+  admin: 'Admin'
 } as const;

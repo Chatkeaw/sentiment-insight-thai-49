@@ -26,26 +26,16 @@ const mockUsers: User[] = [
   },
   {
     id: '2',
-    username: 'business_admin',
+    username: 'admin',
     email: 'admin@bank.com',
-    role: 'business_admin',
+    role: 'admin',
     fullName: 'สมชาย บริหาร',
-    department: 'ฝ่ายธุรกิจ',
+    department: 'ฝ่ายบริหาร',
     lastLogin: '2024-01-15 16:45:00',
     isActive: true
   },
   {
     id: '3',
-    username: 'system_admin',
-    email: 'sysadmin@bank.com',
-    role: 'system_admin',
-    fullName: 'สมหมาย เทคโนโลยี',
-    department: 'ฝ่ายเทคโนโลยีสารสนเทศ',
-    lastLogin: '2024-01-15 09:15:00',
-    isActive: true
-  },
-  {
-    id: '4',
     username: 'hr_assistant',
     email: 'hr.assist@bank.com',
     role: 'hr',
@@ -71,8 +61,7 @@ export const UserManagementPage: React.FC = () => {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'system_admin': return 'destructive';
-      case 'business_admin': return 'default';
+      case 'admin': return 'destructive';
       case 'hr': return 'secondary';
       default: return 'outline';
     }
@@ -154,8 +143,7 @@ export const UserManagementPage: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="hr">HR User</SelectItem>
-                    <SelectItem value="business_admin">Business Admin</SelectItem>
-                    <SelectItem value="system_admin">System Admin</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -208,7 +196,7 @@ export const UserManagementPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {users.filter(u => u.role.includes('admin')).length}
+              {users.filter(u => u.role === 'admin').length}
             </div>
           </CardContent>
         </Card>
