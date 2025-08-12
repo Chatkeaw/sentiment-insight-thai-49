@@ -1,3 +1,4 @@
+
 import React from "react";
 import { RefreshCw, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,13 +28,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
   return (
     <header>
-      <div>
+      <div className="flex items-center justify-between">
         {/* ด้านซ้าย - หัวข้อ Dashboard */}
         <div className="flex-1">
-          <h1 className="text-header-main >
+          <h1 className="text-header-main font-bold text-foreground mb-1">
             Dashboard ข้อเสนอแนะ ข้อร้องเรียน การใช้บริการสาขา (Mockup)
           </h1>
-          <h2 className="text-header-sub text-muted-foreground ">
+          <h2 className="text-header-sub text-muted-foreground">
             ระบบติดตามและวิเคราะห์ข้อร้องเรียนลูกค้าธนาคารออมสิน
           </h2>
         </div>
