@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BarChart3, MapPin, TrendingUp, MessageSquare, AlertTriangle, Bot, Home, Users, Settings } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -63,13 +64,16 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       title: 'ระบบ',
       icon: Settings,
       category: 'การจัดการระบบ'
-    },
-    {
+    }
+  ] : [];
+
+  // AI Agent item (available to all users)
+  const aiAgentItem = {
     id: 'ai-agent',
     title: 'AI AGENT',
     icon: Bot,
-    }
-  ] : [];
+    badge: 'NEW'
+  };
 
   const allMenuItems = [...baseMenuItems, ...adminMenuItems];
 
