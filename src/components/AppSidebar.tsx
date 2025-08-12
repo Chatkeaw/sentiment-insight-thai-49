@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BarChart3, MapPin, TrendingUp, MessageSquare, AlertTriangle, Bot, Home, Users, Settings } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -36,9 +35,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     },
     {
       id: 'analytics',
-      title: 'วิเคราะห์เชิงลึก',
-      icon: TrendingUp,
-      disabled: !state.isUnlocked
+      title: 'ติดตามผลดำเนินงาน',
+      icon: TrendingUp
     },
     {
       id: 'feedback',
@@ -114,7 +112,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             const isActive = activePage === item.id;
             const menuButton = (
               <button 
-                onClick={() => !item.disabled && onPageChange(item.id)} 
+                onClick={() => onPageChange(item.id)} 
                 disabled={item.disabled} 
                 className={`
                   w-11 h-11 rounded-2xl transition-all duration-300 grid place-items-center

@@ -3,10 +3,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import TimeFilter from '@/components/TimeFilter';
-import { useAnalytics } from '@/contexts/AnalyticsContext';
-import { SatisfactionDetailPage } from '@/components/analytics/SatisfactionDetailPage';
-import { RegionalSatisfactionPage } from '@/components/analytics/RegionalSatisfactionPage';
-import { SentimentDetailPage } from '@/components/analytics/SentimentDetailPage';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
 
 interface AnalyticsPageProps {
@@ -20,25 +16,6 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
   timeFilter, 
   onTimeFilterChange 
 }) => {
-  const { state } = useAnalytics();
-
-  const renderContent = () => {
-    switch (state.lastClickedChart) {
-      case 'satisfaction-topics':
-        return <SatisfactionDetailPage />;
-      case 'regional-satisfaction':
-        return <RegionalSatisfactionPage />;
-      case 'regional-sentiment':
-        return <SentimentDetailPage />;
-      default:
-        return (
-          <div className="flex items-center justify-center min-h-96">
-            <p className="text-lg text-muted-foreground">เลือกกราฟจากหน้าสรุปภาพรวมเพื่อดูข้อมูลเชิงลึก</p>
-          </div>
-        );
-    }
-  };
-
   return (
     <div className="space-y-6 max-w-full">
       {/* Header with Back Button and Time Filter */}
@@ -59,7 +36,12 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
       </div>
 
       {/* Content */}
-      {renderContent()}
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-semibold text-gray-700">ติดตามผลดำเนินงาน</h2>
+          <p className="text-lg text-muted-foreground">เนื้อหาจะถูกเพิ่มในภายหลัง</p>
+        </div>
+      </div>
     </div>
   );
 };
