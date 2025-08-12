@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Shield, Users, Settings } from 'lucide-react';
+import { Loader2, Shield, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const LoginPage: React.FC = () => {
@@ -116,21 +117,12 @@ export const LoginPage: React.FC = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => handleDemoLogin('business_admin')}
+                  onClick={() => handleDemoLogin('admin')}
                   className="w-full justify-start"
                   disabled={isLoading}
                 >
                   <Shield className="mr-2 h-4 w-4" />
-                  Business Admin - สมชาย บริหาร
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleDemoLogin('system_admin')}
-                  className="w-full justify-start"
-                  disabled={isLoading}
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  System Admin - สมหมาย เทคโนโลยี
+                  Admin - สมชาย บริหาร
                 </Button>
               </div>
             </div>

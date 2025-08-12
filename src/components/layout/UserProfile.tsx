@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   DropdownMenu, 
@@ -25,8 +26,7 @@ export const UserProfile: React.FC = () => {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'system_admin': return 'destructive';
-      case 'business_admin': return 'default';
+      case 'admin': return 'destructive';
       case 'hr': return 'secondary';
       default: return 'outline';
     }
