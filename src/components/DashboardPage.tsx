@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
 
 const DashboardPage = () => {
   // Generate month options from มกราคม 2567 to สิงหาคม 2568
@@ -14,6 +15,23 @@ const DashboardPage = () => {
 
   // State to manage selected month
   const [selectedMonth, setSelectedMonth] = useState("มิถุนายน 2568");
+
+  // Data for branch types donut chart
+  const branchTypeData = [
+    { name: "สาขาให้บริการ 5 วัน", value: 52, color: "#8B5CF6" },
+    { name: "สาขาให้บริการ 7 วัน", value: 45, color: "#3B82F6" },
+    { name: "หน่วยให้บริการ", value: 3, color: "#6B7280" }
+  ];
+
+  // Data for service types bar chart
+  const serviceTypeData = [
+    { name: "สินเชื่อ", gray: 1050, pink: 1250 },
+    { name: "เงินฝาก", gray: 350, pink: 420 },
+    { name: "สินค้า", gray: 150, pink: 180 },
+    { name: "ประกันภัย", gray: 80, pink: 95 },
+    { name: "บัตรเครดิต", gray: 60, pink: 75 },
+    { name: "กิจกรรม", gray: 50, pink: 65 }
+  ];
 
   const stats = [{
     title: "ลูกค้าตอบแบบประเมิน",
@@ -55,6 +73,41 @@ const DashboardPage = () => {
 
   const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedMonth(event.target.value);
+  };
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-3 border border-border rounded-lg shadow-md">
+          <p className="font-medium">{data.name}</p>
+          <p className="text-sm text-muted-foreground">
+            สัดส่วน: {data.value}%
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, value, name }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 30;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="hsl(var(--foreground))"
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+        className="text-sm font-medium"
+      >
+        {`${name} ${value}%`}
+      </text>
+    );
   };
 
   return (
@@ -108,6 +161,90 @@ const DashboardPage = () => {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* ภาพรวมการให้บริการสาขา */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-foreground">ภาพรวมการให้บริการสาขา</h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* ประเภทของสาขา - Donut Chart */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg font-medium text-foreground">ประเภทของสาขา</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={branchTypeData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={CustomLabel}
+                    outerRadius={80}
+                    innerRadius={50}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {branchTypeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* ประเภทการให้บริการ - Bar Chart */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg font-medium text-foreground">ประเภทการให้บริการ</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={serviceTypeData} margin={{ bottom: 5, right: 30 }}>
+                  <XAxis 
+                    dataKey="name" 
+                    fontSize={12}
+                    tick={{ fill: 'hsl(var(--foreground))' }}
+                  />
+                  <YAxis 
+                    fontSize={12}
+                    tick={{ fill: 'hsl(var(--foreground))' }}
+                  />
+                  <Tooltip 
+                    formatter={(value, name) => [
+                      value.toLocaleString(), 
+                      name === 'gray' ? 'เดือนที่แล้ว' : 'เดือนปัจจุบัน'
+                    ]}
+                    labelFormatter={(label) => `ประเภท: ${label}`}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Bar dataKey="gray" fill="#9CA3AF" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="pink" fill="#EC4899" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              
+              {/* Legend */}
+              <div className="flex justify-center gap-6 mt-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-gray-400 rounded"></div>
+                  <span className="text-sm text-muted-foreground">เดือนที่แล้ว</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-pink-500 rounded"></div>
+                  <span className="text-sm text-muted-foreground">เดือนปัจจุบัน</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
