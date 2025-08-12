@@ -63,15 +63,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       title: 'ระบบ',
       icon: Settings,
       category: 'การจัดการระบบ'
-    }
-  ] : [];
-
-  const aiAgentItem = {
+    },
+    {
     id: 'ai-agent',
     title: 'AI AGENT',
     icon: Bot,
-    badge: 'ใหม่'
-  };
+    }
+  ] : [];
 
   const allMenuItems = [...baseMenuItems, ...adminMenuItems];
 
