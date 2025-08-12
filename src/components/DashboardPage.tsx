@@ -1,58 +1,49 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
-
 const DashboardPage = () => {
-  const stats = [
-    {
-      title: "ลูกค้าตอบแบบประเมิน",
-      value: "3,245",
-      unit: "ครั้ง",
-      change: "+11.97%",
-      previousValue: "(2,898 ครั้ง)",
-      icon: Users,
-      color: "bg-purple-50",
-      iconColor: "text-purple-600"
-    },
-    {
-      title: "ลูกค้าให้หมายเหตุ", 
-      value: "892",
-      unit: "ครั้ง",
-      change: "+2.65%",
-      previousValue: "(869 ครั้ง)",
-      icon: MessageSquare,
-      color: "bg-blue-50",
-      iconColor: "text-blue-600"
-    },
-    {
-      title: "ข้อร้องเรียนที่รุนแรง",
-      value: "23",
-      unit: "ครั้ง",
-      change: "+4.17%",
-      previousValue: "(24 ครั้ง)",
-      icon: AlertTriangle,
-      color: "bg-red-50",
-      iconColor: "text-red-600"
-    },
-    {
-      title: "ลูกค้าให้ติดต่อกลับ",
-      value: "156",
-      unit: "ครั้ง",
-      change: "+17.29%",
-      previousValue: "(133 ครั้ง)",
-      icon: Phone,
-      color: "bg-green-50",
-      iconColor: "text-green-600"
-    }
-  ];
-
-  return (
-    <div className="space-y-6 animate-fade-in">
+  const stats = [{
+    title: "ลูกค้าตอบแบบประเมิน",
+    value: "3,245",
+    unit: "ครั้ง",
+    change: "+11.97%",
+    previousValue: "(2,898 ครั้ง)",
+    icon: Users,
+    color: "bg-purple-50",
+    iconColor: "text-purple-600"
+  }, {
+    title: "ลูกค้าให้หมายเหตุ",
+    value: "892",
+    unit: "ครั้ง",
+    change: "+2.65%",
+    previousValue: "(869 ครั้ง)",
+    icon: MessageSquare,
+    color: "bg-blue-50",
+    iconColor: "text-blue-600"
+  }, {
+    title: "ข้อร้องเรียนที่รุนแรง",
+    value: "23",
+    unit: "ครั้ง",
+    change: "+4.17%",
+    previousValue: "(24 ครั้ง)",
+    icon: AlertTriangle,
+    color: "bg-red-50",
+    iconColor: "text-red-600"
+  }, {
+    title: "ลูกค้าให้ติดต่อกลับ",
+    value: "156",
+    unit: "ครั้ง",
+    change: "+17.29%",
+    previousValue: "(133 ครั้ง)",
+    icon: Phone,
+    color: "bg-green-50",
+    iconColor: "text-green-600"
+  }];
+  return <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-foreground">สรุปภาพรวามประจำเดือน มิถุนายน 2568</h1>
+          <h1 className="text-3xl font-bold text-foreground">สรุปภาพรวมประจำเดือน มิถุนายน 2568</h1>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">เลือกเดือน:</span>
             <select className="px-3 py-1 border rounded-md bg-background text-foreground">
@@ -64,8 +55,7 @@ const DashboardPage = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {stats.map((stat, index) => (
-          <Card key={index} className="relative overflow-hidden border-0 shadow-lg">
+        {stats.map((stat, index) => <Card key={index} className="relative overflow-hidden border-0 shadow-lg">
             <CardContent className={`p-6 ${stat.color}`}>
               <div className="flex items-start justify-between">
                 <div className="space-y-3">
@@ -88,11 +78,8 @@ const DashboardPage = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        ))}
+          </Card>)}
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default DashboardPage;
