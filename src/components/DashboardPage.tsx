@@ -1,10 +1,13 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
 
-const DashboardPage = () => {
+interface DashboardPageProps {
+  onPageChange?: (page: string) => void;
+}
+
+const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   // Generate month options from มกราคม 2567 to สิงหาคม 2568
   const monthOptions = [
     "มกราคม 2567", "กุมภาพันธ์ 2567", "มีนาคม 2567", "เมษายน 2567", "พฤษภาคม 2567", "มิถุนายน 2567",
@@ -41,7 +44,8 @@ const DashboardPage = () => {
     previousValue: "(2,898 ครั้ง)",
     icon: Users,
     color: "bg-purple-50",
-    iconColor: "text-purple-600"
+    iconColor: "text-purple-600",
+    clickable: false
   }, {
     title: "ลูกค้าให้หมายเหตุ",
     value: "892",
@@ -50,7 +54,9 @@ const DashboardPage = () => {
     previousValue: "(869 ครั้ง)",
     icon: MessageSquare,
     color: "bg-blue-50",
-    iconColor: "text-blue-600"
+    iconColor: "text-blue-600",
+    clickable: true,
+    targetPage: "feedback"
   }, {
     title: "ข้อร้องเรียนที่รุนแรง",
     value: "23",
@@ -59,7 +65,9 @@ const DashboardPage = () => {
     previousValue: "(24 ครั้ง)",
     icon: AlertTriangle,
     color: "bg-red-50",
-    iconColor: "text-red-600"
+    iconColor: "text-red-600",
+    clickable: true,
+    targetPage: "complaints"
   }, {
     title: "ลูกค้าให้ติดต่อกลับ",
     value: "156",
@@ -68,7 +76,8 @@ const DashboardPage = () => {
     previousValue: "(133 ครั้ง)",
     icon: Phone,
     color: "bg-green-50",
-    iconColor: "text-green-600"
+    iconColor: "text-green-600",
+    clickable: false
   }];
 
   const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -110,6 +119,12 @@ const DashboardPage = () => {
     );
   };
 
+  const handleCardClick = (stat: any) => {
+    if (stat.clickable && stat.targetPage && onPageChange) {
+      onPageChange(stat.targetPage);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -136,7 +151,11 @@ const DashboardPage = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} className="relative overflow-hidden border-0 shadow-lg">
+          <Card 
+            key={index} 
+            className={`relative overflow-hidden border-0 shadow-lg ${stat.clickable ? 'cursor-pointer hover:shadow-xl transition-shadow duration-300' : ''}`}
+            onClick={() => handleCardClick(stat)}
+          >
             <CardContent className={`p-6 ${stat.color}`}>
               <div className="flex items-start justify-between">
                 <div className="space-y-3">

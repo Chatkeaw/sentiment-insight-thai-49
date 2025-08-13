@@ -77,7 +77,7 @@ const Index = () => {
   const renderContent = () => {
     switch (activePage) {
       case "overview":
-        return <DashboardPage />;
+        return <DashboardPage onPageChange={handlePageChange} />;
       case "regional":
         return <RegionalPage />;
       case "analytics":
@@ -117,7 +117,7 @@ const Index = () => {
           </ProtectedRoute>
         );
       default:
-        return <DashboardPage />;
+        return <DashboardPage onPageChange={handlePageChange} />;
     }
   };
 
