@@ -26,7 +26,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   const baseMenuItems = [
     {
       id: 'overview',
-      title: 'สรุปภาพรวม Dashboard',
+      title: 'สรุปภาพรวมประจำเดือน',
       icon: BarChart3
     },
     {
