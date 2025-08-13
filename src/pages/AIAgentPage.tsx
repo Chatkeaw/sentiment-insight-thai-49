@@ -153,8 +153,26 @@ export const AIAgentPage: React.FC = () => {
 
           {/* Input Area */}
           <div className="p-6 border-t bg-white relative">
-            <div className="flex gap-2">
-              <div className="flex-1 relative">
+            <div className="relative">
+              {/* Suggestions Dropdown - moved above input */}
+              {showSuggestions && (
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                  <div className="p-2 border-b bg-gray-50">
+                    <p className="text-xs text-gray-600 font-medium">คำถามแนะนำ</p>
+                  </div>
+                  {sampleQuestions.map((question, index) => (
+                    <button
+                      key={index}
+                      className="w-full text-left p-3 hover:bg-gray-50 border-b last:border-b-0 text-sm leading-relaxed"
+                      onMouseDown={() => handleQuestionClick(question)}
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              <div className="flex gap-2">
                 <Textarea
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
@@ -165,30 +183,16 @@ export const AIAgentPage: React.FC = () => {
                   onBlur={handleInputBlur}
                   disabled={isLoading}
                 />
-                
-                {/* Suggestions Dropdown */}
-                {showSuggestions && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-                    {sampleQuestions.map((question, index) => (
-                      <button
-                        key={index}
-                        className="w-full text-left p-3 hover:bg-gray-50 border-b last:border-b-0 text-sm leading-relaxed"
-                        onMouseDown={() => handleQuestionClick(question)}
-                      >
-                        {question}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={!inputMessage.trim() || isLoading}
+                  className="px-6 bg-pink-primary hover:bg-pink-deep"
+                  size="lg"
+                >
+                  <Send className="w-4 h-4" />
+                  <span className="ml-2">ส่ง</span>
+                </Button>
               </div>
-              <Button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isLoading}
-                className="px-6 bg-pink-primary hover:bg-pink-deep"
-                size="lg"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
             </div>
           </div>
         </CardContent>
