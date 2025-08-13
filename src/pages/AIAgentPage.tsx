@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Bot, Send, User } from 'lucide-react';
+import { Bot, Send, User, MessageSquare } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -17,18 +17,19 @@ export const AIAgentPage: React.FC = () => {
     {
       id: '1',
       type: 'ai',
-      content: 'สวัสดีครับ! ผมคือ AI Assistant ที่จะช่วยวิเคราะห์และตอบคำถามเกี่ยวกับข้อมูล Dashboard ของคุณ มีอะไรให้ผมช่วยเหลือไหมครับ?',
+      content: 'สวัสดีครับ ผมคือ AI Agent ที่จะช่วยวิเคราะห์และให้คำแนะนำเกี่ยวกับการให้บริการลูกค้า',
       timestamp: new Date()
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const sampleQuestions = [
-    'แสดงสรุปข้อมูลความพึงพอใจในเดือนนี้',
-    'อธิบายแนวโน้มความคิดเห็นเชิงลบที่เพิ่มขึ้น',
-    'แนะนำการปรับปรุงบริการในสาขาที่มีคะแนนต่ำ',
-    'วิเคราะห์หมวดหมู่ที่มีข้อร้องเรียนมากที่สุด'
+    'ช่วยวิเคราะห์แนวโน้มความพึงพอใจลูกค้าในช่วง 6 เดือนที่ผ่านมา และให้คำแนะนำ',
+    'เปรียบเทียบผลการดำเนินงานระหว่างสาขาต่าง ๆ และเสนอมาตรการที่ต้องให้ความสนใจ',
+    'สรุปข้อร้องเรียนที่มีสำคัญในเดือนนี้ และเสนอแนวทางแก้ไข',
+    'ให้คำแนะนำในการพัฒนาคุณภาพการให้บริการสำหรับข้อมูลที่มี'
   ];
 
   const handleSendMessage = async () => {
@@ -44,6 +45,7 @@ export const AIAgentPage: React.FC = () => {
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
+    setShowSuggestions(false);
 
     // Simulate AI response
     setTimeout(() => {
@@ -72,6 +74,7 @@ export const AIAgentPage: React.FC = () => {
 
   const handleQuestionClick = (question: string) => {
     setInputMessage(question);
+    setShowSuggestions(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -81,38 +84,29 @@ export const AIAgentPage: React.FC = () => {
     }
   };
 
+  const handleInputFocus = () => {
+    setShowSuggestions(true);
+  };
+
+  const handleInputBlur = () => {
+    // Delay hiding suggestions to allow clicking on them
+    setTimeout(() => setShowSuggestions(false), 200);
+  };
+
   return (
     <div className="space-y-6 max-w-full">
-      <h2 className="text-xl font-semibold text-foreground">AI Agent</h2>
-
-      {/* Sample Questions */}
-      <Card className="chart-container-medium">
-        <CardHeader>
-          <CardTitle className="card-title">คำถามตัวอย่าง</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {sampleQuestions.map((question, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                className="text-left justify-start h-auto p-3 whitespace-normal"
-                onClick={() => handleQuestionClick(question)}
-              >
-                {question}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex items-center gap-3">
+        <MessageSquare className="w-6 h-6 text-pink-primary" />
+        <div>
+          <h2 className="text-xl font-semibold text-foreground">แชทกับ AI AGENT</h2>
+          <p className="text-sm text-muted-foreground">วิเคราะห์ข้อมูลและให้คำแนะนำเกี่ยวกับการให้บริการลูกค้า</p>
+        </div>
+      </div>
 
       {/* Chat Messages */}
-      <Card className="chart-container-large">
-        <CardHeader>
-          <CardTitle className="card-title">แชท</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-96 overflow-y-auto mb-4 space-y-4 p-4 bg-gray-50 rounded-lg">
+      <Card className="h-[600px] flex flex-col">
+        <CardContent className="flex-1 p-0">
+          <div className="h-[480px] overflow-y-auto p-6 space-y-4 bg-gray-50">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -126,13 +120,16 @@ export const AIAgentPage: React.FC = () => {
                 <div className={`max-w-[80%] p-3 rounded-lg ${
                   message.type === 'user' 
                     ? 'bg-pink-primary text-white ml-auto' 
-                    : 'bg-white border'
+                    : 'bg-white border shadow-sm'
                 }`}>
                   <p className="text-sm leading-relaxed">{message.content}</p>
                   <div className={`text-xs mt-1 ${
                     message.type === 'user' ? 'text-pink-100' : 'text-gray-500'
                   }`}>
-                    {message.timestamp.toLocaleTimeString('th-TH')}
+                    {message.timestamp.toLocaleTimeString('th-TH', { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
                   </div>
                 </div>
               </div>
@@ -143,7 +140,7 @@ export const AIAgentPage: React.FC = () => {
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
                   <Bot className="w-4 h-4" />
                 </div>
-                <div className="bg-white border p-3 rounded-lg">
+                <div className="bg-white border p-3 rounded-lg shadow-sm">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -155,22 +152,44 @@ export const AIAgentPage: React.FC = () => {
           </div>
 
           {/* Input Area */}
-          <div className="flex gap-2">
-            <Textarea
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="พิมพ์คำถามของคุณ..."
-              className="min-h-[60px] resize-none"
-              onKeyPress={handleKeyPress}
-              disabled={isLoading}
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!inputMessage.trim() || isLoading}
-              className="px-6"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
+          <div className="p-6 border-t bg-white relative">
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Textarea
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  placeholder="พิมพ์คำถามของคุณที่นี่..."
+                  className="min-h-[80px] resize-none pr-4"
+                  onKeyPress={handleKeyPress}
+                  onFocus={handleInputFocus}
+                  onBlur={handleInputBlur}
+                  disabled={isLoading}
+                />
+                
+                {/* Suggestions Dropdown */}
+                {showSuggestions && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                    {sampleQuestions.map((question, index) => (
+                      <button
+                        key={index}
+                        className="w-full text-left p-3 hover:bg-gray-50 border-b last:border-b-0 text-sm leading-relaxed"
+                        onMouseDown={() => handleQuestionClick(question)}
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <Button
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim() || isLoading}
+                className="px-6 bg-pink-primary hover:bg-pink-deep"
+                size="lg"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
