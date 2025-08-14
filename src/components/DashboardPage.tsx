@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
@@ -62,6 +63,23 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
     value: Math.random() * 2 + 3, // Random score between 3-5
     previousValue: Math.random() * 2 + 2.5, // Random previous value between 2.5-4.5
   }));
+
+  // Data for customer feedback sentiment donut chart
+  const sentimentData = [
+    { name: "เชิงบวก", value: 68, color: "#10B981" },
+    { name: "เชิงลบ", value: 32, color: "#EF4444" }
+  ];
+
+  // Data for top 7 categories
+  const top7Categories = [
+    { name: "พนักงานและบุคลากร", positive: 245, negative: 89 },
+    { name: "เทคโนโลยีและดิจิทัล", positive: 156, negative: 134 },
+    { name: "Market Conduct", positive: 23, negative: 12 },
+    { name: "สภาพแวดล้อมและสิ่งอำนวยความสะดวก", positive: 198, negative: 76 },
+    { name: "ระบบและกระบวนการให้บริการ", positive: 134, negative: 67 },
+    { name: "เงื่อนไขและผลิตภัณฑ์", positive: 89, negative: 45 },
+    { name: "อื่นๆ", positive: 67, negative: 34 }
+  ];
 
   const stats = [{
     title: "ลูกค้าตอบแบบประเมิน",
@@ -278,8 +296,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                       borderRadius: '8px',
                     }}
                   />
-                  <Bar dataKey="gray" fill="#D1D5DB" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="pink" fill="#EC4899" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="gray" name="gray" fill="#D1D5DB" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="pink" name="pink" fill="#EC4899" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               
@@ -375,6 +393,84 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   />
                 </BarChart>
               </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* ข้อคิดเห็นของลูกค้า */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-foreground">ข้อคิดเห็นของลูกค้า</h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* สัดส่วนความคิดเห็น - Donut Chart */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg font-medium text-foreground">สัดส่วนความคิดเห็น</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={sentimentData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={CustomLabel}
+                    outerRadius={80}
+                    innerRadius={50}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {sentimentData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value) => [`${value}%`, 'สัดส่วน']}
+                    labelFormatter={(label) => label}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Top 7 หัวข้อใหญ่ - List View */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg font-medium text-foreground">Top 7 หัวข้อใหญ่</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {top7Categories.map((item, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card/50 hover:bg-card/80 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
+                        {index + 1}
+                      </div>
+                      <span className="font-medium text-sm">{item.name}</span>
+                    </div>
+                    <div className="flex gap-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span className="font-medium">{item.positive}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                        <span className="font-medium">{item.negative}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
