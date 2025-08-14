@@ -16,8 +16,8 @@ interface FeedbackEntry {
   service_type: string;
   timestamp: string;
   raw_comment: string;
-  category: string;
-  sentiment: 'positive' | 'negative' | 'mixed';
+  subcategory: string;
+  sentiment: 'positive' | 'negative';
   severity: 'normal' | 'high';
 }
 
@@ -29,20 +29,20 @@ const mockFeedbackData: FeedbackEntry[] = [
     branch: 'บางเขน',
     service_type: 'เปิดบัญชี',
     timestamp: '2024-07-01 09:30',
-    raw_comment: 'พนักงานให้บริการดีมาก พูดจาสุภาพ แนะนำบริการอย่างชัดเจน',
-    category: 'บริการลูกค้า',
+    raw_comment: 'พนักงานให้บริการดีมาก สุภาพและรวดเร็ว',
+    subcategory: '1.1 ความสุภาพและมารยาทของพนักงาน',
     sentiment: 'positive',
     severity: 'normal'
   },
   {
     id: '2',
     region: 'ภาคตะวันออกเฉียงเหนือ',
-    area: 'อุบลราชธานี',
-    branch: 'เมืองอุบลฯ',
-    service_type: 'สินเชื่อ',
+    area: 'ขอนแก่น',
+    branch: 'เมืองขอนแก่น',
+    service_type: 'สมัครแอป',
     timestamp: '2024-07-01 15:50',
-    raw_comment: 'ไม่สามารถ login เข้าแอป MyMo ได้ พนักงานไม่สามารถช่วยเหลือได้เลย',
-    category: 'แอปพลิเคชัน',
+    raw_comment: 'เข้าแอป MyMo ไม่ได้ และไม่มีใครให้คำตอบที่ชัดเจน',
+    subcategory: '3.5 แอพพลิเคชั่น MyMo',
     sentiment: 'negative',
     severity: 'high'
   },
@@ -51,11 +51,11 @@ const mockFeedbackData: FeedbackEntry[] = [
     region: 'ภาคใต้',
     area: 'สงขลา',
     branch: 'หาดใหญ่',
-    service_type: 'บัตร ATM',
+    service_type: 'ถอนเงิน',
     timestamp: '2024-07-01 13:20',
-    raw_comment: 'พนักงานบริการดี แต่ระบบออกบัตรล่าช้า ใช้เวลานานเกินไป',
-    category: 'ระบบ',
-    sentiment: 'mixed',
+    raw_comment: 'พนักงานดี แต่เครื่องนับเงินเสีย รอคิวนาน',
+    subcategory: '3.7 เครื่องนับเงิน',
+    sentiment: 'negative',
     severity: 'normal'
   }
 ];
@@ -73,7 +73,7 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [serviceType, setServiceType] = useState<string>('all');
   const [sentiment, setSentiment] = useState<'positive' | 'negative' | 'all'>('all');
-  const [category, setCategory] = useState<string>('all');
+  const [subcategory, setSubcategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Cascading filter options
@@ -99,8 +99,44 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
     )).sort();
   }, [selectedRegion, selectedArea]);
 
-  const serviceTypes = ['เปิดบัญชี', 'สินเชื่อ', 'บัตร ATM'];
-  const categories = ['บริการลูกค้า', 'แอปพลิเคชัน', 'ระบบ'];
+  const serviceTypes = ['เปิดบัญชี', 'ถอนเงิน', 'ฝากเงิน', 'สินเชื่อ', 'สมัครแอป', 'บัตร ATM'];
+  const subcategories = [
+    '1.1 ความสุภาพและมารยาทของพนักงาน',
+    '1.2 ความเอาใจใส่ในการให้บริการลูกค้า',
+    '1.3 ความสามารถในการตอบคำถามหรือให้คำแนะนำ',
+    '1.4 ความถูกต้องในการให้บริการ',
+    '1.5 ความรวดเร็วในการให้บริการ',
+    '1.6 ความเป็นมืออาชีพและการแก้ไขปัญหาเฉพาะหน้า',
+    '1.7 ความประทับใจในการให้บริการ',
+    '1.8 รปภ, แม่บ้าน',
+    '2.1 ความพร้อมในการให้บริการ',
+    '2.2 กระบวนการให้บริการ ความเป็นธรรมให้บริการ',
+    '2.3 ระบบเรียกคิวและจัดการคิว',
+    '2.4 ภาระเอกสาร',
+    '3.1 ระบบ Core ของธนาคาร',
+    '3.2 เครื่องออกบัตรคิว',
+    '3.3 ATM ADM CDM',
+    '3.4 E-KYC Scanner',
+    '3.5 แอพพลิเคชั่น MyMo',
+    '3.6 เครื่องปรับสมุด',
+    '3.7 เครื่องนับเงิน',
+    '4.1 รายละเอียด ผลิตภัณฑ์',
+    '4.2 เงื่อนไขอนุมัติ',
+    '4.3 ระยะเวลาอนุมัติ',
+    '4.4 ความยืดหยุ่น',
+    '4.5 ความเรียบง่ายข้อมูล',
+    '5.1 ความสะอาด',
+    '5.2 พื้นที่และความคับคั่ง',
+    '5.3 อุณหภูมิ',
+    '5.4 โต๊ะรับบริการ',
+    '5.5 จุดรอรับบริการ',
+    '5.6 แสง',
+    '5.7 เสียง',
+    '5.8 ห้องน้ำ',
+    '5.9 ที่จอดรถ',
+    '5.10 ป้าย-สื่อประชาสัมพันธ์',
+    '5.11 สิ่งอำนวยความสะดวกอื่นๆ'
+  ];
 
   // Filtered feedback data
   const filteredFeedback = useMemo(() => {
@@ -110,12 +146,12 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
       if (selectedBranch !== 'all' && feedback.branch !== selectedBranch) return false;
       if (serviceType !== 'all' && feedback.service_type !== serviceType) return false;
       if (sentiment !== 'all' && feedback.sentiment !== sentiment) return false;
-      if (category !== 'all' && feedback.category !== category) return false;
+      if (subcategory !== 'all' && feedback.subcategory !== subcategory) return false;
       if (searchTerm && !feedback.raw_comment.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       
       return true;
     });
-  }, [selectedRegion, selectedArea, selectedBranch, serviceType, sentiment, category, searchTerm]);
+  }, [selectedRegion, selectedArea, selectedBranch, serviceType, sentiment, subcategory, searchTerm]);
 
   // Get background color based on sentiment
   const getBackgroundColor = (sentiment: string) => {
@@ -140,7 +176,7 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
     setDateRange(undefined);
     setServiceType('all');
     setSentiment('all');
-    setCategory('all');
+    setSubcategory('all');
     setSearchTerm('');
   };
 
@@ -277,15 +313,15 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">หมวดหมู่ที่ถูกกล่าวถึง</label>
-              <Select value={category} onValueChange={setCategory}>
+              <label className="text-xs text-muted-foreground">หมวดหมู่ย่อยที่ถูกกล่าวถึง</label>
+              <Select value={subcategory} onValueChange={setSubcategory}>
                 <SelectTrigger>
-                  <SelectValue placeholder="เลือกหมวดหมู่" />
+                  <SelectValue placeholder="เลือกหมวดหมู่ย่อย" />
                 </SelectTrigger>
-                <SelectContent className="bg-background">
+                <SelectContent className="bg-background max-h-60 overflow-y-auto">
                   <SelectItem value="all">ทั้งหมด</SelectItem>
-                  {categories.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  {subcategories.map(subcat => (
+                    <SelectItem key={subcat} value={subcat}>{subcat}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -330,7 +366,7 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
                     <span><strong>ภาค / เขต / สาขา:</strong> {feedback.region} / {feedback.area} / {feedback.branch}</span>
                     <span><strong>ประเภทบริการ:</strong> {feedback.service_type}</span>
                     <span><strong>วันที่ - เวลา:</strong> {feedback.timestamp}</span>
-                    <span><strong>หมวดหมู่:</strong> {feedback.category}</span>
+                    <span><strong>หมวดหมู่ย่อย:</strong> {feedback.subcategory}</span>
                   </div>
 
                   {/* Comment */}
