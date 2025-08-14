@@ -62,7 +62,7 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
             
             return (
               <div key={index} className="space-y-4">
-                <div className="grid grid-cols-[300px_1fr] gap-6">
+                <div className="grid grid-cols-[200px_1fr] gap-6">
                   {/* Topic Score Card */}
                   <Card className="bg-gradient-to-b from-purple-50 to-white rounded-2xl shadow-none flex items-center justify-center">
                     <CardContent className="p-6 flex flex-col justify-center items-center text-center">
