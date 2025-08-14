@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import { SatisfactionDetailModal } from './SatisfactionDetailModal';
@@ -25,6 +25,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState('');
   const [selectedScore, setSelectedScore] = useState(0);
+
+  // State for customer feedback section
+  const [selectedSentimentType, setSelectedSentimentType] = useState<'positive' | 'negative'>('positive');
 
   // Data for branch types donut chart
   const branchTypeData = [
@@ -64,14 +67,14 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
     previousValue: Math.random() * 2 + 2.5, // Random previous value between 2.5-4.5
   }));
 
-  // Data for customer feedback sentiment donut chart
-  const sentimentData = [
+  // Data for customer sentiment donut chart
+  const customerSentimentData = [
     { name: "เชิงบวก", value: 68, color: "#10B981" },
     { name: "เชิงลบ", value: 32, color: "#EF4444" }
   ];
 
-  // Data for top 7 categories
-  const top7Categories = [
+  // Data for top 7 main categories
+  const top7MainCategories = [
     { name: "พนักงานและบุคลากร", positive: 245, negative: 89 },
     { name: "เทคโนโลยีและดิจิทัล", positive: 156, negative: 134 },
     { name: "Market Conduct", positive: 23, negative: 12 },
@@ -80,6 +83,26 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
     { name: "เงื่อนไขและผลิตภัณฑ์", positive: 89, negative: 45 },
     { name: "อื่นๆ", positive: 67, negative: 34 }
   ];
+
+  // Data for top 7 subcategories
+  const top7SubCategories = [
+    { name: "ความสุภาพและมารยาทของพนักงาน", positive: 189, negative: 45 },
+    { name: "ความเอาใจใส่ในการให้บริการลูกค้า", positive: 167, negative: 23 },
+    { name: "ไม่เอาเปรียบ", positive: 145, negative: 12 },
+    { name: "ระบบ Core ของธนาคาร", positive: 98, negative: 87 },
+    { name: "ความรวดเร็วในการให้บริการ", positive: 123, negative: 56 },
+    { name: "ไม่บังคับ", positive: 78, negative: 34 },
+    { name: "พื้นที่และความคับคั่ง", positive: 67, negative: 89 }
+  ];
+
+  // Data for regional feedback comparison
+  const regionalFeedbackData = Array.from({ length: 18 }, (_, i) => ({
+    region: `ภาค ${i + 1}`,
+    positive: Math.floor(Math.random() * 50) + 20,
+    negative: Math.floor(Math.random() * 30) + 10,
+    previousPositive: Math.floor(Math.random() * 40) + 15,
+    previousNegative: Math.floor(Math.random() * 25) + 8,
+  }));
 
   const stats = [{
     title: "ลูกค้าตอบแบบประเมิน",
@@ -174,6 +197,18 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
     if (stat.clickable && stat.targetPage && onPageChange) {
       onPageChange(stat.targetPage);
     }
+  };
+
+  const handleMainCategoryDetails = () => {
+    console.log("อัพเดตเพิ่มเติมภายหลัง - หัวข้อใหญ่");
+  };
+
+  const handleSubCategoryDetails = () => {
+    console.log("อัพเดตเพิ่มเติมภายหลัง - หมวดหมู่ย่อย");
+  };
+
+  const handleRegionalDetails = () => {
+    console.log("อัพเดตเพิ่มเติมภายหลัง - รายพื้นที่");
   };
 
   return (
@@ -402,17 +437,18 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-foreground">ข้อคิดเห็นของลูกค้า</h2>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* สัดส่วนความคิดเห็น - Donut Chart */}
+        {/* Card 1: Sentiment Analysis & Categories */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* ทัศนคติของลูกค้า - Donut Chart */}
           <Card className="border-0 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-lg font-medium text-foreground">สัดส่วนความคิดเห็น</CardTitle>
+              <CardTitle className="text-lg font-medium text-foreground">ทัศนคติของลูกค้า</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={sentimentData}
+                    data={customerSentimentData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -422,7 +458,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {sentimentData.map((entry, index) => (
+                    {customerSentimentData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -440,14 +476,62 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
             </CardContent>
           </Card>
 
-          {/* Top 7 หัวข้อใหญ่ - List View */}
+          {/* หัวข้อที่ลูกค้าร้องเรียน - Top 7 Main Categories */}
           <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-lg font-medium text-foreground">Top 7 หัวข้อใหญ่</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-lg font-medium text-foreground">หัวข้อที่ลูกค้าร้องเรียน</CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleMainCategoryDetails}
+              >
+                ดูรายละเอียด
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {top7Categories.map((item, index) => (
+                {top7MainCategories.map((item, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card/50 hover:bg-card/80 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
+                        {index + 1}
+                      </div>
+                      <span className="font-medium text-sm">{item.name}</span>
+                    </div>
+                    <div className="flex gap-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span className="font-medium">{item.positive}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                        <span className="font-medium">{item.negative}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* หมวดหมู่ที่ลูกค้าร้องเรียน - Top 7 Sub Categories */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-lg font-medium text-foreground">หมวดหมู่ที่ลูกค้าร้องเรียน</CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleSubCategoryDetails}
+              >
+                ดูรายละเอียด
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {top7SubCategories.map((item, index) => (
                   <div 
                     key={index}
                     className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card/50 hover:bg-card/80 transition-colors"
@@ -474,6 +558,93 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Card 2: Regional Feedback Comparison */}
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-lg font-medium text-foreground">ข้อคิดเห็นของลูกค้า รายพื้นที่</CardTitle>
+            <div className="flex gap-2">
+              <Button 
+                variant={selectedSentimentType === 'positive' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedSentimentType('positive')}
+              >
+                เชิงบวก
+              </Button>
+              <Button 
+                variant={selectedSentimentType === 'negative' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedSentimentType('negative')}
+              >
+                เชิงลบ
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleRegionalDetails}
+              >
+                ดูรายละเอียด
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={regionalFeedbackData} margin={{ bottom: 40 }}>
+                <XAxis 
+                  dataKey="region" 
+                  fontSize={12}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis 
+                  label={{ value: 'ความถี่ (ครั้ง)', angle: -90, position: 'insideLeft' }}
+                  fontSize={12}
+                />
+                <Tooltip 
+                  formatter={(value, name) => {
+                    let label = '';
+                    if (name === 'positive' || name === 'previousPositive') {
+                      label = name === 'positive' ? 'เชิงบวก (เดือนปัจจุบัน)' : 'เชิงบวก (เดือนก่อนหน้า)';
+                    } else {
+                      label = name === 'negative' ? 'เชิงลบ (เดือนปัจจุบัน)' : 'เชิงลบ (เดือนก่อนหน้า)';
+                    }
+                    return [`${value} ครั้ง`, label];
+                  }}
+                  labelFormatter={(label) => `${label}`}
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                />
+                {selectedSentimentType === 'positive' ? (
+                  <>
+                    <Bar dataKey="previousPositive" fill="#D1D5DB" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="positive" fill="#10B981" radius={[2, 2, 0, 0]} />
+                  </>
+                ) : (
+                  <>
+                    <Bar dataKey="previousNegative" fill="#D1D5DB" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="negative" fill="#EF4444" radius={[2, 2, 0, 0]} />
+                  </>
+                )}
+              </BarChart>
+            </ResponsiveContainer>
+            
+            {/* Legend */}
+            <div className="flex justify-center gap-6 mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gray-300 rounded"></div>
+                <span className="text-sm text-muted-foreground">เดือนก่อนหน้า</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className={`w-4 h-4 rounded ${selectedSentimentType === 'positive' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <span className="text-sm text-muted-foreground">เดือนปัจจุบัน</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Satisfaction Detail Modal */}
