@@ -301,42 +301,33 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
       {/* ระดับความพึงพอใจ */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-foreground">ระดับความพึงพอใจ</h2>
-        
+      
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Overall Score Card */}
-          <Card className="bg-purple-50">
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium text-muted-foreground">
-                  ระดับความพึงพอใจ รายพื้นที่
-                </h3>
-                <div className="space-y-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-foreground">{overallAverage.toFixed(2)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-green-600 font-medium">↗ 2.80%</span>
-                    <span className="text-muted-foreground">
-                      (ค่าเฉลี่ยจากเดือนที่แล้ว {(overallAverage - 0.1).toFixed(2)} คะแนน)
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={handleTopicClick}
-                  className="text-sm text-primary hover:underline cursor-pointer"
-                >
-                  หัวข้อที่ใช้ประเมิน
-                </button>
+          <Card className="bg-gradient-to-b from-pink-50 to-white rounded-2xl shadow-none">
+            <CardContent className="p-8 flex flex-col justify-center items-center text-center">
+              <span className="text-5xl font-bold text-foreground">{overallAverage.toFixed(2)}</span>
+              <div className="flex items-center gap-2 text-sm mt-2">
+                <span className="text-green-600 font-medium">↗ 2.80%</span>
               </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                (คำนวณจากเดือนที่แล้ว {(overallAverage - 0.1).toFixed(2)} คะแนน)
+              </p>
             </CardContent>
           </Card>
-
+      
           {/* Regional Satisfaction Chart */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
+          <Card className="border rounded-2xl shadow-none">
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-medium text-foreground">
                 ระดับความพึงพอใจ รายพื้นที่
               </CardTitle>
+              <button
+                onClick={handleTopicClick}
+                className="text-sm px-3 py-1 border rounded-lg text-muted-foreground hover:bg-muted"
+              >
+                หัวข้อที่ใช้ประเมิน
+              </button>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -364,9 +355,16 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                       borderRadius: '8px',
                     }}
                   />
+                  {/* เดือนที่แล้ว */}
+                  <Bar 
+                    dataKey="previousValue" 
+                    fill="#D1D5DB" // เทา
+                    radius={[2, 2, 0, 0]} 
+                  />
+                  {/* ปัจจุบัน */}
                   <Bar 
                     dataKey="value" 
-                    fill="#EC4899" 
+                    fill="#EC4899" // ชมพู
                     radius={[2, 2, 0, 0]} 
                   />
                 </BarChart>
@@ -375,6 +373,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
           </Card>
         </div>
       </div>
+
 
       {/* Satisfaction Detail Modal */}
       <SatisfactionDetailModal
