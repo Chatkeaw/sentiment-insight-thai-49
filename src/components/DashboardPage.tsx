@@ -60,6 +60,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   const regionalSatisfactionData = Array.from({ length: 18 }, (_, i) => ({
     name: `ภาค${i + 1}`,
     value: Math.random() * 2 + 3, // Random score between 3-5
+    previousValue: Math.random() * 2 + 2.5, // Random previous value between 2.5-4.5
   }));
 
   const stats = [{
@@ -347,7 +348,10 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                     label={{ value: 'คะแนน', angle: -90, position: 'insideLeft' }}
                   />
                   <Tooltip 
-                    formatter={(value) => [`${Number(value).toFixed(1)}`, name]}
+                    formatter={(value, name) => [
+                      `${Number(value).toFixed(1)}`, 
+                      name === 'previousValue' ? 'เดือนที่แล้ว' : 'เดือนนี้'
+                    ]}
                     labelFormatter={(label) => `${label}`}
                     contentStyle={{
                       backgroundColor: 'white',
@@ -375,7 +379,6 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
           </Card>
         </div>
       </div>
-
 
       {/* Satisfaction Detail Modal */}
       <SatisfactionDetailModal
