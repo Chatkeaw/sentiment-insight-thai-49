@@ -269,7 +269,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   <Tooltip 
                     formatter={(value, name) => [
                       value.toLocaleString(), 
-                      name === 'gray' ? 'เดือนที่แล้ว' : 'เดือนปัจจุบัน'
+                      name === 'gray' ? 'เดือนก่อนหน้า' : 'เดือนปัจจุบัน'
                     ]}
                     labelFormatter={(label) => `ประเภท: ${label}`}
                     contentStyle={{
