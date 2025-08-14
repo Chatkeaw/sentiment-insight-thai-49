@@ -160,8 +160,6 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
         return 'bg-green-50 border-green-200';
       case 'negative':
         return 'bg-red-50 border-red-200';
-      case 'mixed':
-        return 'bg-yellow-50 border-yellow-200';
       default:
         return 'bg-gray-50 border-gray-200';
     }
@@ -377,9 +375,9 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
                   {/* Tags */}
                   <div className="flex gap-2">
                     <Badge 
-                      variant={feedback.sentiment === 'positive' ? 'default' : feedback.sentiment === 'negative' ? 'destructive' : 'secondary'}
+                      variant={feedback.sentiment === 'positive' ? 'default' : 'destructive'}
                     >
-                      {feedback.sentiment === 'positive' ? 'เชิงบวก' : feedback.sentiment === 'negative' ? 'เชิงลบ' : 'เชิงผสม'}
+                      {feedback.sentiment === 'positive' ? 'เชิงบวก' : 'เชิงลบ'}
                     </Badge>
                     {feedback.severity === 'high' && (
                       <Badge variant="destructive">
