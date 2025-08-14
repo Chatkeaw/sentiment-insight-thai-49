@@ -312,7 +312,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                 <span className="text-green-600 font-medium">↗ 2.80%</span>
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                (คำนวณจากเดือนที่แล้ว {(overallAverage - 0.1).toFixed(2)} คะแนน)
+                (คำนวณจากเดือนก่อนหน้า {(overallAverage - 0.1).toFixed(2)} คะแนน)
               </p>
             </CardContent>
           </Card>
@@ -350,7 +350,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   <Tooltip 
                     formatter={(value, name) => [
                       `${Number(value).toFixed(1)}`, 
-                      name === 'previousValue' ? 'เดือนที่แล้ว' : 'เดือนนี้'
+                      name === 'previousValue' ? 'เดือนก่อนหน้า' : 'เดือนปัจจุบัน'
                     ]}
                     labelFormatter={(label) => `${label}`}
                     contentStyle={{
@@ -359,17 +359,17 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                       borderRadius: '8px',
                     }}
                   />
-                  {/* เดือนที่แล้ว */}
+                  {/* เดือนก่อนหน้า */}
                   <Bar 
                     dataKey="previousValue"
-                    name="เดือนที่แล้ว"
+                    name="เดือนก่อนหน้า"
                     fill="#D1D5DB" // เทา
                     radius={[2, 2, 0, 0]} 
                   />
                   {/* ปัจจุบัน */}
                   <Bar 
                     dataKey="value" 
-                    name="เดือนนี้"
+                    name="เดือนปัจจุบัน"
                     fill="#EC4899" // ชมพู
                     radius={[2, 2, 0, 0]} 
                   />
