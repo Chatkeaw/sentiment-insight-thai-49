@@ -136,12 +136,12 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center bg-pink-100 p-4 rounded-lg border border-pink-200">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="h-6 w-6 text-destructive" />
-          <h1 className="text-2xl font-bold text-foreground">ข้อร้องเรียนที่รุนแรง</h1>
+          <AlertTriangle className="h-6 w-6 text-pink-600" />
+          <h1 className="text-2xl font-bold text-pink-800">ข้อร้องเรียนที่รุนแรง</h1>
         </div>
-        <Button onClick={clearFilters} variant="outline" size="sm">
+        <Button onClick={clearFilters} variant="outline" size="sm" className="border-pink-300 text-pink-700 hover:bg-pink-50">
           ล้างตัวกรอง
         </Button>
       </div>
@@ -251,7 +251,7 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
               filteredComplaints.map((complaint) => (
                 <div
                   key={complaint.id}
-                  className="p-4 rounded-lg border border-red-200 bg-red-50 transition-colors"
+                  className="p-4 rounded-lg border border-pink-200 bg-pink-50 transition-colors"
                 >
                   {/* Header Info */}
                   <div className="flex flex-wrap gap-4 text-sm font-medium text-foreground mb-3">
@@ -267,10 +267,10 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
                     <p className="text-foreground leading-relaxed text-base">{complaint.raw_comment}</p>
                   </div>
 
-                  {/* Category Tags */}
-                  <div className="mb-3">
-                    <p className="text-sm text-red-700 font-medium">{complaint.category_tags}</p>
-                  </div>
+                   {/* Category Tags */}
+                   <div className="mb-3">
+                     <p className="text-sm text-pink-700 font-medium">{complaint.category_tags}</p>
+                   </div>
 
                   {/* Tags */}
                   <div className="flex gap-2">
