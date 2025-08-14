@@ -342,8 +342,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                     height={80}
                   />
                   <YAxis 
-                    domain={[0, 5]}
-                    interval={0} 
+                    domain={[0, 5]}            
                     fontSize={12}
                     tick={{ fill: 'hsl(var(--foreground))' }}
                     label={{ value: 'คะแนน', angle: -90, position: 'insideLeft' }}
