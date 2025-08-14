@@ -362,14 +362,14 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   {/* เดือนก่อนหน้า */}
                   <Bar 
                     dataKey="previousValue"
-                    name="เดือนก่อนหน้า"
+                    name="previousValue"
                     fill="#D1D5DB" // เทา
                     radius={[2, 2, 0, 0]} 
                   />
                   {/* ปัจจุบัน */}
                   <Bar 
                     dataKey="value" 
-                    name="เดือนปัจจุบัน"
+                    name="value"
                     fill="#EC4899" // ชมพู
                     radius={[2, 2, 0, 0]} 
                   />
