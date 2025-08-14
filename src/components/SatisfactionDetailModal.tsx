@@ -87,7 +87,7 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
                   <Card className="border rounded-2xl shadow-none">
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={regionalData} margin={{ bottom: 10 }} barCategoryGap="20%">
+                        <BarChart data={regionalData}  barCategoryGap="20%">
                           <XAxis 
                             dataKey="name" 
                             fontSize={12}
