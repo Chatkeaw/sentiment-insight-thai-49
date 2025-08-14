@@ -330,7 +330,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                 หัวข้อที่ใช้ประเมิน
               </button>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex justify-center items-center">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={regionalSatisfactionData} margin={{ bottom: 40 }} barCategoryGap="20%">
                   <XAxis 
