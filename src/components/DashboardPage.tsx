@@ -339,7 +339,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                     tick={{ fill: 'hsl(var(--foreground))' }}
                     angle={-45}
                     textAnchor="end"
-                    height={80}
+                    height={100}
                   />
                   <YAxis 
                     domain={[0, 5]}
