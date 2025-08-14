@@ -66,14 +66,14 @@ interface CustomerFeedbackSystemProps {
 
 export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ className }) => {
   // Filter states
-  const [selectedRegion, setSelectedRegion] = useState<string>('');
-  const [selectedArea, setSelectedArea] = useState<string>('');
-  const [selectedBranch, setSelectedBranch] = useState<string>('');
+  const [selectedRegion, setSelectedRegion] = useState<string>('all');
+  const [selectedArea, setSelectedArea] = useState<string>('all');
+  const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [timeType, setTimeType] = useState<'monthly' | 'retrospective' | 'custom'>('monthly');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [serviceType, setServiceType] = useState<string>('');
-  const [sentiment, setSentiment] = useState<'positive' | 'negative' | ''>('');
-  const [category, setCategory] = useState<string>('');
+  const [serviceType, setServiceType] = useState<string>('all');
+  const [sentiment, setSentiment] = useState<'positive' | 'negative' | 'all'>('all');
+  const [category, setCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Cascading filter options
@@ -82,7 +82,7 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
   }, []);
 
   const areas = useMemo(() => {
-    if (!selectedRegion) return [];
+    if (selectedRegion === 'all') return [];
     return Array.from(new Set(
       mockFeedbackData
         .filter(f => f.region === selectedRegion)
@@ -91,7 +91,7 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
   }, [selectedRegion]);
 
   const branches = useMemo(() => {
-    if (!selectedArea) return [];
+    if (selectedArea === 'all') return [];
     return Array.from(new Set(
       mockFeedbackData
         .filter(f => f.region === selectedRegion && f.area === selectedArea)
@@ -105,12 +105,12 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
   // Filtered feedback data
   const filteredFeedback = useMemo(() => {
     return mockFeedbackData.filter(feedback => {
-      if (selectedRegion && feedback.region !== selectedRegion) return false;
-      if (selectedArea && feedback.area !== selectedArea) return false;
-      if (selectedBranch && feedback.branch !== selectedBranch) return false;
-      if (serviceType && feedback.service_type !== serviceType) return false;
-      if (sentiment && feedback.sentiment !== sentiment) return false;
-      if (category && feedback.category !== category) return false;
+      if (selectedRegion !== 'all' && feedback.region !== selectedRegion) return false;
+      if (selectedArea !== 'all' && feedback.area !== selectedArea) return false;
+      if (selectedBranch !== 'all' && feedback.branch !== selectedBranch) return false;
+      if (serviceType !== 'all' && feedback.service_type !== serviceType) return false;
+      if (sentiment !== 'all' && feedback.sentiment !== sentiment) return false;
+      if (category !== 'all' && feedback.category !== category) return false;
       if (searchTerm && !feedback.raw_comment.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       
       return true;
@@ -133,14 +133,14 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
 
   // Clear all filters
   const clearFilters = () => {
-    setSelectedRegion('');
-    setSelectedArea('');
-    setSelectedBranch('');
+    setSelectedRegion('all');
+    setSelectedArea('all');
+    setSelectedBranch('all');
     setTimeType('monthly');
     setDateRange(undefined);
-    setServiceType('');
-    setSentiment('');
-    setCategory('');
+    setServiceType('all');
+    setSentiment('all');
+    setCategory('all');
     setSearchTerm('');
   };
 
@@ -168,14 +168,14 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
                 <label className="text-xs text-muted-foreground">ภาค</label>
                 <Select value={selectedRegion} onValueChange={(value) => {
                   setSelectedRegion(value);
-                  setSelectedArea('');
-                  setSelectedBranch('');
+                  setSelectedArea('all');
+                  setSelectedBranch('all');
                 }}>
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกภาค" />
                   </SelectTrigger>
                   <SelectContent className="bg-background">
-                    <SelectItem value="">ทั้งหมด</SelectItem>
+                    <SelectItem value="all">ทั้งหมด</SelectItem>
                     {regions.map(region => (
                       <SelectItem key={region} value={region}>{region}</SelectItem>
                     ))}
@@ -187,13 +187,13 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
                 <label className="text-xs text-muted-foreground">เขต</label>
                 <Select value={selectedArea} onValueChange={(value) => {
                   setSelectedArea(value);
-                  setSelectedBranch('');
-                }} disabled={!selectedRegion}>
+                  setSelectedBranch('all');
+                }} disabled={selectedRegion === 'all'}>
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกเขต" />
                   </SelectTrigger>
                   <SelectContent className="bg-background">
-                    <SelectItem value="">ทั้งหมด</SelectItem>
+                    <SelectItem value="all">ทั้งหมด</SelectItem>
                     {areas.map(area => (
                       <SelectItem key={area} value={area}>{area}</SelectItem>
                     ))}
@@ -203,12 +203,12 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
 
               <div className="space-y-2">
                 <label className="text-xs text-muted-foreground">สาขา</label>
-                <Select value={selectedBranch} onValueChange={setSelectedBranch} disabled={!selectedArea}>
+                <Select value={selectedBranch} onValueChange={setSelectedBranch} disabled={selectedArea === 'all'}>
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกสาขา" />
                   </SelectTrigger>
                   <SelectContent className="bg-background">
-                    <SelectItem value="">ทั้งหมด</SelectItem>
+                    <SelectItem value="all">ทั้งหมด</SelectItem>
                     {branches.map(branch => (
                       <SelectItem key={branch} value={branch}>{branch}</SelectItem>
                     ))}
@@ -254,7 +254,7 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
                   <SelectValue placeholder="เลือกประเภทบริการ" />
                 </SelectTrigger>
                 <SelectContent className="bg-background">
-                  <SelectItem value="">ทั้งหมด</SelectItem>
+                    <SelectItem value="all">ทั้งหมด</SelectItem>
                   {serviceTypes.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -264,12 +264,12 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
 
             <div className="space-y-2">
               <label className="text-xs text-muted-foreground">ความรู้สึก</label>
-              <Select value={sentiment} onValueChange={(value: 'positive' | 'negative' | '') => setSentiment(value)}>
+              <Select value={sentiment} onValueChange={(value: 'positive' | 'negative' | 'all') => setSentiment(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="เลือกความรู้สึก" />
                 </SelectTrigger>
                 <SelectContent className="bg-background">
-                  <SelectItem value="">ทั้งหมด</SelectItem>
+                    <SelectItem value="all">ทั้งหมด</SelectItem>
                   <SelectItem value="positive">เชิงบวก</SelectItem>
                   <SelectItem value="negative">เชิงลบ</SelectItem>
                 </SelectContent>
@@ -283,7 +283,7 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
                   <SelectValue placeholder="เลือกหมวดหมู่" />
                 </SelectTrigger>
                 <SelectContent className="bg-background">
-                  <SelectItem value="">ทั้งหมด</SelectItem>
+                  <SelectItem value="all">ทั้งหมด</SelectItem>
                   {categories.map(cat => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
