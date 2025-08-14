@@ -44,7 +44,7 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="text-xl font-semibold">
-            หัวข้อที่ใช้ประเมิน
+            หัวข้อที่ใช้ประเมิน - ระดับความพึงพอใจ
           </DialogTitle>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -61,16 +61,16 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
             const regionalData = generateRegionalData(topicData.score);
             
             return (
-              <div key={index} className="space-y-6">
-                {/* ชื่อหัวข้อ */}
-                <h2 className="text-lg font-semibold text-foreground">
-                  {topicData.name}
-                </h2>
-                
-                <div className="grid grid-cols-[300px_1fr] gap-6">
-                  {/* Card คะแนน */}
+              <div key={index} className="space-y-4">
+                <div className="grid grid-cols-[200px_1fr] gap-6">
+                  {/* Topic Score Card */}
                   <Card className="bg-gradient-to-b from-purple-50 to-white rounded-2xl shadow-none flex items-center justify-center">
                     <CardContent className="p-6 flex flex-col justify-center items-center text-center">
+                      <div className="space-y-2 mb-4">
+                        <h3 className="text-sm font-medium text-foreground leading-tight">
+                          {topicData.name}
+                        </h3>
+                      </div>
                       <div className="text-4xl font-bold text-foreground">
                         {topicData.score.toFixed(2)}
                       </div>
@@ -82,12 +82,17 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
                       </p>
                     </CardContent>
                   </Card>
-                
+
                   {/* Regional Comparison Chart */}
                   <Card className="border rounded-2xl shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-medium text-foreground">
+                        เปรียบเทียบรายภาค - {topicData.name}
+                      </CardTitle>
+                    </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={regionalData} margin={{ top: 40, bottom: 40 }} barCategoryGap="20%">
+                        <BarChart data={regionalData} margin={{ bottom: 40 }} barCategoryGap="20%">
                           <XAxis 
                             dataKey="name" 
                             fontSize={12}
@@ -98,7 +103,6 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
                           />
                           <YAxis 
                             domain={[0, 5]}
-                            interval={0} // แสดง 0-5 ครบ
                             fontSize={12}
                             tick={{ fill: 'hsl(var(--foreground))' }}
                             label={{ value: 'คะแนน', angle: -90, position: 'insideLeft' }}
@@ -115,8 +119,20 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
                               borderRadius: '8px',
                             }}
                           />
-                          <Bar dataKey="previousValue" name="previousValue" fill="#D1D5DB" radius={[2, 2, 0, 0]} />
-                          <Bar dataKey="value" name="value" fill="#EC4899" radius={[2, 2, 0, 0]} />
+                          {/* เดือนก่อนหน้า */}
+                          <Bar 
+                            dataKey="previousValue"
+                            name="previousValue"
+                            fill="#D1D5DB"
+                            radius={[2, 2, 0, 0]} 
+                          />
+                          {/* เดือนปัจจุบัน */}
+                          <Bar 
+                            dataKey="value" 
+                            name="value"
+                            fill="#EC4899"
+                            radius={[2, 2, 0, 0]} 
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </CardContent>
