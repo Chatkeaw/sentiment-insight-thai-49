@@ -44,7 +44,7 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="text-xl font-semibold">
-            หัวข้อที่ใช้ประเมิน - ระดับความพึงพอใจ
+            หัวข้อที่ใช้ประเมิน
           </DialogTitle>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -61,83 +61,67 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
             const regionalData = generateRegionalData(topicData.score);
             
             return (
-              <div key={index} className="space-y-4">
-                <div className="grid grid-cols-[300px_1fr] gap-6">
-                  {/* Topic Score Card */}
-                  <Card className="bg-gradient-to-b from-purple-50 to-white rounded-2xl shadow-none flex items-center justify-center">
-                    <CardContent className="p-6 flex flex-col justify-center items-center text-center">
-                      <div className="space-y-2 mb-4">
-                        <h3 className="text-sm font-medium text-foreground leading-tight">
-                          {topicData.name}
-                        </h3>
-                      </div>
-                      <div className="text-4xl font-bold text-foreground">
-                        {topicData.score.toFixed(2)}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm mt-2">
-                        <span className="text-green-600 font-medium">↗ 2.80%</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        (จากเดือนก่อนหน้า {(topicData.score - 0.1).toFixed(2)} คะแนน)
-                      </p>
-                    </CardContent>
-                  </Card>
+              <div className="space-y-6">
+                {/* ชื่อหัวข้อ */}
+                <h2 className="text-lg font-semibold text-foreground">
+                  {topicData.name}
+                </h2>
+              
+                {/* Card คะแนน */}
+                <Card className="bg-gradient-to-b from-purple-50 to-white rounded-2xl shadow-none flex items-center justify-center">
+                  <CardContent className="p-6 flex flex-col justify-center items-center text-center">
+                    <div className="text-4xl font-bold text-foreground">
+                      {topicData.score.toFixed(2)}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm mt-2">
+                      <span className="text-green-600 font-medium">↗ 2.80%</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      (จากเดือนก่อนหน้า {(topicData.score - 0.1).toFixed(2)} คะแนน)
+                    </p>
+                  </CardContent>
+                </Card>
+              
+                {/* Regional Comparison Chart */}
+                <Card className="border rounded-2xl shadow-none">
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={regionalData} margin={{ top: 40, bottom: 40 }} barCategoryGap="20%">
+                        <XAxis 
+                          dataKey="name" 
+                          fontSize={12}
+                          tick={{ fill: 'hsl(var(--foreground))' }}
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                        />
+                        <YAxis 
+                          domain={[0, 5]}
+                          interval={0} // แสดง 0-5 ครบ
+                          fontSize={12}
+                          tick={{ fill: 'hsl(var(--foreground))' }}
+                          label={{ value: 'คะแนน', angle: -90, position: 'insideLeft' }}
+                        />
+                        <Tooltip 
+                          formatter={(value, name) => [
+                            `${Number(value).toFixed(1)}`, 
+                            name === 'previousValue' ? 'เดือนก่อนหน้า' : 'เดือนปัจจุบัน'
+                          ]}
+                          labelFormatter={(label) => `${label}`}
+                          contentStyle={{
+                            backgroundColor: 'white',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px',
+                          }}
+                        />
+                        <Bar dataKey="previousValue" name="previousValue" fill="#D1D5DB" radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="value" name="value" fill="#EC4899" radius={[2, 2, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
 
-                  {/* Regional Comparison Chart */}
-                  <Card className="border rounded-2xl shadow-none">
-                    <CardHeader>
-                      <CardTitle className="text-lg font-medium text-foreground">
-                        เปรียบเทียบรายภาค - {topicData.name}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={regionalData} margin={{ bottom: 40 }} barCategoryGap="20%">
-                          <XAxis 
-                            dataKey="name" 
-                            fontSize={12}
-                            tick={{ fill: 'hsl(var(--foreground))' }}
-                            angle={-45}
-                            textAnchor="end"
-                            height={80}
-                          />
-                          <YAxis 
-                            domain={[0, 5]}
-                            fontSize={12}
-                            tick={{ fill: 'hsl(var(--foreground))' }}
-                            label={{ value: 'คะแนน', angle: -90, position: 'insideLeft' }}
-                          />
-                          <Tooltip 
-                            formatter={(value, name) => [
-                              `${Number(value).toFixed(1)}`, 
-                              name === 'previousValue' ? 'เดือนก่อนหน้า' : 'เดือนปัจจุบัน'
-                            ]}
-                            labelFormatter={(label) => `${label}`}
-                            contentStyle={{
-                              backgroundColor: 'white',
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '8px',
-                            }}
-                          />
-                          {/* เดือนก่อนหน้า */}
-                          <Bar 
-                            dataKey="previousValue"
-                            name="previousValue"
-                            fill="#D1D5DB"
-                            radius={[2, 2, 0, 0]} 
-                          />
-                          {/* เดือนปัจจุบัน */}
-                          <Bar 
-                            dataKey="value" 
-                            name="value"
-                            fill="#EC4899"
-                            radius={[2, 2, 0, 0]} 
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-                </div>
                 
                 {/* Add separator between topics except for the last one */}
                 {index < satisfactionTopics.length - 1 && (
