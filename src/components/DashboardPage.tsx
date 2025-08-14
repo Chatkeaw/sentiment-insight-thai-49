@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
+import { SatisfactionDetailModal } from './SatisfactionDetailModal';
 
 interface DashboardPageProps {
   onPageChange?: (page: string) => void;
@@ -19,6 +20,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   // State to manage selected month
   const [selectedMonth, setSelectedMonth] = useState("มิถุนายน 2568");
 
+  // State for satisfaction detail modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState('');
+  const [selectedScore, setSelectedScore] = useState(0);
+
   // Data for branch types donut chart
   const branchTypeData = [
     { name: "สาขาให้บริการ 5 วัน", value: 52, color: "#8B5CF6" },
@@ -35,6 +41,26 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
     { name: "บัตรเครดิต", gray: 60, pink: 75 },
     { name: "กิจกรรม", gray: 50, pink: 65 }
   ];
+
+  // Satisfaction topics data
+  const satisfactionTopics = [
+    { name: "การดูแล เอาใจใส่ ความสบายใจเมื่อมาใช้บริการ", score: 3.85 },
+    { name: "การตอบคำถาม ให้คำแนะนำ ความน่าเชื่อถือ ความเป็นมืออาชีพ", score: 3.92 },
+    { name: "ความรวดเร็วในการให้บริการ (หลังเรียกคิว)", score: 3.78 },
+    { name: "ความถูกต้องในการทำธุรกรรม", score: 4.15 },
+    { name: "ความพร้อมของเครื่องมือให้บริการ", score: 3.67 },
+    { name: "สภาพแวดล้อมของสาขา", score: 3.89 },
+    { name: "ความพึงพอใจในการเข้าใช้บริการสาขา", score: 3.81 }
+  ];
+
+  // Calculate overall average
+  const overallAverage = satisfactionTopics.reduce((sum, topic) => sum + topic.score, 0) / satisfactionTopics.length;
+
+  // Generate regional satisfaction data for bar chart
+  const regionalSatisfactionData = Array.from({ length: 18 }, (_, i) => ({
+    name: `ภาค${i + 1}`,
+    value: Math.random() * 2 + 3, // Random score between 3-5
+  }));
 
   const stats = [{
     title: "ลูกค้าตอบแบบประเมิน",
@@ -82,6 +108,12 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
 
   const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedMonth(event.target.value);
+  };
+
+  const handleTopicClick = () => {
+    setSelectedTopic("การดูแล เอาใจใส่ ความสบายใจเมื่อมาใช้บริการ");
+    setSelectedScore(overallAverage);
+    setIsModalOpen(true);
   };
 
   const CustomTooltip = ({ active, payload }: any) => {
@@ -182,6 +214,84 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
         ))}
       </div>
 
+      {/* ระดับความพึงพอใจ */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-foreground">ระดับความพึงพอใจ</h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Overall Score Card */}
+          <Card className="bg-purple-50">
+            <CardContent className="p-6">
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  ระดับความพึงพอใจ รายพื้นที่
+                </h3>
+                <div className="space-y-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-foreground">{overallAverage.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-green-600 font-medium">↗ 2.80%</span>
+                    <span className="text-muted-foreground">
+                      (ค่าเฉลี่ยจากเดือนที่แล้ว {(overallAverage - 0.1).toFixed(2)} คะแนน)
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={handleTopicClick}
+                  className="text-sm text-primary hover:underline cursor-pointer"
+                >
+                  หัวข้อที่ใช้ประเมิน
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Regional Satisfaction Chart */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg font-medium text-foreground">
+                ระดับความพึงพอใจ รายพื้นที่
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={regionalSatisfactionData} margin={{ bottom: 40 }}>
+                  <XAxis 
+                    dataKey="name" 
+                    fontSize={12}
+                    tick={{ fill: 'hsl(var(--foreground))' }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis 
+                    domain={[0, 5]}
+                    fontSize={12}
+                    tick={{ fill: 'hsl(var(--foreground))' }}
+                    label={{ value: 'คะแนน', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip 
+                    formatter={(value) => [`${Number(value).toFixed(1)}`, 'คะแนน']}
+                    labelFormatter={(label) => `${label}`}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Bar 
+                    dataKey="value" 
+                    fill="#EC4899" 
+                    radius={[2, 2, 0, 0]} 
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       {/* ภาพรวมการให้บริการสาขา */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-foreground">ภาพรวมการให้บริการสาขา</h2>
@@ -265,6 +375,14 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
           </Card>
         </div>
       </div>
+
+      {/* Satisfaction Detail Modal */}
+      <SatisfactionDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        topic={selectedTopic}
+        score={selectedScore}
+      />
     </div>
   );
 };
