@@ -278,7 +278,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                       borderRadius: '8px',
                     }}
                   />
-                  <Bar dataKey="gray" fill="#9CA3AF" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="gray" fill="#D1D5DB" radius={[2, 2, 0, 0]} />
                   <Bar dataKey="pink" fill="#EC4899" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
