@@ -287,7 +287,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
               <div className="flex justify-center gap-6 mt-4">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-gray-400 rounded"></div>
-                  <span className="text-sm text-muted-foreground">เดือนที่แล้ว</span>
+                  <span className="text-sm text-muted-foreground">เดือนก่อนหน้า</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-pink-500 rounded"></div>
