@@ -318,7 +318,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
           </Card>
       
           {/* Regional Satisfaction Chart */}
-          <Card className="border rounded-2xl shadow-none">
+          <Card className="border rounded-2xl shadow-none flex items-center justify-center">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-medium text-foreground">
                 ระดับความพึงพอใจ รายพื้นที่
