@@ -46,7 +46,6 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
           <DialogTitle className="text-xl font-semibold">
             หัวข้อที่ใช้ประเมิน - ระดับความพึงพอใจ
           </DialogTitle>
-          
         </DialogHeader>
         
         <div className="space-y-8">
