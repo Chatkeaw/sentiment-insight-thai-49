@@ -214,84 +214,6 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
         ))}
       </div>
 
-      {/* ระดับความพึงพอใจ */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-foreground">ระดับความพึงพอใจ</h2>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Overall Score Card */}
-          <Card className="bg-purple-50">
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium text-muted-foreground">
-                  ระดับความพึงพอใจ รายพื้นที่
-                </h3>
-                <div className="space-y-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-foreground">{overallAverage.toFixed(2)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-green-600 font-medium">↗ 2.80%</span>
-                    <span className="text-muted-foreground">
-                      (ค่าเฉลี่ยจากเดือนที่แล้ว {(overallAverage - 0.1).toFixed(2)} คะแนน)
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={handleTopicClick}
-                  className="text-sm text-primary hover:underline cursor-pointer"
-                >
-                  หัวข้อที่ใช้ประเมิน
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Regional Satisfaction Chart */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-lg font-medium text-foreground">
-                ระดับความพึงพอใจ รายพื้นที่
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={regionalSatisfactionData} margin={{ bottom: 40 }}>
-                  <XAxis 
-                    dataKey="name" 
-                    fontSize={12}
-                    tick={{ fill: 'hsl(var(--foreground))' }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis 
-                    domain={[0, 5]}
-                    fontSize={12}
-                    tick={{ fill: 'hsl(var(--foreground))' }}
-                    label={{ value: 'คะแนน', angle: -90, position: 'insideLeft' }}
-                  />
-                  <Tooltip 
-                    formatter={(value) => [`${Number(value).toFixed(1)}`, 'คะแนน']}
-                    labelFormatter={(label) => `${label}`}
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                    }}
-                  />
-                  <Bar 
-                    dataKey="value" 
-                    fill="#EC4899" 
-                    radius={[2, 2, 0, 0]} 
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
       {/* ภาพรวมการให้บริการสาขา */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-foreground">ภาพรวมการให้บริการสาขา</h2>
@@ -371,6 +293,84 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   <span className="text-sm text-muted-foreground">เดือนปัจจุบัน</span>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* ระดับความพึงพอใจ */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-foreground">ระดับความพึงพอใจ</h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Overall Score Card */}
+          <Card className="bg-purple-50">
+            <CardContent className="p-6">
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  ระดับความพึงพอใจ รายพื้นที่
+                </h3>
+                <div className="space-y-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-foreground">{overallAverage.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-green-600 font-medium">↗ 2.80%</span>
+                    <span className="text-muted-foreground">
+                      (ค่าเฉลี่ยจากเดือนที่แล้ว {(overallAverage - 0.1).toFixed(2)} คะแนน)
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={handleTopicClick}
+                  className="text-sm text-primary hover:underline cursor-pointer"
+                >
+                  หัวข้อที่ใช้ประเมิน
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Regional Satisfaction Chart */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg font-medium text-foreground">
+                ระดับความพึงพอใจ รายพื้นที่
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={regionalSatisfactionData} margin={{ bottom: 40 }}>
+                  <XAxis 
+                    dataKey="name" 
+                    fontSize={12}
+                    tick={{ fill: 'hsl(var(--foreground))' }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis 
+                    domain={[0, 5]}
+                    fontSize={12}
+                    tick={{ fill: 'hsl(var(--foreground))' }}
+                    label={{ value: 'คะแนน', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip 
+                    formatter={(value) => [`${Number(value).toFixed(1)}`, 'คะแนน']}
+                    labelFormatter={(label) => `${label}`}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Bar 
+                    dataKey="value" 
+                    fill="#EC4899" 
+                    radius={[2, 2, 0, 0]} 
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>
