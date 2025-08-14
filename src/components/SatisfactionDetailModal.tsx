@@ -44,7 +44,7 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="text-xl font-semibold">
-            หัวข้อที่ใช้ประเมิน
+            หัวข้อที่ใช้ประเมิน - ระดับความพึงพอใจ
           </DialogTitle>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -67,7 +67,7 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
                   {topicData.name}
                 </h2>
                 
-                <div className="grid grid-cols-[300px_1fr] gap-6">
+                <div className="grid grid-cols-[200px_1fr] gap-6">
                   {/* Card คะแนน */}
                   <Card className="bg-gradient-to-b from-purple-50 to-white rounded-2xl shadow-none flex items-center justify-center">
                     <CardContent className="p-6 flex flex-col justify-center items-center text-center">
