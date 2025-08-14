@@ -335,7 +335,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                 <BarChart data={regionalSatisfactionData} margin={{ bottom: 40 }} barCategoryGap="20%">
                   <XAxis 
                     dataKey="name" 
-                    fontSize={12}
+                    fontSize={15}
                     tick={{ fill: 'hsl(var(--foreground))' }}
                     angle={-45}
                     textAnchor="end"
