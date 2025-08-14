@@ -80,7 +80,13 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+
+  // Helper function to parse categories from category_tags
+  const parseCategories = (categoryTags: string): string[] => {
+    return categoryTags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+  };
 
   // Cascading filter options
   const regions = useMemo(() => {
@@ -105,6 +111,16 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
     )).sort();
   }, [selectedRegion, selectedArea]);
 
+  // Get all unique categories
+  const allCategories = useMemo(() => {
+    const categories = new Set<string>();
+    mockSevereComplaints.forEach(complaint => {
+      const cats = parseCategories(complaint.category_tags);
+      cats.forEach(cat => categories.add(cat));
+    });
+    return Array.from(categories).sort();
+  }, []);
+
   // Filtered complaints data (only severe complaints with negative sentiment and high severity)
   const filteredComplaints = useMemo(() => {
     return mockSevereComplaints.filter(complaint => {
@@ -115,7 +131,13 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
       if (selectedArea !== 'all' && complaint.area !== selectedArea) return false;
       if (selectedBranch !== 'all' && complaint.branch !== selectedBranch) return false;
       
-      // Date range filter (if implemented)
+      // Category filter
+      if (selectedCategory !== 'all') {
+        const categories = parseCategories(complaint.category_tags);
+        if (!categories.includes(selectedCategory)) return false;
+      }
+      
+      // Date range filter
       if (dateRange?.from && dateRange?.to) {
         const complaintDate = new Date(complaint.timestamp);
         if (complaintDate < dateRange.from || complaintDate > dateRange.to) return false;
@@ -123,14 +145,20 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
       
       return true;
     });
-  }, [selectedRegion, selectedArea, selectedBranch, dateRange]);
+  }, [selectedRegion, selectedArea, selectedBranch, selectedCategory, dateRange]);
 
   // Clear all filters
   const clearFilters = () => {
     setSelectedRegion('all');
     setSelectedArea('all');
     setSelectedBranch('all');
+    setSelectedCategory('all');
     setDateRange(undefined);
+  };
+
+  // Handle category tag click
+  const handleCategoryClick = (category: string) => {
+    setSelectedCategory(category);
   };
 
   return (
@@ -215,6 +243,27 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
             </div>
           </div>
 
+          {/* Category Filter */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-foreground">หมวดหมู่ปัญหา</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground">หมวดหมู่</label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกหมวดหมู่" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background">
+                    <SelectItem value="all">ทั้งหมด</SelectItem>
+                    {allCategories.map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
           {/* Date Range Filter */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-foreground">ช่วงเวลา</h3>
@@ -267,19 +316,27 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
                     <p className="text-foreground leading-relaxed text-base">{complaint.raw_comment}</p>
                   </div>
 
-                   {/* Category Tags */}
-                   <div className="mb-3">
-                     <p className="text-sm text-pink-700 font-medium">{complaint.category_tags}</p>
-                   </div>
-
-                  {/* Tags */}
-                  <div className="flex gap-2">
-                    <Badge variant="destructive">
-                      เชิงลบ
-                    </Badge>
-                    <Badge variant="destructive">
-                      ⚠️ ความคิดเห็นรุนแรง
-                    </Badge>
+                  {/* Category Tags */}
+                  <div className="flex flex-wrap gap-2">
+                    {(() => {
+                      const categories = parseCategories(complaint.category_tags);
+                      return categories.length > 0 ? (
+                        categories.map((category, index) => (
+                          <Badge 
+                            key={index}
+                            variant="secondary"
+                            className="cursor-pointer hover:bg-pink-200 bg-pink-100 text-pink-800 border-pink-300"
+                            onClick={() => handleCategoryClick(category)}
+                          >
+                            {category}
+                          </Badge>
+                        ))
+                      ) : (
+                        <Badge variant="outline" className="text-muted-foreground">
+                          ยังไม่ระบุหมวดหมู่
+                        </Badge>
+                      );
+                    })()}
                   </div>
                 </div>
               ))
