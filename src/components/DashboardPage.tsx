@@ -126,7 +126,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   };
 
   return (
-    <div >
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
