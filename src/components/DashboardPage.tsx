@@ -304,7 +304,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
       
         <div className="grid grid-cols-[300px_1fr] gap-6">
           {/* Overall Score Card */}
-          <Card className="bg-gradient-to-b from-pink-50 to-white rounded-2xl shadow-none ">
+          <Card className="bg-gradient-to-b from-pink-50 to-white rounded-2xl shadow-none flex items-center justify-center">
             <CardContent className="p-8 flex flex-col justify-center items-center text-center">
               <span className="text-5xl font-bold text-foreground">{overallAverage.toFixed(2)}</span>
               <div className="flex items-center gap-2 text-sm mt-2">
