@@ -19,87 +19,133 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
   topic,
   score
 }) => {
-  // Generate mock data for regional comparison of this specific topic
-  const regionalData = Array.from({ length: 18 }, (_, i) => ({
-    name: `ภาค${i + 1}`,
-    value: Math.random() * 2 + 3, // Random score between 3-5
-  }));
+  // Define all 7 satisfaction topics with their scores
+  const satisfactionTopics = [
+    { name: "การดูแล เอาใจใส่ ความสบายใจเมื่อมาใช้บริการ", score: 3.85 },
+    { name: "การตอบคำถาม ให้คำแนะนำ ความน่าเชื่อถือ ความเป็นมืออาชีพ", score: 3.92 },
+    { name: "ความรวดเร็วในการให้บริการ (หลังเรียกคิว)", score: 3.78 },
+    { name: "ความถูกต้องในการทำธุรกรรม", score: 4.15 },
+    { name: "ความพร้อมของเครื่องมือให้บริการ", score: 3.67 },
+    { name: "สภาพแวดล้อมของสาขา", score: 3.89 },
+    { name: "ความพึงพอใจในการเข้าใช้บริการสาขา", score: 3.81 }
+  ];
+
+  // Generate regional data for each topic
+  const generateRegionalData = (topicScore: number) => {
+    return Array.from({ length: 18 }, (_, i) => ({
+      name: `ภาค${i + 1}`,
+      value: topicScore + (Math.random() * 0.8 - 0.4), // Random variation around topic score
+      previousValue: topicScore + (Math.random() * 0.8 - 0.4) - 0.1, // Previous month slightly lower
+    }));
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="text-xl font-semibold">
-            หัวข้อที่ใช้ประเมิน
+            หัวข้อที่ใช้ประเมิน - ระดับความพึงพอใจ
           </DialogTitle>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </DialogHeader>
         
-        <div className="space-y-6">
+        <div className="space-y-8">
           <div className="text-sm text-muted-foreground">
-            รายละเอียดการประเมินความพึงพอใจในแต่ละหัวข้อและข้อมูลเปรียบเทียบ
+            รายละเอียดการประเมินความพึงพอใจในแต่ละหัวข้อและข้อมูลเปรียบเทียบรายภาค
           </div>
 
-          {/* Topic Score Card */}
-          <Card className="bg-purple-50">
-            <CardContent className="p-6">
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium text-foreground">
-                  คะแนนความพึงพอใจเฉลี่ย ทุกภาค
-                </h3>
-                <div className="text-4xl font-bold text-foreground">
-                  {score.toFixed(2)}
+          {/* Display each satisfaction topic */}
+          {satisfactionTopics.map((topicData, index) => {
+            const regionalData = generateRegionalData(topicData.score);
+            
+            return (
+              <div key={index} className="space-y-4">
+                <div className="grid grid-cols-[300px_1fr] gap-6">
+                  {/* Topic Score Card */}
+                  <Card className="bg-gradient-to-b from-purple-50 to-white rounded-2xl shadow-none flex items-center justify-center">
+                    <CardContent className="p-6 flex flex-col justify-center items-center text-center">
+                      <div className="space-y-2 mb-4">
+                        <h3 className="text-sm font-medium text-foreground leading-tight">
+                          {topicData.name}
+                        </h3>
+                      </div>
+                      <div className="text-4xl font-bold text-foreground">
+                        {topicData.score.toFixed(2)}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm mt-2">
+                        <span className="text-green-600 font-medium">↗ 2.80%</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        (จากเดือนก่อนหน้า {(topicData.score - 0.1).toFixed(2)} คะแนน)
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Regional Comparison Chart */}
+                  <Card className="border rounded-2xl shadow-none">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-medium text-foreground">
+                        เปรียบเทียบรายภาค - {topicData.name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={regionalData} margin={{ bottom: 40 }} barCategoryGap="20%">
+                          <XAxis 
+                            dataKey="name" 
+                            fontSize={12}
+                            tick={{ fill: 'hsl(var(--foreground))' }}
+                            angle={-45}
+                            textAnchor="end"
+                            height={80}
+                          />
+                          <YAxis 
+                            domain={[0, 5]}
+                            fontSize={12}
+                            tick={{ fill: 'hsl(var(--foreground))' }}
+                            label={{ value: 'คะแนน', angle: -90, position: 'insideLeft' }}
+                          />
+                          <Tooltip 
+                            formatter={(value, name) => [
+                              `${Number(value).toFixed(1)}`, 
+                              name === 'previousValue' ? 'เดือนก่อนหน้า' : 'เดือนปัจจุบัน'
+                            ]}
+                            labelFormatter={(label) => `${label}`}
+                            contentStyle={{
+                              backgroundColor: 'white',
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px',
+                            }}
+                          />
+                          {/* เดือนก่อนหน้า */}
+                          <Bar 
+                            dataKey="previousValue"
+                            name="previousValue"
+                            fill="#D1D5DB"
+                            radius={[2, 2, 0, 0]} 
+                          />
+                          {/* เดือนปัจจุบัน */}
+                          <Bar 
+                            dataKey="value" 
+                            name="value"
+                            fill="#EC4899"
+                            radius={[2, 2, 0, 0]} 
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600 font-medium">↗ 2.80%</span>
-                  <span className="text-muted-foreground">
-                    (ค่าเฉลี่ยจากเดือนที่แล้ว {(score - 0.1).toFixed(2)} คะแนน)
-                  </span>
-                </div>
+                
+                {/* Add separator between topics except for the last one */}
+                {index < satisfactionTopics.length - 1 && (
+                  <hr className="border-gray-200 my-8" />
+                )}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Topic Name */}
-          <div>
-            <h3 className="text-lg font-medium text-foreground mb-4">{topic}</h3>
-          </div>
-
-          {/* Regional Comparison Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{topic}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={regionalData} margin={{ bottom: 40 }}>
-                  <XAxis 
-                    dataKey="name" 
-                    fontSize={12}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis 
-                    domain={[0, 5]}
-                    label={{ value: 'คะแนน', angle: -90, position: 'insideLeft' }}
-                    fontSize={12}
-                  />
-                  <Tooltip 
-                    formatter={(value) => [`${Number(value).toFixed(1)}`, 'คะแนน']}
-                    labelFormatter={(label) => `${label}`}
-                  />
-                  <Bar 
-                    dataKey="value" 
-                    fill="hsl(var(--primary))" 
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+            );
+          })}
         </div>
       </DialogContent>
     </Dialog>
