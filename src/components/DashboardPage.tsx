@@ -153,7 +153,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
         {stats.map((stat, index) => (
           <Card 
             key={index} 
-            className={`relative overflow-hidden border-0 shadow-lg ${stat.clickable ? 'cursor-pointer hover:shadow-xl transition-shadow duration-300' : ''}`}
+            className={`relative overflow-hidden border-0  ${stat.clickable ? 'cursor-pointer hover:shadow-xl transition-shadow duration-300' : ''}`}
             onClick={() => handleCardClick(stat)}
           >
             <CardContent className={`p-6 ${stat.color}`}>
