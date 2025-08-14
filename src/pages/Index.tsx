@@ -11,7 +11,7 @@ import GlobalFilters from "@/components/GlobalFilters";
 import { TimeFilter as TimeFilterType } from "@/types/dashboard";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FeedbackPage } from "./FeedbackPage";
+import { CustomerFeedbackSystem } from "@/components/feedback/CustomerFeedbackSystem";
 import { ComplaintsPage } from "./ComplaintsPage";
 import { AIAgentPage } from "./AIAgentPage";
 import { UserManagementPage } from "./UserManagementPage";
@@ -88,12 +88,7 @@ const Index = () => {
           />
         );
       case "feedback":
-        return (
-          <FeedbackPage 
-            timeFilter={timeFilter}
-            onTimeFilterChange={setTimeFilter}
-          />
-        );
+        return <CustomerFeedbackSystem />;
       case "complaints":
         return (
           <ComplaintsPage 
