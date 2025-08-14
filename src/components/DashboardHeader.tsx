@@ -27,7 +27,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   };
 
   return (
-    <header>
+    <header className="relative bg-white">
       <div className="flex items-center justify-between">
         {/* ด้านซ้าย - หัวข้อ Dashboard */}
         <div className="flex-1">
