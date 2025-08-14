@@ -331,7 +331,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={regionalSatisfactionData} margin={{ bottom: 40 }}>
+                <BarChart data={regionalSatisfactionData} margin={{ bottom: 40 }} barCategoryGap="20%">
                   <XAxis 
                     dataKey="name" 
                     fontSize={12}
@@ -347,7 +347,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                     label={{ value: 'คะแนน', angle: -90, position: 'insideLeft' }}
                   />
                   <Tooltip 
-                    formatter={(value) => [`${Number(value).toFixed(1)}`, 'คะแนน']}
+                    formatter={(value) => [`${Number(value).toFixed(1)}`, name]}
                     labelFormatter={(label) => `${label}`}
                     contentStyle={{
                       backgroundColor: 'white',
@@ -357,13 +357,15 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   />
                   {/* เดือนที่แล้ว */}
                   <Bar 
-                    dataKey="previousValue" 
+                    dataKey="previousValue"
+                    name="เดือนที่แล้ว"
                     fill="#D1D5DB" // เทา
                     radius={[2, 2, 0, 0]} 
                   />
                   {/* ปัจจุบัน */}
                   <Bar 
                     dataKey="value" 
+                    name="เดือนนี้"
                     fill="#EC4899" // ชมพู
                     radius={[2, 2, 0, 0]} 
                   />
