@@ -125,7 +125,7 @@ const Index = () => {
     <AuthProvider>
       <ProtectedRoute>
         <AnalyticsProvider>
-          <div className="min-h-screen w-full bg-gradient-to-br from-background via-pink-50/30 to-background flex relative">
+          <div className="min-h-screen w-full bg-white flex relative">
             {/* Mobile Overlay */}
             {isSidebarOpen && (
               <div 
@@ -161,7 +161,7 @@ const Index = () => {
               </div>
               
               {/* Dashboard Content */}
-              <div className="container mx-auto px-6 pb-6">
+              <div className="container mx-auto px-6 pb-6 bg-white">
                 {renderContent()}
               </div>
             </main>
