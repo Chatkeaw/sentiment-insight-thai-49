@@ -332,7 +332,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
             </CardHeader>
             <CardContent className="flex justify-center items-center">
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={regionalSatisfactionData} margin={{ top: 40, bottom: 40 }} barCategoryGap="20%">
+                <BarChart data={regionalSatisfactionData} margin={{ top: 40, bottom: 30 }} barCategoryGap="20%">
                   <XAxis 
                     dataKey="name" 
                     fontSize={15}
