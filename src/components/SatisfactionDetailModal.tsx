@@ -85,9 +85,9 @@ export const SatisfactionDetailModal: React.FC<SatisfactionDetailModalProps> = (
                 
                   {/* Regional Comparison Chart */}
                   <Card className="border rounded-2xl shadow-none">
-                    <CardContent className="flex justify-center items-center">
+                    <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={regionalData} margin={{ top: 30, bottom: 30 }} barCategoryGap="20%">
+                        <BarChart data={regionalData} margin={{ bottom: 10 }} barCategoryGap="20%">
                           <XAxis 
                             dataKey="name" 
                             fontSize={12}
