@@ -1,8 +1,8 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, Legend } from 'recharts';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
+import { SentimentAnalysisModal } from '@/components/analytics/SentimentAnalysisModal';
 
 interface SentimentData {
   positive: { count: number; percentage: number };
@@ -16,6 +16,7 @@ interface SentimentChartsProps {
 
 export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData }) => {
   const { unlockAnalytics } = useAnalytics();
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
 
   // Donut chart data
   const donutData = [
@@ -42,13 +43,26 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
     unlockAnalytics('regional-sentiment');
   };
 
+  const handleSentimentAnalysisClick = () => {
+    setIsAnalysisModalOpen(true);
+  };
+
+  const handleViewFeedback = (region?: string) => {
+    // This would navigate to the feedback page with region filter
+    console.log(`Navigate to feedback page with region filter: ${region}`);
+    // In a real implementation, this would use navigation with filters
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-foreground">ทัศนคติ</h2>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sentiment Donut Chart */}
-        <Card className="chart-container-small animate-fade-in">
+        <Card 
+          className="chart-container-small animate-fade-in cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={handleSentimentAnalysisClick}
+        >
           <CardHeader>
             <CardTitle className="card-title">สัดส่วน ทัศนคติต่อการให้บริการ</CardTitle>
           </CardHeader>
@@ -175,6 +189,13 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
           </ResponsiveContainer>
         </CardContent>
       </Card>
+
+      {/* Sentiment Analysis Modal */}
+      <SentimentAnalysisModal
+        isOpen={isAnalysisModalOpen}
+        onClose={() => setIsAnalysisModalOpen(false)}
+        onViewFeedback={handleViewFeedback}
+      />
     </div>
   );
 };
