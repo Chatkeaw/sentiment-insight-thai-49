@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, Legend } from 'recharts';
@@ -58,13 +59,13 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
       <h2 className="text-xl font-semibold text-foreground">ทัศนคติ</h2>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sentiment Donut Chart */}
+        {/* Sentiment Donut Chart - Updated to trigger modal */}
         <Card 
           className="chart-container-small animate-fade-in cursor-pointer hover:shadow-lg transition-shadow"
           onClick={handleSentimentAnalysisClick}
         >
           <CardHeader>
-            <CardTitle className="card-title">สัดส่วน ทัศนคติต่อการให้บริการ</CardTitle>
+            <CardTitle className="card-title">หัวข้อที่ลูกค้าร้องเรียน</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
@@ -106,6 +107,17 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
                   </div>
                 ))}
               </div>
+            </div>
+            <div className="mt-4 text-center">
+              <button 
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSentimentAnalysisClick();
+                }}
+              >
+                ดูรายละเอียด
+              </button>
             </div>
           </CardContent>
         </Card>
