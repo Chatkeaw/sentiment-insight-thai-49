@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, Legend } from 'recharts';
@@ -45,6 +44,7 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
   };
 
   const handleSentimentAnalysisClick = () => {
+    console.log('Opening sentiment analysis modal'); // Debug log
     setIsAnalysisModalOpen(true);
   };
 
@@ -60,10 +60,7 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sentiment Donut Chart - Updated to trigger modal */}
-        <Card 
-          className="chart-container-small animate-fade-in cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={handleSentimentAnalysisClick}
-        >
+        <Card className="chart-container-small animate-fade-in">
           <CardHeader>
             <CardTitle className="card-title">หัวข้อที่ลูกค้าร้องเรียน</CardTitle>
           </CardHeader>
@@ -111,10 +108,7 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
             <div className="mt-4 text-center">
               <button 
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSentimentAnalysisClick();
-                }}
+                onClick={handleSentimentAnalysisClick}
               >
                 ดูรายละเอียด
               </button>
@@ -202,12 +196,17 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
         </CardContent>
       </Card>
 
-      {/* Sentiment Analysis Modal */}
-      <SentimentAnalysisModal
-        isOpen={isAnalysisModalOpen}
-        onClose={() => setIsAnalysisModalOpen(false)}
-        onViewFeedback={handleViewFeedback}
-      />
+      {/* Sentiment Analysis Modal - Make sure it's rendered */}
+      {isAnalysisModalOpen && (
+        <SentimentAnalysisModal
+          isOpen={isAnalysisModalOpen}
+          onClose={() => {
+            console.log('Closing sentiment analysis modal'); // Debug log
+            setIsAnalysisModalOpen(false);
+          }}
+          onViewFeedback={handleViewFeedback}
+        />
+      )}
     </div>
   );
 };
