@@ -152,6 +152,9 @@ export const UserManagementPage: React.FC = () => {
           <p className="text-muted-foreground">
             จัดการบัญชีผู้ใช้งานและสิทธิ์การเข้าถึงระบบ
           </p>
+          <div className="mt-2 text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+            💡 เชื่อมต่อ Supabase เพื่อใช้งานฟีเจอร์การจัดการผู้ใช้แบบเต็มรูปแบบ
+          </div>
         </div>
         
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>

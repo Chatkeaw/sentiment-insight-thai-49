@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, LineChart, Line } from 'recharts';
 import { ChartData } from '@/types/dashboard';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
+import { ExportButton } from '@/components/shared/ExportButton';
+import { MonthlyComparison } from '@/components/shared/MonthlyComparison';
 
 interface SatisfactionChartsProps {
   satisfactionData: ChartData[];
@@ -40,8 +42,9 @@ export const SatisfactionCharts: React.FC<SatisfactionChartsProps> = ({
           className="chart-container-small animate-fade-in cursor-pointer hover:shadow-lg transition-shadow" 
           onClick={handleSatisfactionTopicsClick}
         >
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="card-title">หัวข้อการประเมินความพึงพอใจ</CardTitle>
+            <ExportButton data={satisfactionData} type="chart" filename="satisfaction-topics" />
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -71,8 +74,9 @@ export const SatisfactionCharts: React.FC<SatisfactionChartsProps> = ({
 
         {/* Satisfaction Trend */}
         <Card className="chart-container-small animate-fade-in">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="card-title">แนวโน้มคะแนนความพึงพอใจ</CardTitle>
+            <ExportButton data={trendData} type="chart" filename="satisfaction-trend" />
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -109,8 +113,9 @@ export const SatisfactionCharts: React.FC<SatisfactionChartsProps> = ({
         className="chart-container-large animate-fade-in cursor-pointer hover:shadow-lg transition-shadow"
         onClick={handleRegionalSatisfactionClick}
       >
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="card-title">เปรียบเทียบคะแนนความพึงพอใจ รายภาค</CardTitle>
+          <ExportButton data={regionSatisfactionData} type="chart" filename="regional-satisfaction" />
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>

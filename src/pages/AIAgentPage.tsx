@@ -190,7 +190,7 @@ export const AIAgentPage: React.FC = () => {
                 <Button
                   onClick={handleSendMessage}
                   disabled={!inputMessage.trim() || isLoading}
-                  className="w-14 h-14 rounded-full text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center p-0"
+                  className="w-16 h-16 rounded-full text-white font-medium shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center p-0 ring-2 ring-pink-200"
                   style={{
                     backgroundColor: '#F13596',
                     borderColor: '#F13596'
@@ -198,15 +198,17 @@ export const AIAgentPage: React.FC = () => {
                   onMouseEnter={(e) => {
                     if (!e.currentTarget.disabled) {
                       e.currentTarget.style.backgroundColor = '#D12B7E';
+                      e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(241, 53, 150, 0.4)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!e.currentTarget.disabled) {
                       e.currentTarget.style.backgroundColor = '#F13596';
+                      e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(241, 53, 150, 0.3)';
                     }
                   }}
                 >
-                  <Send className="w-5 h-5" />
+                  <Send className="w-6 h-6" />
                 </Button>
               </div>
             </div>
