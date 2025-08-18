@@ -3,17 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
-import { SentimentAnalysisModal } from "./SentimentAnalysisModal";
+import { SatisfactionDetailModal } from './SatisfactionDetailModal';
 
 interface DashboardPageProps {
   onPageChange?: (page: string) => void;
 }
-
-const [isSentimentModalOpen, setIsSentimentModalOpen] = useState(false);
-
-const handleMainCategoryDetails = () => {
-  setIsSentimentModalOpen(true);
-};
 
 const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   // Generate month options from มกราคม 2567 to สิงหาคม 2568
@@ -653,12 +647,13 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
         </Card>
       </div>
 
-      {/* Satisfaction Analysis Modal */}
-    <SentimentAnalysisModal
-      isOpen={isSentimentModalOpen}
-      onClose={() => setIsSentimentModalOpen(false)}
-      onViewFeedback={(region) => console.log("ดูความคิดเห็นของ:", region)}
-    />
+      {/* Satisfaction Detail Modal */}
+      <SatisfactionDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        topic={selectedTopic}
+        score={selectedScore}
+      />
     </div>
   );
 };
