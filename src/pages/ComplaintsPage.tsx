@@ -12,9 +12,7 @@ interface ComplaintsPageProps {
   onTimeFilterChange: (value: TimeFilterType['value']) => void;
 }
 
-/** พจนานุกรมรหัสย่อย -> ข้อความไทย (Sub Category – Comment) */
 const COMMENT_TAG_LABELS: Record<string, string> = {
-  // 1 พนักงานและบุคลากร (8)
   '1.1': 'ความสุภาพและมารยาทของพนักงาน',
   '1.2': 'ความเอาใจใส่ในการให้บริการลูกค้า',
   '1.3': 'ความสามารถในการตอบคำถามหรือให้คำแนะนำ',
@@ -23,12 +21,10 @@ const COMMENT_TAG_LABELS: Record<string, string> = {
   '1.6': 'ความเป็นมืออาชีพและการแก้ไขปัญหาเฉพาะหน้า',
   '1.7': 'ความประทับใจในการให้บริการ',
   '1.8': 'รปภ, แม่บ้าน',
-  // 2 ระบบและกระบวนการให้บริการ (4)
   '2.1': 'ความพร้อมในการให้บริการ',
   '2.2': 'กระบวนการ/ความเป็นธรรมในการให้บริการ',
   '2.3': 'ระบบเรียกคิวและจัดการคิว',
   '2.4': 'ภาระเอกสาร',
-  // 3 เทคโนโลยีและดิจิทัล (7)
   '3.1': 'ระบบ Core ของธนาคาร',
   '3.2': 'เครื่องออกบัตรคิว',
   '3.3': 'ATM / ADM / CDM',
@@ -36,13 +32,11 @@ const COMMENT_TAG_LABELS: Record<string, string> = {
   '3.5': 'แอพพลิเคชัน MyMo',
   '3.6': 'เครื่องปรับสมุด',
   '3.7': 'เครื่องนับเงิน',
-  // 4 เงื่อนไขและผลิตภัณฑ์ (5)
   '4.1': 'รายละเอียดผลิตภัณฑ์',
   '4.2': 'เงื่อนไขอนุมัติ',
   '4.3': 'ระยะเวลาอนุมัติ',
   '4.4': 'ความยืดหยุ่น',
   '4.5': 'ความเรียบง่ายของข้อมูล',
-  // 5 สภาพแวดล้อมและสิ่งอำนวยความสะดวก (11)
   '5.1': 'ความสะอาด',
   '5.2': 'พื้นที่และความคับคั่ง',
   '5.3': 'อุณหภูมิ',
@@ -56,7 +50,6 @@ const COMMENT_TAG_LABELS: Record<string, string> = {
   '5.11': 'สิ่งอำนวยความสะดวกอื่นๆ',
 };
 
-/** map หมวดหลัก -> prefix ของรหัสย่อย เพื่อใช้กรอง */
 const MAIN_CATEGORY_PREFIX: Record<string, string | null> = {
   all: null,
   staff: '1.',
@@ -64,7 +57,6 @@ const MAIN_CATEGORY_PREFIX: Record<string, string | null> = {
   technology: '3.',
   products: '4.',
   environment: '5.',
-  // กลุ่มอื่นๆที่ไม่อยู่ใน 1–5 ให้ไม่กรองไปก่อน
   marketConduct: null,
   other: null,
 };
@@ -79,7 +71,6 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>('all');
   const [selectedServiceType, setSelectedServiceType] = useState<string>('all');
 
-  // Get unique values for filters
   const regions = useMemo(() => {
     const unique = Array.from(new Set(mockFeedbackData.map(f => f.branch.region))).sort();
     return ['all', ...unique];
@@ -108,7 +99,6 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
     return ['all', ...unique];
   }, [selectedRegion, selectedDistrict]);
 
-  // หมวดหลักบนตัวกรอง (คงชื่อเดิม)
   const mainCategories = [
     { value: 'all', label: 'ทั้งหมด' },
     { value: 'staff', label: 'พนักงานและบุคลากร' },
@@ -128,30 +118,19 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
     'อื่นๆ'
   ];
 
-  const timePeriods = [
-    { value: 'monthly', label: 'รายเดือน' },
-    { value: 'quarterly', label: 'ไตรมาส' },
-    { value: 'custom', label: 'กำหนดเอง' }
-  ];
-  const [selectedTimePeriod, setSelectedTimePeriod] = useState('monthly');
-
-  /** กรองข้อมูล: เลิกใช้ sentiment/detailedSentiment และใช้ commentTags + prefix 1–5 แทน */
   const filteredComplaints = useMemo(() => {
     const prefix = MAIN_CATEGORY_PREFIX[selectedMainCategory] ?? null;
 
     return mockFeedbackData
       .filter((feedback: FeedbackEntry) => {
-        // ตำแหน่ง
         if (selectedRegion !== 'all' && feedback.branch.region !== selectedRegion) return false;
         if (selectedDistrict !== 'all' && feedback.branch.district !== selectedDistrict) return false;
         if (selectedBranch !== 'all' && feedback.branch.branch !== selectedBranch) return false;
 
-        // ประเภทบริการ
         if (selectedServiceType !== 'all' && selectedServiceType !== 'ทั้งหมด' && feedback.serviceType !== selectedServiceType) {
           return false;
         }
 
-        // หมวดหลักจากแท็กรหัสย่อย 1.x / 2.x / … / 5.x
         if (prefix) {
           const tags = feedback.commentTags || [];
           if (!tags.some(code => code.startsWith(prefix))) return false;
@@ -164,7 +143,6 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
 
   return (
     <div className="space-y-6 max-w-full">
-      {/* Header */}
       <div className="flex flex-col space-y-2">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-foreground">ข้อร้องเรียนลูกค้า</h1>
@@ -173,7 +151,6 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
         <p className="text-muted-foreground">รายงานข้อร้องเรียนสำคัญจากลูกค้า</p>
       </div>
 
-      {/* Filter Section */}
       <Card className="border rounded-2xl shadow-none">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">ตัวกรองข้อมูล</CardTitle>
@@ -263,7 +240,6 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
         </CardContent>
       </Card>
 
-      {/* Results */}
       <Card className="border rounded-2xl shadow-none">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">
