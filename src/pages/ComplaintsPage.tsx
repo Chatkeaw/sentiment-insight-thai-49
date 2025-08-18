@@ -215,13 +215,13 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
       {/* Header */}
       <div className="flex flex-col space-y-2">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-foreground">⚠️ ข้อร้องเรียนลูกค้า</h1>
+          <h1 className="text-3xl font-bold text-foreground">ข้อร้องเรียนลูกค้า</h1>
           <TimeFilter
             value={timeFilter}
             onChange={onTimeFilterChange}
           />
         </div>
-        <p className="text-muted-foreground">รวมเฉพาะความคิดเห็นเชิงลบและข้อร้องเรียน</p>
+        <p className="text-muted-foreground">รายงานข้อร้องเรียนสำคัญจากลูกค้า</p>
       </div>
 
       {/* Filters */}
