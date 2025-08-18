@@ -43,6 +43,29 @@ const Index = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  const handleRefreshData = () => {
+    console.log('Refreshing data...');
+    const now = new Date();
+    const day = now.getDate().toString().padStart(2, '0');
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const year = now.getFullYear();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    setLastUpdate(`${day}-${month}-${year} ${hours}:${minutes}`);
+  };
+
+  const handleFiltersChange = (filters: any) => {
+    console.log('Filters changed:', filters);
+    setGlobalFilters(filters);
+  };
+
   useEffect(() => {
     localStorage.setItem('sidebar_open', JSON.stringify(isSidebarOpen));
   }, [isSidebarOpen]);
@@ -67,8 +90,6 @@ const Index = () => {
   const handleBackToOverview = () => {
     setActivePage("overview");
   };
-
-  // ... keep existing code (scrollToTop, handleRefreshData, handleFiltersChange functions)
 
   const renderContent = () => {
     switch (activePage) {
