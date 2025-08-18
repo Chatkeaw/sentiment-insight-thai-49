@@ -8,6 +8,7 @@ import { SentimentCharts } from '@/components/overview/SentimentCharts';
 import { CategoryRankings } from '@/components/overview/CategoryRankings';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ExportButton } from '@/components/shared/ExportButton';
 import { getKPIData, getServiceTypeData, getSatisfactionData, getRegionSatisfactionData, getSentimentData } from '@/data/mockData';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
 
@@ -48,39 +49,49 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
         
         {/* ง3. กราฟเส้นแนวโน้ม */}
         <Card className="chart-container-medium animate-fade-in">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="card-title">แนวโน้มการส่งแบบประเมิน</CardTitle>
+            <ExportButton 
+              data={trendData}
+              type="chart"
+              elementId="form-submission-trend-chart"
+              chartType="กราฟเส้นแนวโน้มการส่งแบบประเมิน"
+              filename="แนวโน้ม-แบบประเมิน"
+              title="แนวโน้มการส่งแบบประเมิน"
+            />
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={trendData}>
-                <XAxis 
-                  dataKey="day" 
-                  fontSize={12}
-                  tick={{ fill: 'hsl(var(--foreground))' }}
-                />
-                <YAxis 
-                  fontSize={12}
-                  tick={{ fill: 'hsl(var(--foreground))' }}
-                />
-                <Tooltip 
-                  formatter={(value) => [`${value} ครั้ง`, 'จำนวนฟอร์ม']}
-                  labelFormatter={(label) => `วันที่ ${label}`}
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="forms" 
-                  stroke="hsl(var(--primary))" 
-                  strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <div id="form-submission-trend-chart">
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={trendData}>
+                  <XAxis 
+                    dataKey="day" 
+                    fontSize={12}
+                    tick={{ fill: 'hsl(var(--foreground))' }}
+                  />
+                  <YAxis 
+                    fontSize={12}
+                    tick={{ fill: 'hsl(var(--foreground))' }}
+                  />
+                  <Tooltip 
+                    formatter={(value) => [`${value} ครั้ง`, 'จำนวนฟอร์ม']}
+                    labelFormatter={(label) => `วันที่ ${label}`}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="forms" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={2}
+                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -98,49 +109,59 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
         
         {/* ง6. กราฟเส้นแนวโน้มหมวดหมู่ความคิดเห็น */}
         <Card className="chart-container-medium animate-fade-in">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="card-title">แนวโน้มหมวดหมู่ความคิดเห็น</CardTitle>
+            <ExportButton 
+              data={categoryTrendData}
+              type="chart"
+              elementId="comment-category-trend-chart"
+              chartType="กราฟเส้นแนวโน้มหมวดหมู่ความคิดเห็น"
+              filename="แนวโน้ม-หมวดหมู่ความคิดเห็น"
+              title="แนวโน้มหมวดหมู่ความคิดเห็น"
+            />
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={categoryTrendData}>
-                <XAxis 
-                  dataKey="day" 
-                  fontSize={12}
-                  tick={{ fill: 'hsl(var(--foreground))' }}
-                />
-                <YAxis 
-                  fontSize={12}
-                  tick={{ fill: 'hsl(var(--foreground))' }}
-                />
-                <Tooltip 
-                  formatter={(value, name) => [
-                    `${value} ครั้ง`, 
-                    name === 'positive' ? 'เชิงบวก' : 'เชิงลบ'
-                  ]}
-                  labelFormatter={(label) => `วันที่ ${label}`}
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="positive" 
-                  stroke="hsl(var(--success))" 
-                  strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--success))', strokeWidth: 2, r: 4 }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="negative" 
-                  stroke="hsl(var(--destructive))" 
-                  strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--destructive))', strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <div id="comment-category-trend-chart">
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={categoryTrendData}>
+                  <XAxis 
+                    dataKey="day" 
+                    fontSize={12}
+                    tick={{ fill: 'hsl(var(--foreground))' }}
+                  />
+                  <YAxis 
+                    fontSize={12}
+                    tick={{ fill: 'hsl(var(--foreground))' }}
+                  />
+                  <Tooltip 
+                    formatter={(value, name) => [
+                      `${value} ครั้ง`, 
+                      name === 'positive' ? 'เชิงบวก' : 'เชิงลบ'
+                    ]}
+                    labelFormatter={(label) => `วันที่ ${label}`}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="positive" 
+                    stroke="hsl(var(--success))" 
+                    strokeWidth={2}
+                    dot={{ fill: 'hsl(var(--success))', strokeWidth: 2, r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="negative" 
+                    stroke="hsl(var(--destructive))" 
+                    strokeWidth={2}
+                    dot={{ fill: 'hsl(var(--destructive))', strokeWidth: 2, r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       </div>

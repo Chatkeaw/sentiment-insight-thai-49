@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, Legend } from 'recharts';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
 import { SentimentAnalysisModal } from '@/components/analytics/SentimentAnalysisModal';
+import { ExportButton } from '@/components/shared/ExportButton';
 
 interface SentimentData {
   positive: { count: number; percentage: number };
@@ -65,11 +66,19 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sentiment Donut Chart - Updated to trigger modal */}
         <Card className="chart-container-small animate-fade-in">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="card-title">หัวข้อที่ลูกค้าร้องเรียน</CardTitle>
+            <ExportButton 
+              data={donutData}
+              type="chart"
+              elementId="sentiment-complaints-chart"
+              chartType="กราฟวงกลมหัวข้อร้องเรียน"
+              filename="ร้องเรียน-หัวข้อ"
+              title="หัวข้อที่ลูกค้าร้องเรียน"
+            />
           </CardHeader>
           <CardContent>
-            <div className="flex items-center">
+            <div id="sentiment-complaints-chart" className="flex items-center">
               <div className="flex-1">
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
@@ -122,44 +131,54 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
 
         {/* Sentiment Trend */}
         <Card className="chart-container-small animate-fade-in">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="card-title">แนวโน้มทัศนคติต่อการให้บริการ</CardTitle>
+            <ExportButton 
+              data={trendData}
+              type="chart"
+              elementId="sentiment-trend-chart"
+              chartType="กราฟเส้นแนวโน้มทัศนคติ"
+              filename="แนวโน้ม-ทัศนคติ"
+              title="แนวโน้มทัศนคติต่อการให้บริการ"
+            />
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={trendData}>
-                <XAxis 
-                  dataKey="month"
-                  label={{ value: 'เดือน', position: 'insideBottom', offset: -10 }}
-                  fontSize={12}
-                />
-                <YAxis 
-                  label={{ value: 'ความถี่ (ครั้ง)', angle: -90, position: 'insideLeft' }}
-                  fontSize={12}
-                />
-                <Tooltip 
-                  formatter={(value, name) => [`${value} ครั้ง`, name === 'positive' ? 'เชิงบวก' : 'เชิงลบ']}
-                  labelFormatter={(label) => `เดือน: ${label}`}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="positive" 
-                  stroke="#10B981" 
-                  strokeWidth={3}
-                  dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="negative" 
-                  stroke="#EF4444" 
-                  strokeWidth={3}
-                  dot={{ fill: '#EF4444', strokeWidth: 2, r: 4 }}
-                />
-                <Legend 
-                  formatter={(value) => value === 'positive' ? 'เชิงบวก' : 'เชิงลบ'}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <div id="sentiment-trend-chart">
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={trendData}>
+                  <XAxis 
+                    dataKey="month"
+                    label={{ value: 'เดือน', position: 'insideBottom', offset: -10 }}
+                    fontSize={12}
+                  />
+                  <YAxis 
+                    label={{ value: 'ความถี่ (ครั้ง)', angle: -90, position: 'insideLeft' }}
+                    fontSize={12}
+                  />
+                  <Tooltip 
+                    formatter={(value, name) => [`${value} ครั้ง`, name === 'positive' ? 'เชิงบวก' : 'เชิงลบ']}
+                    labelFormatter={(label) => `เดือน: ${label}`}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="positive" 
+                    stroke="#10B981" 
+                    strokeWidth={3}
+                    dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="negative" 
+                    stroke="#EF4444" 
+                    strokeWidth={3}
+                    dot={{ fill: '#EF4444', strokeWidth: 2, r: 4 }}
+                  />
+                  <Legend 
+                    formatter={(value) => value === 'positive' ? 'เชิงบวก' : 'เชิงลบ'}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -169,34 +188,44 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
         className="chart-container-large animate-fade-in cursor-pointer hover:shadow-lg transition-shadow"
         onClick={handleRegionalSentimentClick}
       >
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="card-title">ทัศนคติการให้บริการ รายภาค</CardTitle>
+          <ExportButton 
+            data={regionalSentimentData}
+            type="chart"
+            elementId="regional-sentiment-chart"
+            chartType="กราฟแท่งทัศนคติรายภาค"
+            filename="ทัศนคติ-รายภาค"
+            title="ทัศนคติการให้บริการ รายภาค"
+          />
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={regionalSentimentData} margin={{ bottom: 40 }}>
-              <XAxis 
-                dataKey="region" 
-                fontSize={12}
-                angle={-45}
-                textAnchor="end"
-                height={80}
-              />
-              <YAxis 
-                label={{ value: 'ความถี่ (ครั้ง)', angle: -90, position: 'insideLeft' }}
-                fontSize={12}
-              />
-              <Tooltip 
-                formatter={(value, name) => [`${value} ครั้ง`, name === 'positive' ? 'เชิงบวก' : 'เชิงลบ']}
-                labelFormatter={(label) => `${label}`}
-              />
-              <Bar dataKey="positive" fill="#10B981" radius={[2, 2, 0, 0]} />
-              <Bar dataKey="negative" fill="#EF4444" radius={[2, 2, 0, 0]} />
-              <Legend 
-                formatter={(value) => value === 'positive' ? 'เชิงบวก' : 'เชิงลบ'}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <div id="regional-sentiment-chart">
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={regionalSentimentData} margin={{ bottom: 40 }}>
+                <XAxis 
+                  dataKey="region" 
+                  fontSize={12}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis 
+                  label={{ value: 'ความถี่ (ครั้ง)', angle: -90, position: 'insideLeft' }}
+                  fontSize={12}
+                />
+                <Tooltip 
+                  formatter={(value, name) => [`${value} ครั้ง`, name === 'positive' ? 'เชิงบวก' : 'เชิงลบ']}
+                  labelFormatter={(label) => `${label}`}
+                />
+                <Bar dataKey="positive" fill="#10B981" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="negative" fill="#EF4444" radius={[2, 2, 0, 0]} />
+                <Legend 
+                  formatter={(value) => value === 'positive' ? 'เชิงบวก' : 'เชิงลบ'}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </CardContent>
       </Card>
 

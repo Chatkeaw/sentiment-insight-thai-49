@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import TimeFilter from '@/components/TimeFilter';
+import { ExportButton } from '@/components/shared/ExportButton';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
 import { mockFeedbackData } from '@/data/mockData';
 import { FeedbackEntry } from '@/types/dashboard';
@@ -349,10 +350,16 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({
 
       {/* Feedback List */}
       <Card className="chart-container-large">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="card-title">
             รายการความคิดเห็น ({filteredFeedback.length} รายการ)
           </CardTitle>
+          <ExportButton 
+            data={filteredFeedback}
+            type="feedback"
+            filename="ความคิดเห็นลูกค้า"
+            title="รายการความคิดเห็นลูกค้า"
+          />
         </CardHeader>
         <CardContent>
           <div className="max-h-96 overflow-y-auto space-y-4">
