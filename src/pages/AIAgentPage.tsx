@@ -165,13 +165,7 @@ export const AIAgentPage: React.FC = () => {
                     <p className="text-xs text-gray-600 font-medium">คำถามแนะนำ</p>
                   </div>
                   {sampleQuestions.map((question, index) => (
-                    <button
-                      key={index}
-                      className="w-full text-left p-3 hover:bg-gray-50 border-b last:border-b-0 text-sm leading-relaxed"
-                      onMouseDown={() => handleQuestionClick(question)}
-                    >
-                      {question}
-                    </button>
+
                   ))}
                 </div>
               )}
