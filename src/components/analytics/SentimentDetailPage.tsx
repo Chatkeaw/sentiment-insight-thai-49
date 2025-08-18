@@ -10,14 +10,12 @@ export const SentimentDetailPage: React.FC = () => {
     total: 1248,
     positive: 654,
     negative: 394,
-    neutral: 200,
   };
 
   // Mock donut data
   const donutData = [
     { name: 'เชิงบวก', value: kpiData.positive, percentage: 52, color: '#10B981' },
     { name: 'เชิงลบ', value: kpiData.negative, percentage: 32, color: '#EF4444' },
-    { name: 'ไม่มีนัยสำคัญ', value: kpiData.neutral, percentage: 16, color: '#6B7280' },
   ];
 
   // Mock district sentiment data
@@ -75,10 +73,6 @@ export const SentimentDetailPage: React.FC = () => {
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">{kpiData.negative}</div>
               <div className="text-sm text-muted-foreground">เชิงลบ</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-600">{kpiData.neutral}</div>
-              <div className="text-sm text-muted-foreground">ไม่มีนัยสำคัญ</div>
             </div>
           </div>
         </CardContent>
