@@ -208,7 +208,6 @@ export const AIAgentPage: React.FC = () => {
                   size="lg"
                 >
                   <Send className="w-5 h-5" />
-                  <span className="ml-2 text-base">ส่งข้อความ</span>
                 </Button>
               </div>
             </div>
