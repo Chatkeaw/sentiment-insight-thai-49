@@ -1,8 +1,8 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import TimeFilter from '@/components/TimeFilter';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
 import { mockFeedbackData } from '@/data/mockData';
@@ -21,7 +21,6 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
   const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>('all');
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>('all');
   const [selectedServiceType, setSelectedServiceType] = useState<string>('all');
 
   // Get unique values for filters
@@ -53,15 +52,15 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
     return ['all', ...unique];
   }, [selectedRegion, selectedDistrict]);
 
-  // Category mappings (same as feedback page)
+  // Category mappings
   const mainCategories = [
     { value: 'all', label: 'ทั้งหมด' },
-    { value: 'staff', label: 'พนักงานและบุคลากร' },
-    { value: 'service', label: 'ระบบและกระบวนการให้บริการ' },
-    { value: 'technology', label: 'เทคโนโลยีและดิจิทัล' },
-    { value: 'products', label: 'ผลิตภัณฑ์และบริการทางการเงิน' },
-    { value: 'environment', label: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก' },
-    { value: 'marketConduct', label: 'การปฏิบัติตามหลักธรรมาภิบาลทางการตลาด' },
+    { value: 'staff', label: 'พนักงาน' },
+    { value: 'service', label: 'การบริการ' },
+    { value: 'technology', label: 'เทคโนโลยี' },
+    { value: 'products', label: 'ผลิตภัณฑ์' },
+    { value: 'environment', label: 'สภาพแวดล้อม' },
+    { value: 'marketConduct', label: 'การปฏิบัติตลาด' },
     { value: 'other', label: 'อื่นๆ' }
   ];
 
@@ -77,38 +76,38 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
       { value: 'staffSecurity', label: 'ความปลอดภัย' }
     ],
     service: [
-      { value: 'serviceReadiness', label: 'ความพร้อมของบริการ' },
-      { value: 'serviceProcess', label: 'กระบวนการให้บริการ' },
-      { value: 'serviceQueue', label: 'ระบบจัดการคิว' },
-      { value: 'serviceDocuments', label: 'เอกสารและข้อมูล' }
+      { value: 'serviceReadiness', label: 'ความพร้อม' },
+      { value: 'serviceProcess', label: 'กระบวนการ' },
+      { value: 'serviceQueue', label: 'ระบบคิว' },
+      { value: 'serviceDocuments', label: 'เอกสาร' }
     ],
     technology: [
-      { value: 'techCore', label: 'ระบบ Core ของธนาคาร' },
-      { value: 'techQueue', label: 'ระบบเรียกคิวและจัดการคิว' },
-      { value: 'techATM', label: 'ATM ADM CDM' },
-      { value: 'techKYC', label: 'ระบบ KYC' },
-      { value: 'techApp', label: 'MyMo Application' },
-      { value: 'techBookUpdate', label: 'ระบบปรับปรุงสมุดบัญชี' },
+      { value: 'techCore', label: 'ระบบ Core' },
+      { value: 'techQueue', label: 'ระบบคิว' },
+      { value: 'techATM', label: 'ATM' },
+      { value: 'techKYC', label: 'KYC' },
+      { value: 'techApp', label: 'แอปพลิเคชัน' },
+      { value: 'techBookUpdate', label: 'ปรับปรุงสมุด' },
       { value: 'techCashCounter', label: 'เครื่องนับเงิน' }
     ],
     products: [
-      { value: 'productDetails', label: 'รายละเอียดผลิตภัณฑ์' },
-      { value: 'productConditions', label: 'เงื่อนไขการใช้บริการ' },
-      { value: 'productApprovalTime', label: 'ระยะเวลาอนุมัติ' },
+      { value: 'productDetails', label: 'รายละเอียด' },
+      { value: 'productConditions', label: 'เงื่อนไข' },
+      { value: 'productApprovalTime', label: 'เวลาอนุมัติ' },
       { value: 'productFlexibility', label: 'ความยืดหยุ่น' },
-      { value: 'productSimplicity', label: 'ความง่ายในการใช้' }
+      { value: 'productSimplicity', label: 'ความง่าย' }
     ],
     environment: [
       { value: 'envCleanliness', label: 'ความสะอาด' },
-      { value: 'envSpace', label: 'พื้นที่และความคับคั่ง' },
+      { value: 'envSpace', label: 'พื้นที่' },
       { value: 'envTemperature', label: 'อุณหภูมิ' },
-      { value: 'envDesk', label: 'โต๊ะทำงานและเก้าอี้' },
-      { value: 'envWaitingArea', label: 'พื้นที่นั่งรอ' },
+      { value: 'envDesk', label: 'โต๊ะทำงาน' },
+      { value: 'envWaitingArea', label: 'พื้นที่รอ' },
       { value: 'envLighting', label: 'แสงสวาง' },
       { value: 'envSound', label: 'เสียงรบกวน' },
       { value: 'envRestroom', label: 'ห้องน้ำ' },
       { value: 'envParking', label: 'ที่จอดรถ' },
-      { value: 'envSignage', label: 'ป้ายบอกทางและสัญลักษณ์' },
+      { value: 'envSignage', label: 'ป้ายบอกทาง' },
       { value: 'envOtherFacilities', label: 'สิ่งอำนวยความสะดวกอื่นๆ' }
     ],
     marketConduct: [
@@ -122,11 +121,6 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
     ]
   };
 
-  const subCategories = useMemo(() => {
-    if (selectedMainCategory === 'all') return [{ value: 'all', label: 'ทั้งหมด' }];
-    return [{ value: 'all', label: 'ทั้งหมด' }, ...(subCategoryMap[selectedMainCategory] || [])];
-  }, [selectedMainCategory]);
-
   const serviceTypes = [
     'ทั้งหมด',
     'การฝากเงิน/ถอนเงิน',
@@ -134,6 +128,15 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
     'การชำระค่าบริการ/ค่าธรรมเนียม',
     'อื่นๆ'
   ];
+
+  // Time period options
+  const timePeriods = [
+    { value: 'monthly', label: 'รายเดือน' },
+    { value: 'quarterly', label: 'ไตรมาส' },
+    { value: 'custom', label: 'กำหนดเอง' }
+  ];
+
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState('monthly');
 
   // Filter feedback data - only negative sentiments
   const filteredComplaints = useMemo(() => {
@@ -158,7 +161,30 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
       
       return true;
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [selectedRegion, selectedDistrict, selectedBranch, selectedMainCategory, selectedSubCategory, selectedServiceType]);
+  }, [selectedRegion, selectedDistrict, selectedBranch, selectedMainCategory, selectedServiceType]);
+
+  // Calculate statistics
+  const totalComplaints = filteredComplaints.length;
+  const totalFeedback = mockFeedbackData.length;
+  const complaintPercentage = totalFeedback > 0 ? ((totalComplaints / totalFeedback) * 100).toFixed(1) : '0';
+
+  // Chart data for categories
+  const categoryChartData = useMemo(() => {
+    const categoryCounts: { [key: string]: number } = {};
+    
+    filteredComplaints.forEach(complaint => {
+      Object.entries(complaint.sentiment).forEach(([category, sentiment]) => {
+        if (sentiment === -1) {
+          const categoryLabel = mainCategories.find(c => c.value === category)?.label || category;
+          categoryCounts[categoryLabel] = (categoryCounts[categoryLabel] || 0) + 1;
+        }
+      });
+    });
+
+    return Object.entries(categoryCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [filteredComplaints]);
 
   // Get detailed sentiments for display (only negative ones)
   const getDetailedSentiments = (feedback: FeedbackEntry) => {
@@ -186,25 +212,28 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
 
   return (
     <div className="space-y-6 max-w-full">
-      {/* Header with Time Filter */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-foreground">ข้อร้องเรียน</h2>
-        <TimeFilter
-          value={timeFilter}
-          onChange={onTimeFilterChange}
-        />
+      {/* Header */}
+      <div className="flex flex-col space-y-2">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-foreground">⚠️ ข้อร้องเรียนลูกค้า</h1>
+          <TimeFilter
+            value={timeFilter}
+            onChange={onTimeFilterChange}
+          />
+        </div>
+        <p className="text-muted-foreground">รวมเฉพาะความคิดเห็นเชิงลบและข้อร้องเรียน</p>
       </div>
 
-      {/* Filter Controls */}
-      <Card className="chart-container-medium">
+      {/* Filters */}
+      <Card>
         <CardHeader>
-          <CardTitle className="card-title">ตัวกรองข้อมูล</CardTitle>
+          <CardTitle>ตัวกรองข้อมูล</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Location Filters */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">พื้นที่ให้บริการ</label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">เขต/ภาค</label>
               <Select value={selectedRegion} onValueChange={(value) => {
                 setSelectedRegion(value);
                 setSelectedDistrict('all');
@@ -220,23 +249,10 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
 
-              <Select value={selectedDistrict} onValueChange={(value) => {
-                setSelectedDistrict(value);
-                setSelectedBranch('all');
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกเขต" />
-                </SelectTrigger>
-                <SelectContent>
-                  {districts.map(district => (
-                    <SelectItem key={district} value={district}>
-                      {district === 'all' ? 'ทั้งหมด' : district}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
+            <div className="space-y-2">
+              <label className="text-sm font-medium">สาขา</label>
               <Select value={selectedBranch} onValueChange={setSelectedBranch}>
                 <SelectTrigger>
                   <SelectValue placeholder="เลือกสาขา" />
@@ -250,18 +266,28 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          {/* Category Filters */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">หมวดหมู่ที่ถูกกล่าวถึง</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select value={selectedMainCategory} onValueChange={(value) => {
-                setSelectedMainCategory(value);
-                setSelectedSubCategory('all');
-              }}>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">ประเภทเวลา</label>
+              <Select value={selectedTimePeriod} onValueChange={setSelectedTimePeriod}>
                 <SelectTrigger>
-                  <SelectValue placeholder="เลือกหมวดหมู่หลัก" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {timePeriods.map(period => (
+                    <SelectItem key={period.value} value={period.value}>
+                      {period.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">หมวดหมู่</label>
+              <Select value={selectedMainCategory} onValueChange={setSelectedMainCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกหมวดหมู่" />
                 </SelectTrigger>
                 <SelectContent>
                   {mainCategories.map(category => (
@@ -271,89 +297,113 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
                   ))}
                 </SelectContent>
               </Select>
-
-              <Select value={selectedSubCategory} onValueChange={setSelectedSubCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกหมวดหมู่ย่อย" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subCategories.map(category => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
-          </div>
-
-          {/* Service Type Filter */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">ประเภทการให้บริการ</label>
-            <Select value={selectedServiceType} onValueChange={setSelectedServiceType}>
-              <SelectTrigger className="md:w-1/2">
-                <SelectValue placeholder="เลือกประเภทบริการ" />
-              </SelectTrigger>
-              <SelectContent>
-                {serviceTypes.map(type => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </CardContent>
       </Card>
 
+      {/* Dashboard Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Statistics Cards */}
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">จำนวนข้อร้องเรียนทั้งหมด</p>
+                  <p className="text-3xl font-bold text-destructive">{totalComplaints}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground">สัดส่วนจากความคิดเห็นทั้งหมด</p>
+                  <p className="text-xl font-semibold text-destructive">{complaintPercentage}%</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Category Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>กราฟแท่ง - หมวดหมู่ข้อร้องเรียน</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={categoryChartData.slice(0, 5)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="name" 
+                  fontSize={12}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis fontSize={12} />
+                <Tooltip />
+                <Bar dataKey="value" fill="hsl(var(--destructive))" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Complaints List */}
-      <Card className="chart-container-large">
+      <Card>
         <CardHeader>
-          <CardTitle className="card-title">
-            รายการข้อร้องเรียน ({filteredComplaints.length} รายการ)
+          <CardTitle className="flex items-center gap-2">
+            📋 รายการข้อร้องเรียน ({filteredComplaints.length} รายการ)
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="max-h-96 overflow-y-auto space-y-4">
+          <div className="space-y-4 max-h-96 overflow-y-auto">
             {filteredComplaints.map((complaint) => {
               const detailedSentiments = getDetailedSentiments(complaint);
               
               return (
-                <div
-                  key={complaint.id}
-                  className="p-4 rounded-lg border bg-red-100"
-                >
-                  {/* Header Info */}
-                  <div className="flex flex-wrap gap-4 mb-3 text-sm text-gray-600">
-                    <span><strong>วันที่:</strong> {complaint.date} {complaint.timestamp}</span>
-                    <span><strong>บริการ:</strong> {complaint.serviceType}</span>
-                    <span><strong>สาขา:</strong> {complaint.branch.branch} / {complaint.branch.district} / {complaint.branch.region}</span>
-                  </div>
-
-                  {/* Comment Content */}
-                  <div className="mb-3">
-                    <p className="text-gray-800 leading-relaxed">{complaint.comment}</p>
-                  </div>
-
-                  {/* Sentiment Categories */}
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium text-gray-700">หมวดหมู่ที่เกี่ยวข้อง:</div>
-                    <div className="flex flex-wrap gap-2">
-                      {detailedSentiments.map((item, index) => (
-                        <Badge
-                          key={index}
-                          className="bg-red-200 text-gray-800 border-0"
-                        >
-                          {item.category}: {item.subcategory} 👎
-                        </Badge>
-                      ))}
+                <Card key={complaint.id} className="border-l-4 border-l-destructive">
+                  <CardContent className="p-4">
+                    {/* Card Header */}
+                    <div className="flex items-start gap-3 mb-3">
+                      <span className="text-xl">⚠️</span>
+                      <div className="flex-1">
+                        {/* Metadata */}
+                        <div className="flex flex-wrap gap-4 mb-2 text-sm text-muted-foreground">
+                          <span>📅 {complaint.date}</span>
+                          <span>🏢 {complaint.branch.branch}</span>
+                          <span>🔧 {complaint.serviceType}</span>
+                        </div>
+                        
+                        {/* Content */}
+                        <p className="text-foreground leading-relaxed mb-3">
+                          {complaint.comment}
+                        </p>
+                        
+                        {/* Tags */}
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">หมวดหมู่:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {detailedSentiments.map((item, index) => (
+                              <Badge
+                                key={index}
+                                variant="destructive"
+                                className="text-xs"
+                              >
+                                {item.category}: {item.subcategory}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               );
             })}
 
             {filteredComplaints.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                ไม่พบข้อร้องเรียนที่ตรงกับเงื่อนไขที่เลือก
+              <div className="text-center py-12 text-muted-foreground">
+                <p className="text-lg">ไม่พบข้อร้องเรียนที่ตรงกับเงื่อนไขที่เลือก</p>
+                <p className="text-sm mt-2">ลองปรับเปลี่ยนตัวกรองเพื่อดูข้อมูลเพิ่มเติม</p>
               </div>
             )}
           </div>
