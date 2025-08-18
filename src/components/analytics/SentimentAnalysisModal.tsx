@@ -54,24 +54,24 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
 
   // Regional breakdown data (18 regions)
   const regionalData = [
-    { region: 'ภาค 1', total: 78, positive: 41, neutral: 22, negative: 15 },
-    { region: 'ภาค 2', total: 79, positive: 50, neutral: 11, negative: 18 },
-    { region: 'ภาค 3', total: 86, positive: 48, neutral: 8, negative: 30 },
-    { region: 'ภาค 4', total: 81, positive: 50, neutral: 16, negative: 15 },
-    { region: 'ภาค 5', total: 71, positive: 43, neutral: 6, negative: 22 },
-    { region: 'ภาค 6', total: 65, positive: 38, neutral: 12, negative: 15 },
-    { region: 'ภาค 7', total: 73, positive: 45, neutral: 14, negative: 14 },
-    { region: 'ภาค 8', total: 69, positive: 41, neutral: 13, negative: 15 },
-    { region: 'ภาค 9', total: 82, positive: 52, neutral: 18, negative: 12 },
-    { region: 'ภาค 10', total: 77, positive: 44, neutral: 19, negative: 14 },
-    { region: 'ภาค 11', total: 84, positive: 49, neutral: 21, negative: 14 },
-    { region: 'ภาค 12', total: 76, positive: 46, neutral: 16, negative: 14 },
-    { region: 'ภาค 13', total: 88, positive: 53, neutral: 20, negative: 15 },
-    { region: 'ภาค 14', total: 74, positive: 42, neutral: 17, negative: 15 },
-    { region: 'ภาค 15', total: 80, positive: 48, neutral: 18, negative: 14 },
-    { region: 'ภาค 16', total: 75, positive: 44, neutral: 16, negative: 15 },
-    { region: 'ภาค 17', total: 83, positive: 51, neutral: 19, negative: 13 },
-    { region: 'ภาค 18', total: 72, positive: 43, neutral: 15, negative: 14 }
+    { region: 'ภาค 1', total: 78, positive: 41, negative: 15 },
+    { region: 'ภาค 2', total: 79, positive: 50, negative: 18 },
+    { region: 'ภาค 3', total: 86, positive: 48, negative: 30 },
+    { region: 'ภาค 4', total: 81, positive: 50, negative: 15 },
+    { region: 'ภาค 5', total: 71, positive: 43, negative: 22 },
+    { region: 'ภาค 6', total: 65, positive: 38, negative: 15 },
+    { region: 'ภาค 7', total: 73, positive: 45, negative: 14 },
+    { region: 'ภาค 8', total: 69, positive: 41, negative: 15 },
+    { region: 'ภาค 9', total: 82, positive: 52, negative: 12 },
+    { region: 'ภาค 10', total: 77, positive: 44, negative: 14 },
+    { region: 'ภาค 11', total: 84, positive: 49, negative: 14 },
+    { region: 'ภาค 12', total: 76, positive: 46, negative: 14 },
+    { region: 'ภาค 13', total: 88, positive: 53, negative: 15 },
+    { region: 'ภาค 14', total: 74, positive: 42, negative: 15 },
+    { region: 'ภาค 15', total: 80, positive: 48, negative: 14 },
+    { region: 'ภาค 16', total: 75, positive: 44, negative: 15 },
+    { region: 'ภาค 17', total: 83, positive: 51, negative: 13 },
+    { region: 'ภาค 18', total: 72, positive: 43, negative: 14 }
   ];
 
   const handleViewFeedback = (region?: string) => {
@@ -125,10 +125,6 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                     }}
-                  />
-                  <Legend 
-                    formatter={(value) => value === 'positive' ? 'เชิงบวก: 312 ครั้ง' : 'เชิงลบ: 149 ครั้ง'}
-                    wrapperStyle={{ paddingTop: '20px' }}
                   />
                   <Line
                     type="monotone"
@@ -252,11 +248,6 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
                       </th>
                       <th className="text-center py-4 px-4">
                         <div className="flex flex-col items-center">
-                          <span className="text-muted-foreground">ผสม</span>
-                        </div>
-                      </th>
-                      <th className="text-center py-4 px-4">
-                        <div className="flex flex-col items-center">
                           <span className="text-muted-foreground">เชิงลบ</span>
                         </div>
                       </th>
@@ -278,7 +269,6 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
                         </td>
                         <td className="py-4 px-4 text-center font-bold">{region.total}</td>
                         <td className="py-4 px-4 text-center font-bold text-green-600">{region.positive}</td>
-                        <td className="py-4 px-4 text-center font-bold text-orange-500">{region.neutral}</td>
                         <td className="py-4 px-4 text-center font-bold text-red-600 underline">{region.negative}</td>
                       </tr>
                     ))}
