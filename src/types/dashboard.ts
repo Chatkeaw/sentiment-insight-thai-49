@@ -88,6 +88,7 @@ export interface FeedbackEntry {
   comment: string;
   sentiment: SentimentAnalysis;
   detailedSentiment: DetailedSentiment;
+  commentTags?: string[];
 }
 
 export interface KPIData {

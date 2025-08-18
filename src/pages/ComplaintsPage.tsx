@@ -153,7 +153,7 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
 
         // หมวดหลักจากแท็กรหัสย่อย 1.x / 2.x / … / 5.x
         if (prefix) {
-          const tags = feedback.commentTags ?? [];
+          const tags = feedback.commentTags || [];
           if (!tags.some(code => code.startsWith(prefix))) return false;
         }
 
@@ -171,3 +171,148 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
           <TimeFilter value={timeFilter} onChange={onTimeFilterChange} />
         </div>
         <p className="text-muted-foreground">รายงานข้อร้องเรียนสำคัญจากลูกค้า</p>
+      </div>
+
+      {/* Filter Section */}
+      <Card className="border rounded-2xl shadow-none">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">ตัวกรองข้อมูล</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">ภาค</label>
+              <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกภาค" />
+                </SelectTrigger>
+                <SelectContent>
+                  {regions.map((region) => (
+                    <SelectItem key={region} value={region}>
+                      {region === 'all' ? 'ทั้งหมด' : region}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">จังหวัด</label>
+              <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกจังหวัด" />
+                </SelectTrigger>
+                <SelectContent>
+                  {districts.map((district) => (
+                    <SelectItem key={district} value={district}>
+                      {district === 'all' ? 'ทั้งหมด' : district}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">สาขา</label>
+              <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกสาขา" />
+                </SelectTrigger>
+                <SelectContent>
+                  {branches.map((branch) => (
+                    <SelectItem key={branch} value={branch}>
+                      {branch === 'all' ? 'ทั้งหมด' : branch}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">หมวดหมู่</label>
+              <Select value={selectedMainCategory} onValueChange={setSelectedMainCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกหมวดหมู่" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mainCategories.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">ประเภทบริการ</label>
+              <Select value={selectedServiceType} onValueChange={setSelectedServiceType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกประเภทบริการ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {serviceTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Results */}
+      <Card className="border rounded-2xl shadow-none">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">
+            ข้อร้องเรียน ({filteredComplaints.length} รายการ)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {filteredComplaints.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                ไม่พบข้อร้องเรียนที่ตรงกับเงื่อนไขที่เลือก
+              </div>
+            ) : (
+              filteredComplaints.map((complaint) => (
+                <div key={complaint.id} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium">{complaint.branch.branch}</h3>
+                        <Badge variant="outline">{complaint.serviceType}</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {complaint.branch.region} - {complaint.branch.district}
+                      </p>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {new Date(complaint.date).toLocaleDateString('th-TH')}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <p className="text-sm">{complaint.comment}</p>
+                    
+                    {complaint.commentTags && complaint.commentTags.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {complaint.commentTags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {COMMENT_TAG_LABELS[tag] || tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};

@@ -33,39 +33,52 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
     { value: 'others', label: 'อื่นๆ' }
   ];
 
-  // Categories for each topic
+  // Categories for each topic - detailed subcategories
   const categoriesByTopic: Record<string, { value: string; label: string }[]> = {
     'staff': [
-      { value: 'politeness', label: 'ความสุภาพ' },
-      { value: 'care', label: 'ความใส่ใจ' },
-      { value: 'consultation', label: 'การให้คำปรึกษา' },
-      { value: 'accuracy', label: 'ความถูกต้อง' },
-      { value: 'speed', label: 'ความรวดเร็ว' }
+      { value: '1.1', label: 'ความสุภาพและมารยาทของพนักงาน' },
+      { value: '1.2', label: 'ความเอาใจใส่ในการให้บริการลูกค้า' },
+      { value: '1.3', label: 'ความสามารถในการตอบคำถามหรือให้คำแนะนำ' },
+      { value: '1.4', label: 'ความถูกต้องในการให้บริการ' },
+      { value: '1.5', label: 'ความรวดเร็วในการให้บริการ' },
+      { value: '1.6', label: 'ความเป็นมืออาชีพและการแก้ไขปัญหาเฉพาะหน้า' },
+      { value: '1.7', label: 'ความประทับใจในการให้บริการ' },
+      { value: '1.8', label: 'รปภ, แม่บ้าน' }
     ],
     'service': [
-      { value: 'readiness', label: 'ความพร้อม' },
-      { value: 'process', label: 'กระบวนการ' },
-      { value: 'queue', label: 'ระบบคิว' },
-      { value: 'documents', label: 'เอกสาร' }
+      { value: '2.1', label: 'ความพร้อมในการให้บริการ' },
+      { value: '2.2', label: 'กระบวนการให้บริการ ความเป็นธรรมให้บริการ' },
+      { value: '2.3', label: 'ระบบเรียกคิวและจัดการคิว' },
+      { value: '2.4', label: 'ภาระเอกสาร' }
     ],
     'technology': [
-      { value: 'core-system', label: 'ระบบหลัก' },
-      { value: 'queue-system', label: 'ระบบคิว' },
-      { value: 'atm', label: 'เครื่อง ATM' },
-      { value: 'kyc', label: 'ระบบ KYC' },
-      { value: 'mobile-app', label: 'แอปพลิเคชัน' }
+      { value: '3.1', label: 'ระบบ Core ของธนาคาร' },
+      { value: '3.2', label: 'เครื่องออกบัตรคิว' },
+      { value: '3.3', label: 'ATM ADM CDM' },
+      { value: '3.4', label: 'E-KYC Scanner' },
+      { value: '3.5', label: 'แอพพลิเคชัน MyMo' },
+      { value: '3.6', label: 'เครื่องปรับสมุด' },
+      { value: '3.7', label: 'เครื่องนับเงิน' }
     ],
     'products': [
-      { value: 'details', label: 'รายละเอียดผลิตภัณฑ์' },
-      { value: 'conditions', label: 'เงื่อนไข' },
-      { value: 'approval-time', label: 'เวลาอนุมัติ' },
-      { value: 'flexibility', label: 'ความยืดหยุ่น' }
+      { value: '4.1', label: 'รายละเอียด ผลิตภัณฑ์' },
+      { value: '4.2', label: 'เงื่อนไขอนุมัติ' },
+      { value: '4.3', label: 'ระยะเวลาอนุมัติ' },
+      { value: '4.4', label: 'ความยืดหยุ่น' },
+      { value: '4.5', label: 'ความเรียบง่ายข้อมูล' }
     ],
     'environment': [
-      { value: 'cleanliness', label: 'ความสะอาด' },
-      { value: 'space', label: 'พื้นที่' },
-      { value: 'temperature', label: 'อุณหภูมิ' },
-      { value: 'facilities', label: 'สิ่งอำนวยความสะดวก' }
+      { value: '5.1', label: 'ความสะอาด' },
+      { value: '5.2', label: 'พื้นที่และความคับคั่ง' },
+      { value: '5.3', label: 'อุณหภูมิ' },
+      { value: '5.4', label: 'โต๊ะรับบริการ' },
+      { value: '5.5', label: 'จุดรอรับบริการ' },
+      { value: '5.6', label: 'แสง' },
+      { value: '5.7', label: 'เสียง' },
+      { value: '5.8', label: 'ห้องน้ำ' },
+      { value: '5.9', label: 'ที่จอดรถ' },
+      { value: '5.10', label: 'ป้าย-สื่อประชาสัมพันธ์' },
+      { value: '5.11', label: 'สิ่งอำนวยความสะดวกอื่นๆ' }
     ],
     'market-conduct': [
       { value: 'no-deception', label: 'ไม่หลอกลวง' },
