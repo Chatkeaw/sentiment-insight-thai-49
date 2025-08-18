@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { OverviewPage } from "./OverviewPage";
@@ -50,28 +51,24 @@ const Index = () => {
     localStorage.setItem('selectedMenuItem', activePage);
   }, [activePage]);
 
+  // Listen for custom page change events
+  useEffect(() => {
+    const handleCustomPageChange = (event: CustomEvent) => {
+      handlePageChange(event.detail);
+    };
+
+    window.addEventListener('changePage', handleCustomPageChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('changePage', handleCustomPageChange as EventListener);
+    };
+  }, []);
+
   const handleBackToOverview = () => {
     setActivePage("overview");
   };
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleRefreshData = () => {
-    const now = new Date();
-    const day = now.getDate().toString().padStart(2, '0');
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const year = now.getFullYear();
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    setLastUpdate(`${day}-${month}-${year} ${hours}:${minutes}`);
-  };
-
-  const handleFiltersChange = (filters: any) => {
-    setGlobalFilters(filters);
-    setTimeFilter(filters.timeRange || "1month");
-  };
+  // ... keep existing code (scrollToTop, handleRefreshData, handleFiltersChange functions)
 
   const renderContent = () => {
     switch (activePage) {
