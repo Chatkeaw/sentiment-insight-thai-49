@@ -1,10 +1,10 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
 
 interface SentimentAnalysisModalProps {
@@ -19,6 +19,68 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
   onViewFeedback,
 }) => {
   const navigate = useNavigate();
+  const [selectedTopic, setSelectedTopic] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+
+  // Assessment topics
+  const assessmentTopics = [
+    { value: 'staff', label: 'พนักงานและบุคลากร' },
+    { value: 'service', label: 'ระบบและกระบวนการให้บริการ' },
+    { value: 'technology', label: 'เทคโนโลยีและดิจิทัล' },
+    { value: 'products', label: 'เงื่อนไขและผลิตภัณฑ์' },
+    { value: 'environment', label: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก' },
+    { value: 'market-conduct', label: 'Market Conduct' },
+    { value: 'others', label: 'อื่นๆ' }
+  ];
+
+  // Categories for each topic
+  const categoriesByTopic: Record<string, { value: string; label: string }[]> = {
+    'staff': [
+      { value: 'politeness', label: 'ความสุภาพ' },
+      { value: 'care', label: 'ความใส่ใจ' },
+      { value: 'consultation', label: 'การให้คำปรึกษา' },
+      { value: 'accuracy', label: 'ความถูกต้อง' },
+      { value: 'speed', label: 'ความรวดเร็ว' }
+    ],
+    'service': [
+      { value: 'readiness', label: 'ความพร้อม' },
+      { value: 'process', label: 'กระบวนการ' },
+      { value: 'queue', label: 'ระบบคิว' },
+      { value: 'documents', label: 'เอกสาร' }
+    ],
+    'technology': [
+      { value: 'core-system', label: 'ระบบหลัก' },
+      { value: 'queue-system', label: 'ระบบคิว' },
+      { value: 'atm', label: 'เครื่อง ATM' },
+      { value: 'kyc', label: 'ระบบ KYC' },
+      { value: 'mobile-app', label: 'แอปพลิเคชัน' }
+    ],
+    'products': [
+      { value: 'details', label: 'รายละเอียดผลิตภัณฑ์' },
+      { value: 'conditions', label: 'เงื่อนไข' },
+      { value: 'approval-time', label: 'เวลาอนุมัติ' },
+      { value: 'flexibility', label: 'ความยืดหยุ่น' }
+    ],
+    'environment': [
+      { value: 'cleanliness', label: 'ความสะอาด' },
+      { value: 'space', label: 'พื้นที่' },
+      { value: 'temperature', label: 'อุณหภูมิ' },
+      { value: 'facilities', label: 'สิ่งอำนวยความสะดวก' }
+    ],
+    'market-conduct': [
+      { value: 'no-deception', label: 'ไม่หลอกลวง' },
+      { value: 'no-advantage', label: 'ไม่เอาเปรียบ' },
+      { value: 'no-forcing', label: 'ไม่บังคับ' },
+      { value: 'no-disturbance', label: 'ไม่รบกวน' }
+    ],
+    'others': [
+      { value: 'impression', label: 'ความประทับใจ' },
+      { value: 'overall', label: 'โดยรวม' }
+    ]
+  };
+
+  // Get categories for selected topic
+  const availableCategories = selectedTopic ? categoriesByTopic[selectedTopic] || [] : [];
 
   // Mock data for 6 months trend
   const trendData = [
@@ -87,6 +149,11 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
     }, 100);
   };
 
+  const handleTopicChange = (value: string) => {
+    setSelectedTopic(value);
+    setSelectedCategory(''); // Reset category when topic changes
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
@@ -98,6 +165,47 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
             วิเคราะห์ข้อมูลความคิดเห็นของลูกค้าตามหัวข้อและหมวดหมู่ที่เลือก
           </p>
         </DialogHeader>
+
+        {/* Filter Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-muted/30 rounded-lg">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">หัวข้อการประเมิน</label>
+            <Select value={selectedTopic} onValueChange={handleTopicChange}>
+              <SelectTrigger className="w-full bg-background">
+                <SelectValue placeholder="เลือกทั้งหมด" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border shadow-lg z-50">
+                <SelectItem value="">เลือกทั้งหมด</SelectItem>
+                {assessmentTopics.map((topic) => (
+                  <SelectItem key={topic.value} value={topic.value}>
+                    {topic.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">หมวดหมู่ที่กล่าวถึง</label>
+            <Select 
+              value={selectedCategory} 
+              onValueChange={setSelectedCategory}
+              disabled={!selectedTopic}
+            >
+              <SelectTrigger className="w-full bg-background">
+                <SelectValue placeholder="เลือกทั้งหมด" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border shadow-lg z-50">
+                <SelectItem value="">เลือกทั้งหมด</SelectItem>
+                {availableCategories.map((category) => (
+                  <SelectItem key={category.value} value={category.value}>
+                    {category.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         
         <div className="space-y-8">
           {/* Sentiment Trend Chart */}
