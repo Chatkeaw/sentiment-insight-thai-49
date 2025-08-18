@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ChartData } from '@/types/dashboard';
 import { ExportButton } from '@/components/shared/ExportButton';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { getComplaintCategoryColor } from '@/utils/exportUtils';
+import { getComplaintCategoryColor, sortComplaintData } from '@/utils/exportUtils';
 
 export const MonthlyOverviewPage: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState<string>('');
@@ -21,24 +21,53 @@ export const MonthlyOverviewPage: React.FC = () => {
   }, []);
 
   // Mock data based on selected month/year
-  const complaintTopics = [
-    { name: 'การปฏิบัติตามหลักธรรมาภิบาลทางการตลาด', value: 25, category: 'marketConduct' },
-    { name: 'พนักงานและบุคลากร', value: 18, category: 'staff' },
-    { name: 'ระบบและกระบวนการให้บริการ', value: 15, category: 'service' },
-    { name: 'เทคโนโลยีและดิจิทัล', value: 12, category: 'technology' },
-    { name: 'ผลิตภัณฑ์และบริการทางการเงิน', value: 10, category: 'products' },
-    { name: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก', value: 8, category: 'environment' },
-    { name: 'อื่นๆ', value: 5, category: 'other' },
-  ].map((item, index) => ({
-    ...item,
-    color: getComplaintCategoryColor(item.name, index, 7)
-  }));
-
-  const complaintCategories = [
-    { name: 'ร้ายแรง', value: 35, color: '#DC2626' },
-    { name: 'ปานกลาง', value: 45, color: '#F59E0B' },
-    { name: 'เล็กน้อย', value: 20, color: '#10B981' },
+  const rawComplaintTopics = [
+    { name: 'พนักงานและบุคลากร', positive: 245, negative: 89, category: 'staff' },
+    { name: 'เทคโนโลยีและดิจิทัล', positive: 156, negative: 134, category: 'technology' },
+    { name: 'การปฏิบัติตามหลักธรรมาภิบาลทางการตลาด', positive: 23, negative: 156, category: 'marketConduct' },
+    { name: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก', positive: 198, negative: 76, category: 'environment' },
+    { name: 'ระบบและกระบวนการให้บริการ', positive: 134, negative: 67, category: 'service' },
+    { name: 'เงื่อนไขและผลิตภัณฑ์', positive: 89, negative: 45, category: 'products' },
+    { name: 'อื่นๆ', positive: 67, negative: 34, category: 'other' },
   ];
+
+  // Sort topics with Market Conduct first, then by complaint count
+  const sortedComplaintTopics = sortComplaintData(rawComplaintTopics, 'negative');
+  
+  const complaintTopics = sortedComplaintTopics.map((item, index) => {
+    const isMarketConduct = item.category === 'marketConduct';
+    let colorIndex = index;
+    if (isMarketConduct) {
+      colorIndex = -1; // Special case for Market Conduct
+    } else {
+      colorIndex = index - 1; // Adjust index since Market Conduct takes first position
+    }
+    
+    return {
+      ...item,
+      value: item.negative, // Use negative count for chart value
+      color: getComplaintCategoryColor(item.name, Math.max(0, colorIndex), isMarketConduct)
+    };
+  });
+
+  const rawComplaintCategories = [
+    { name: 'ความสุภาพและมารยาทของพนักงาน', positive: 189, negative: 45 },
+    { name: 'ความเอาใจใส่ในการให้บริการลูกค้า', positive: 167, negative: 23 },
+    { name: 'ไม่เอาเปรียบ', positive: 145, negative: 12 },
+    { name: 'ระบบ Core ของธนาคาร', positive: 98, negative: 87 },
+    { name: 'ความรวดเร็วในการให้บริการ', positive: 123, negative: 56 },
+    { name: 'ไม่บังคับ', positive: 78, negative: 34 },
+    { name: 'พื้นที่และความคับคั่ง', positive: 67, negative: 89 },
+  ];
+
+  // Sort categories with highest complaint count first
+  const sortedComplaintCategories = sortComplaintData(rawComplaintCategories, 'negative');
+  
+  const complaintCategories = sortedComplaintCategories.map((item, index) => ({
+    ...item,
+    value: Math.round((item.negative / (item.positive + item.negative)) * 100), // Calculate percentage
+    color: getComplaintCategoryColor(item.name, index, false)
+  }));
 
   const monthlyTrend = Array.from({ length: 12 }, (_, i) => ({
     month: `${i + 1}`,
@@ -186,33 +215,42 @@ export const MonthlyOverviewPage: React.FC = () => {
                   <YAxis 
                     dataKey="name" 
                     type="category" 
-                    width={150} 
+                    width={180} 
                     fontSize={12}
                     tick={{ fontSize: 10 }}
                   />
                   <Tooltip 
-                    formatter={(value) => [`${value} ครั้ง`, 'จำนวน']}
+                    formatter={(value) => [`${value} ครั้ง`, 'จำนวนร้องเรียน']}
                   />
-                  <Bar 
-                    dataKey="value" 
-                    fill="#DC2626"
-                    radius={[0, 4, 4, 0]}
-                  />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                    {complaintTopics.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <div className="mt-4 space-y-2">
-              {complaintTopics.slice(0, 3).map((topic, index) => (
+              {complaintTopics.slice(0, 5).map((topic, index) => (
                 <button
                   key={topic.name}
                   onClick={() => handleNavigateToFeedback(topic.category)}
                   className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 transition-colors border border-gray-200"
                 >
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">{topic.name}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {topic.value} ครั้ง → ดูความคิดเห็น
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg font-bold text-gray-500">{index + 1}</span>
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: topic.color }}
+                      />
+                      <span className="text-sm font-medium">{topic.name}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-green-600">● {topic.positive}</span>
+                      <span className="text-sm text-red-600">● {topic.negative}</span>
+                      <span className="text-xs text-muted-foreground">→ ดูความคิดเห็น</span>
+                    </div>
                   </div>
                 </button>
               ))}
@@ -258,15 +296,19 @@ export const MonthlyOverviewPage: React.FC = () => {
                 </ResponsiveContainer>
               </div>
               <div className="ml-4 space-y-3">
-                {complaintCategories.map((item, index) => (
+                {complaintCategories.slice(0, 7).map((item, index) => (
                   <div key={index} className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-gray-500 w-6">{index + 1}</span>
                     <div 
                       className="w-4 h-4 rounded-full" 
                       style={{ backgroundColor: item.color }}
                     />
-                    <div className="text-sm">
+                    <div className="text-sm flex-1">
                       <div className="font-medium">{item.name}</div>
-                      <div className="text-muted-foreground">{item.value}%</div>
+                      <div className="text-muted-foreground flex gap-2">
+                        <span className="text-green-600">● {item.positive}</span>
+                        <span className="text-red-600">● {item.negative}</span>
+                      </div>
                     </div>
                   </div>
                 ))}

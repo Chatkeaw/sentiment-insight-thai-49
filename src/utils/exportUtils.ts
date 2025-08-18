@@ -254,12 +254,29 @@ export const convertFeedbackDataForExport = (feedbackData: any[]) => {
 };
 
 // Color management for complaint categories
-export const getComplaintCategoryColor = (category: string, index: number, total: number): string => {
-  if (category === 'Market Conduct' || category.includes('Market') || category.includes('ธรรมาภิบาล')) {
-    return '#DC2626'; // Deep red for Market Conduct
+export const getComplaintCategoryColor = (category: string, index: number, isMarketConduct: boolean = false): string => {
+  if (isMarketConduct || category === 'Market Conduct' || category.includes('Market') || category.includes('ธรรมาภิบาล')) {
+    return '#DC2626'; // Deep red for Market Conduct (highest priority)
   }
   
-  // Generate gradient of red colors for other categories
+  // Red gradient colors for other categories (sorted by complaint count)
   const redShades = ['#EF4444', '#F87171', '#FCA5A5', '#FECACA', '#FEE2E2', '#FEF2F2'];
-  return redShades[index % redShades.length] || '#EF4444';
+  return redShades[index] || '#FEF2F2';
+};
+
+// Sort complaint data with Market Conduct first, then by complaint count
+export const sortComplaintData = (data: any[], complaintKey: string = 'negative') => {
+  return data.sort((a, b) => {
+    // Market Conduct always comes first
+    const aIsMarketConduct = a.name?.includes('Market') || a.name?.includes('ธรรมาภิบาล') || a.category === 'marketConduct';
+    const bIsMarketConduct = b.name?.includes('Market') || b.name?.includes('ธรรมาภิบาล') || b.category === 'marketConduct';
+    
+    if (aIsMarketConduct && !bIsMarketConduct) return -1;
+    if (!aIsMarketConduct && bIsMarketConduct) return 1;
+    
+    // Sort others by complaint count (descending)
+    const aCount = a[complaintKey] || a.value || 0;
+    const bCount = b[complaintKey] || b.value || 0;
+    return bCount - aCount;
+  });
 };
