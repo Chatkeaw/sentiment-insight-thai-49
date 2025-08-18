@@ -12,58 +12,9 @@ interface ComplaintsPageProps {
   onTimeFilterChange: (value: TimeFilterType['value']) => void;
 }
 
-const COMMENT_TAG_LABELS: Record<string, string> = {
-  '1.1': 'ความสุภาพและมารยาทของพนักงาน',
-  '1.2': 'ความเอาใจใส่ในการให้บริการลูกค้า',
-  '1.3': 'ความสามารถในการตอบคำถามหรือให้คำแนะนำ',
-  '1.4': 'ความถูกต้องในการให้บริการ',
-  '1.5': 'ความรวดเร็วในการให้บริการ',
-  '1.6': 'ความเป็นมืออาชีพและการแก้ไขปัญหาเฉพาะหน้า',
-  '1.7': 'ความประทับใจในการให้บริการ',
-  '1.8': 'รปภ, แม่บ้าน',
-  '2.1': 'ความพร้อมในการให้บริการ',
-  '2.2': 'กระบวนการ/ความเป็นธรรมในการให้บริการ',
-  '2.3': 'ระบบเรียกคิวและจัดการคิว',
-  '2.4': 'ภาระเอกสาร',
-  '3.1': 'ระบบ Core ของธนาคาร',
-  '3.2': 'เครื่องออกบัตรคิว',
-  '3.3': 'ATM / ADM / CDM',
-  '3.4': 'E-KYC / Scanner',
-  '3.5': 'แอพพลิเคชัน MyMo',
-  '3.6': 'เครื่องปรับสมุด',
-  '3.7': 'เครื่องนับเงิน',
-  '4.1': 'รายละเอียดผลิตภัณฑ์',
-  '4.2': 'เงื่อนไขอนุมัติ',
-  '4.3': 'ระยะเวลาอนุมัติ',
-  '4.4': 'ความยืดหยุ่น',
-  '4.5': 'ความเรียบง่ายของข้อมูล',
-  '5.1': 'ความสะอาด',
-  '5.2': 'พื้นที่และความคับคั่ง',
-  '5.3': 'อุณหภูมิ',
-  '5.4': 'โต๊ะรับบริการ',
-  '5.5': 'จุดรอรับบริการ',
-  '5.6': 'แสง',
-  '5.7': 'เสียง',
-  '5.8': 'ห้องน้ำ',
-  '5.9': 'ที่จอดรถ',
-  '5.10': 'ป้าย-สื่อประชาสัมพันธ์',
-  '5.11': 'สิ่งอำนวยความสะดวกอื่นๆ',
-};
-
-const MAIN_CATEGORY_PREFIX: Record<string, string | null> = {
-  all: null,
-  staff: '1.',
-  service: '2.',
-  technology: '3.',
-  products: '4.',
-  environment: '5.',
-  marketConduct: null,
-  other: null,
-};
-
-export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
-  timeFilter,
-  onTimeFilterChange
+export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({ 
+  timeFilter, 
+  onTimeFilterChange 
 }) => {
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
@@ -71,6 +22,7 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>('all');
   const [selectedServiceType, setSelectedServiceType] = useState<string>('all');
 
+  // Get unique values for filters
   const regions = useMemo(() => {
     const unique = Array.from(new Set(mockFeedbackData.map(f => f.branch.region))).sort();
     return ['all', ...unique];
@@ -90,7 +42,7 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
     if (selectedDistrict === 'all') return ['all'];
     const unique = Array.from(new Set(
       mockFeedbackData
-        .filter(f =>
+        .filter(f => 
           (selectedRegion === 'all' || f.branch.region === selectedRegion) &&
           f.branch.district === selectedDistrict
         )
@@ -99,16 +51,74 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
     return ['all', ...unique];
   }, [selectedRegion, selectedDistrict]);
 
+  // Category mappings
   const mainCategories = [
     { value: 'all', label: 'ทั้งหมด' },
-    { value: 'staff', label: 'พนักงานและบุคลากร' },
-    { value: 'service', label: 'ระบบและกระบวนการให้บริการ' },
-    { value: 'technology', label: 'เทคโนโลยีและดิจิทัล' },
-    { value: 'products', label: 'เงื่อนไขและผลิตภัณฑ์' },
-    { value: 'environment', label: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก' },
+    { value: 'staff', label: 'พนักงาน' },
+    { value: 'service', label: 'การบริการ' },
+    { value: 'technology', label: 'เทคโนโลยี' },
+    { value: 'products', label: 'ผลิตภัณฑ์' },
+    { value: 'environment', label: 'สภาพแวดล้อม' },
     { value: 'marketConduct', label: 'การปฏิบัติตลาด' },
     { value: 'other', label: 'อื่นๆ' }
   ];
+
+  const subCategoryMap: { [key: string]: Array<{ value: string; label: string }> } = {
+    staff: [
+      { value: 'staffPoliteness', label: 'ความสุภาพ' },
+      { value: 'staffCare', label: 'การดูแลเอาใจใส่' },
+      { value: 'staffConsultation', label: 'การให้คำปรึกษา' },
+      { value: 'staffAccuracy', label: 'ความถูกต้อง' },
+      { value: 'staffSpeed', label: 'ความรวดเร็ว' },
+      { value: 'staffProfessionalism', label: 'ความเป็นมืออาชีพ' },
+      { value: 'staffImpression', label: 'ความประทับใจ' },
+      { value: 'staffSecurity', label: 'ความปลอดภัย' }
+    ],
+    service: [
+      { value: 'serviceReadiness', label: 'ความพร้อม' },
+      { value: 'serviceProcess', label: 'กระบวนการ' },
+      { value: 'serviceQueue', label: 'ระบบคิว' },
+      { value: 'serviceDocuments', label: 'เอกสาร' }
+    ],
+    technology: [
+      { value: 'techCore', label: 'ระบบ Core' },
+      { value: 'techQueue', label: 'ระบบคิว' },
+      { value: 'techATM', label: 'ATM' },
+      { value: 'techKYC', label: 'KYC' },
+      { value: 'techApp', label: 'แอปพลิเคชัน' },
+      { value: 'techBookUpdate', label: 'ปรับปรุงสมุด' },
+      { value: 'techCashCounter', label: 'เครื่องนับเงิน' }
+    ],
+    products: [
+      { value: 'productDetails', label: 'รายละเอียด' },
+      { value: 'productConditions', label: 'เงื่อนไข' },
+      { value: 'productApprovalTime', label: 'เวลาอนุมัติ' },
+      { value: 'productFlexibility', label: 'ความยืดหยุ่น' },
+      { value: 'productSimplicity', label: 'ความง่าย' }
+    ],
+    environment: [
+      { value: 'envCleanliness', label: 'ความสะอาด' },
+      { value: 'envSpace', label: 'พื้นที่' },
+      { value: 'envTemperature', label: 'อุณหภูมิ' },
+      { value: 'envDesk', label: 'โต๊ะทำงาน' },
+      { value: 'envWaitingArea', label: 'พื้นที่รอ' },
+      { value: 'envLighting', label: 'แสงสวาง' },
+      { value: 'envSound', label: 'เสียงรบกวน' },
+      { value: 'envRestroom', label: 'ห้องน้ำ' },
+      { value: 'envParking', label: 'ที่จอดรถ' },
+      { value: 'envSignage', label: 'ป้ายบอกทาง' },
+      { value: 'envOtherFacilities', label: 'สิ่งอำนวยความสะดวกอื่นๆ' }
+    ],
+    marketConduct: [
+      { value: 'conductNoDeception', label: 'ไม่หลอกลวง' },
+      { value: 'conductNoAdvantage', label: 'ไม่เอาเปรียบ' },
+      { value: 'conductNoForcing', label: 'ไม่บังคับ' },
+      { value: 'conductNoDisturbance', label: 'ไม่รบกวน' }
+    ],
+    other: [
+      { value: 'otherImpression', label: 'ความประทับใจโดยรวม' }
+    ]
+  };
 
   const serviceTypes = [
     'ทั้งหมด',
@@ -118,72 +128,92 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
     'อื่นๆ'
   ];
 
+  // Time period options
+  const timePeriods = [
+    { value: 'monthly', label: 'รายเดือน' },
+    { value: 'quarterly', label: 'ไตรมาส' },
+    { value: 'custom', label: 'กำหนดเอง' }
+  ];
+
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState('monthly');
+
+  // Filter feedback data - only negative sentiments
   const filteredComplaints = useMemo(() => {
-    const prefix = MAIN_CATEGORY_PREFIX[selectedMainCategory] ?? null;
+    return mockFeedbackData.filter(feedback => {
+      const hasNegative = Object.values(feedback.sentiment).some(s => s === -1);
+      if (!hasNegative) return false;
 
-    return mockFeedbackData
-      .filter((feedback: FeedbackEntry) => {
-        if (selectedRegion !== 'all' && feedback.branch.region !== selectedRegion) return false;
-        if (selectedDistrict !== 'all' && feedback.branch.district !== selectedDistrict) return false;
-        if (selectedBranch !== 'all' && feedback.branch.branch !== selectedBranch) return false;
+      if (selectedRegion !== 'all' && feedback.branch.region !== selectedRegion) return false;
+      if (selectedDistrict !== 'all' && feedback.branch.district !== selectedDistrict) return false;
+      if (selectedBranch !== 'all' && feedback.branch.branch !== selectedBranch) return false;
 
-        if (selectedServiceType !== 'all' && selectedServiceType !== 'ทั้งหมด' && feedback.serviceType !== selectedServiceType) {
-          return false;
-        }
+      if (selectedServiceType !== 'all' && selectedServiceType !== 'ทั้งหมด' && feedback.serviceType !== selectedServiceType) return false;
 
-        if (prefix) {
-          const tags = feedback.commentTags || [];
-          if (!tags.some(code => code.startsWith(prefix))) return false;
-        }
+      if (selectedMainCategory !== 'all') {
+        const categoryValue = feedback.sentiment[selectedMainCategory as keyof typeof feedback.sentiment];
+        if (categoryValue !== -1) return false;
+      }
 
-        return true;
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      return true;
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [selectedRegion, selectedDistrict, selectedBranch, selectedMainCategory, selectedServiceType]);
+
+  // Helper to extract detailed negative sentiments
+  const getDetailedSentiments = (feedback: FeedbackEntry) => {
+    const results: Array<{ category: string; subcategory: string; sentiment: number }> = [];
+    Object.entries(feedback.detailedSentiment).forEach(([key, value]) => {
+      if (value === -1) {
+        const mainCat = mainCategories.find(cat => 
+          subCategoryMap[cat.value]?.some(sub => sub.value === key)
+        );
+        const subCat = subCategoryMap[mainCat?.value || '']?.find(sub => sub.value === key);
+        if (mainCat && subCat) {
+          results.push({
+            category: mainCat.label,
+            subcategory: subCat.label,
+            sentiment: value
+          });
+        }
+      }
+    });
+    return results;
+  };
 
   return (
     <div className="space-y-6 max-w-full">
+      {/* Header */}
       <div className="flex flex-col space-y-2">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-foreground">ข้อร้องเรียนลูกค้า</h1>
-          <TimeFilter value={timeFilter} onChange={onTimeFilterChange} />
+          <TimeFilter
+            value={timeFilter}
+            onChange={onTimeFilterChange}
+          />
         </div>
         <p className="text-muted-foreground">รายงานข้อร้องเรียนสำคัญจากลูกค้า</p>
       </div>
 
-      <Card className="border rounded-2xl shadow-none">
+      {/* Filters */}
+      <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">ตัวกรองข้อมูล</CardTitle>
+          <CardTitle>ตัวกรองข้อมูล</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">ภาค</label>
-              <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+              <label className="text-sm font-medium">เขต/ภาค</label>
+              <Select value={selectedRegion} onValueChange={(value) => {
+                setSelectedRegion(value);
+                setSelectedDistrict('all');
+                setSelectedBranch('all');
+              }}>
                 <SelectTrigger>
                   <SelectValue placeholder="เลือกภาค" />
                 </SelectTrigger>
                 <SelectContent>
-                  {regions.map((region) => (
-                    <SelectItem key={region} value={region}>
-                      {region === 'all' ? 'ทั้งหมด' : region}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">จังหวัด</label>
-              <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกจังหวัด" />
-                </SelectTrigger>
-                <SelectContent>
-                  {districts.map((district) => (
-                    <SelectItem key={district} value={district}>
-                      {district === 'all' ? 'ทั้งหมด' : district}
-                    </SelectItem>
+                  <SelectItem value="all">ทั้งหมด</SelectItem>
+                  {regions.filter(r => r !== 'all').map(region => (
+                    <SelectItem key={region} value={region}>{region}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -196,9 +226,25 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
                   <SelectValue placeholder="เลือกสาขา" />
                 </SelectTrigger>
                 <SelectContent>
-                  {branches.map((branch) => (
+                  {branches.map(branch => (
                     <SelectItem key={branch} value={branch}>
                       {branch === 'all' ? 'ทั้งหมด' : branch}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">ประเภทเวลา</label>
+              <Select value={selectedTimePeriod} onValueChange={setSelectedTimePeriod}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {timePeriods.map(period => (
+                    <SelectItem key={period.value} value={period.value}>
+                      {period.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -212,25 +258,9 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
                   <SelectValue placeholder="เลือกหมวดหมู่" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mainCategories.map((category) => (
+                  {mainCategories.map(category => (
                     <SelectItem key={category.value} value={category.value}>
                       {category.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">ประเภทบริการ</label>
-              <Select value={selectedServiceType} onValueChange={setSelectedServiceType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกประเภทบริการ" />
-                </SelectTrigger>
-                <SelectContent>
-                  {serviceTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -240,51 +270,53 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
         </CardContent>
       </Card>
 
-      <Card className="border rounded-2xl shadow-none">
+      {/* Complaints List (เหลือส่วนนี้ไว้เท่านั้น) */}
+      <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">
-            ข้อร้องเรียน ({filteredComplaints.length} รายการ)
+          <CardTitle className="flex items-center gap-2">
+            📋 รายการข้อร้องเรียน ({filteredComplaints.length} รายการ)
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {filteredComplaints.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                ไม่พบข้อร้องเรียนที่ตรงกับเงื่อนไขที่เลือก
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {filteredComplaints.map((complaint) => {
+              const detailedSentiments = getDetailedSentiments(complaint);
+              return (
+                <Card key={complaint.id} className="border-l-4 border-l-destructive">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      <span className="text-xl">⚠️</span>
+                      <div className="flex-1">
+                        <div className="flex flex-wrap gap-4 mb-2 text-sm text-muted-foreground">
+                          <span>📅 {complaint.date}</span>
+                          <span>🏢 {complaint.branch.branch}</span>
+                          <span>🔧 {complaint.serviceType}</span>
+                        </div>
+                        <p className="text-foreground leading-relaxed mb-3">
+                          {complaint.comment}
+                        </p>
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">หมวดหมู่:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {detailedSentiments.map((item, index) => (
+                              <Badge key={index} variant="destructive" className="text-xs">
+                                {item.category}: {item.subcategory}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+
+            {filteredComplaints.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">
+                <p className="text-lg">ไม่พบข้อร้องเรียนที่ตรงกับเงื่อนไขที่เลือก</p>
+                <p className="text-sm mt-2">ลองปรับเปลี่ยนตัวกรองเพื่อดูข้อมูลเพิ่มเติม</p>
               </div>
-            ) : (
-              filteredComplaints.map((complaint) => (
-                <div key={complaint.id} className="border rounded-lg p-4 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium">{complaint.branch.branch}</h3>
-                        <Badge variant="outline">{complaint.serviceType}</Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {complaint.branch.region} - {complaint.branch.district}
-                      </p>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {new Date(complaint.date).toLocaleDateString('th-TH')}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <p className="text-sm">{complaint.comment}</p>
-                    
-                    {complaint.commentTags && complaint.commentTags.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {complaint.commentTags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {COMMENT_TAG_LABELS[tag] || tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
             )}
           </div>
         </CardContent>
