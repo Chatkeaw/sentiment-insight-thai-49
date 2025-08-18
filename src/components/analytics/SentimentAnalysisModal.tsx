@@ -17,6 +17,8 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
   onClose,
   onViewFeedback,
 }) => {
+  const navigate = useNavigate();
+
   // Mock data for 6 months trend
   const trendData = [
     { month: 'ม.ค. 67', positive: 232, negative: 78 },
@@ -75,10 +77,9 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
   ];
 
   const handleViewFeedback = (region?: string) => {
-    if (onViewFeedback) {
-      onViewFeedback(region);
-    }
     onClose();
+    // Navigate to feedback page with region filter
+    navigate('/feedback', { state: { selectedRegion: region } });
   };
 
   return (
