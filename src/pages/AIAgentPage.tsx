@@ -113,15 +113,19 @@ export const AIAgentPage: React.FC = () => {
                 className={`flex gap-3 ${message.type === 'user' ? 'flex-row-reverse' : ''}`}
               >
                 <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                  message.type === 'user' ? 'bg-pink-primary text-white' : 'bg-gray-200'
-                }`}>
+                  message.type === 'user' ? 'text-white' : 'bg-gray-200'
+                }`} style={{
+                  backgroundColor: message.type === 'user' ? '#F13596' : undefined
+                }}>
                   {message.type === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                 </div>
                 <div className={`max-w-[80%] p-3 rounded-lg ${
                   message.type === 'user' 
-                    ? 'bg-pink-primary text-white ml-auto' 
+                    ? 'text-white ml-auto' 
                     : 'bg-white border shadow-sm'
-                }`}>
+                }`} style={{
+                  backgroundColor: message.type === 'user' ? '#F13596' : undefined
+                }}>
                   <p className="text-sm leading-relaxed">{message.content}</p>
                   <div className={`text-xs mt-1 ${
                     message.type === 'user' ? 'text-pink-100' : 'text-gray-500'
@@ -172,12 +176,12 @@ export const AIAgentPage: React.FC = () => {
                 </div>
               )}
               
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Textarea
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   placeholder="พิมพ์คำถามของคุณที่นี่..."
-                  className="min-h-[80px] resize-none pr-4"
+                  className="min-h-[80px] resize-none flex-1"
                   onKeyPress={handleKeyPress}
                   onFocus={handleInputFocus}
                   onBlur={handleInputBlur}
@@ -186,11 +190,25 @@ export const AIAgentPage: React.FC = () => {
                 <Button
                   onClick={handleSendMessage}
                   disabled={!inputMessage.trim() || isLoading}
-                  className="px-6 bg-pink-primary hover:bg-pink-deep"
+                  className="px-8 py-6 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  style={{
+                    backgroundColor: '#F13596',
+                    borderColor: '#F13596'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.backgroundColor = '#D12B7E';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.backgroundColor = '#F13596';
+                    }
+                  }}
                   size="lg"
                 >
-                  <Send className="w-4 h-4" />
-                  <span className="ml-2">ส่ง</span>
+                  <Send className="w-5 h-5" />
+                  <span className="ml-2 text-base">ส่งข้อความ</span>
                 </Button>
               </div>
             </div>
