@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,9 +55,9 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
   // subCategories dynamic ตาม topic ที่เลือก
   const subCategories = useMemo(() => {
     if (selectedTopic === 'all') return [{ value: 'all', label: 'ทั้งหมด' }];
-    return [{ value: 'all', label: 'ทั้งหมด' }, ...(subCategoryMap[selectedTopic] || [])];
+    return [{ value: 'all', label: 'ทั้งหมด' }, ...(topicCategoryMap[selectedTopic] || [])];
   }, [selectedTopic]);
-  
+
   // Mock data for 6 months trend
   const trendData = [
     { month: 'ม.ค. 68', positive: 232, negative: 78 },
@@ -134,10 +133,9 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4">
-          // DialogTitle
           <DialogTitle className="text-xl font-semibold">
             ประเภท / หมวดหมู่ ความคิดเห็น :{" "}
-            {topics.find(t => t.value === selectedTopic)?.label || 'ทั้งหมด'} /{" "}
+            {evaluationTopics.find(t => t.value === selectedTopic)?.label || 'ทั้งหมด'} /{" "}
             {subCategories.find(s => s.value === selectedSubCategory)?.label || 'ทั้งหมด'}
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
