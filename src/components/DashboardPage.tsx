@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
-import { SentimentAnalysisModal } from "./SentimentAnalysisModal";
+import { SentimentAnalysisModal } from "./analytics/SentimentAnalysisModal";
 
 interface DashboardPageProps {
   onPageChange?: (page: string) => void;
