@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
@@ -9,13 +10,11 @@ import { ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
 interface SentimentAnalysisModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onViewFeedback?: (region?: string) => void;
 }
 
 export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
   isOpen,
   onClose,
-  onViewFeedback
 }) => {
   // Mock data for 6 months trend
   const trendData = [
