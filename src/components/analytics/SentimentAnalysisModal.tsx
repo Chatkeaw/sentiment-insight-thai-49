@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -77,9 +78,13 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
   ];
 
   const handleViewFeedback = (region?: string) => {
-    console.log(`Navigate to feedback page with region filter: ${region}`);
-    navigate('/feedback');
     onClose();
+    navigate('/');
+    // Use setTimeout to ensure navigation completes before setting the page
+    setTimeout(() => {
+      const event = new CustomEvent('changePage', { detail: 'feedback' });
+      window.dispatchEvent(event);
+    }, 100);
   };
 
   return (
