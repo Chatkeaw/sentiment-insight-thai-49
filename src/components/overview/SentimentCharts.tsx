@@ -44,14 +44,18 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
   };
 
   const handleSentimentAnalysisClick = () => {
-    console.log('Opening sentiment analysis modal'); // Debug log
+    console.log('Opening sentiment analysis modal');
     setIsAnalysisModalOpen(true);
   };
 
+  const handleCloseModal = () => {
+    console.log('Closing sentiment analysis modal');
+    setIsAnalysisModalOpen(false);
+  };
+
   const handleViewFeedback = (region?: string) => {
-    // This would navigate to the feedback page with region filter
     console.log(`Navigate to feedback page with region filter: ${region}`);
-    // In a real implementation, this would use navigation with filters
+    setIsAnalysisModalOpen(false);
   };
 
   return (
@@ -196,17 +200,12 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
         </CardContent>
       </Card>
 
-      {/* Sentiment Analysis Modal - Make sure it's rendered */}
-      {isAnalysisModalOpen && (
-        <SentimentAnalysisModal
-          isOpen={isAnalysisModalOpen}
-          onClose={() => {
-            console.log('Closing sentiment analysis modal'); // Debug log
-            setIsAnalysisModalOpen(false);
-          }}
-          onViewFeedback={handleViewFeedback}
-        />
-      )}
+      {/* Sentiment Analysis Modal */}
+      <SentimentAnalysisModal
+        isOpen={isAnalysisModalOpen}
+        onClose={handleCloseModal}
+        onViewFeedback={handleViewFeedback}
+      />
     </div>
   );
 };
