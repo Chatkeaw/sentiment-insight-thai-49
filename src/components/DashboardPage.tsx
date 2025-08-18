@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import { SatisfactionDetailModal } from './SatisfactionDetailModal';
+import { SentimentAnalysisModal } from './analytics/SentimentAnalysisModal';
 
 interface DashboardPageProps {
   onPageChange?: (page: string) => void;
@@ -26,6 +28,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState('');
   const [selectedScore, setSelectedScore] = useState(0);
+
+  // State for sentiment analysis modal
+  const [isSentimentModalOpen, setIsSentimentModalOpen] = useState(false);
 
   // State for customer feedback section
   const [selectedSentimentType, setSelectedSentimentType] = useState<'positive' | 'negative'>('positive');
@@ -201,15 +206,27 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   };
 
   const handleMainCategoryDetails = () => {
-    console.log("อัพเดตเพิ่มเติมภายหลัง - หัวข้อใหญ่");
+    console.log("Opening main category sentiment analysis modal");
+    setIsSentimentModalOpen(true);
   };
 
   const handleSubCategoryDetails = () => {
-    console.log("อัพเดตเพิ่มเติมภายหลัง - หมวดหมู่ย่อย");
+    console.log("Opening sub category sentiment analysis modal");
+    setIsSentimentModalOpen(true);
   };
 
   const handleRegionalDetails = () => {
     console.log("อัพเดตเพิ่มเติมภายหลัง - รายพื้นที่");
+  };
+
+  const handleCloseSentimentModal = () => {
+    console.log('Closing sentiment analysis modal');
+    setIsSentimentModalOpen(false);
+  };
+
+  const handleViewFeedback = (region?: string) => {
+    console.log(`Navigate to feedback page with region filter: ${region}`);
+    setIsSentimentModalOpen(false);
   };
 
   return (
@@ -654,6 +671,13 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
         onClose={() => setIsModalOpen(false)}
         topic={selectedTopic}
         score={selectedScore}
+      />
+
+      {/* Sentiment Analysis Modal */}
+      <SentimentAnalysisModal
+        isOpen={isSentimentModalOpen}
+        onClose={handleCloseSentimentModal}
+        onViewFeedback={handleViewFeedback}
       />
     </div>
   );
