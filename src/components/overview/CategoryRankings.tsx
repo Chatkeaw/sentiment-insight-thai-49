@@ -1,8 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { SentimentAnalysisModal } from '@/components/analytics/SentimentAnalysisModal';
+
+interface CategoryData {
+  name: string;
+  category?: string;
+  positive: number;
+  negative: number;
+}
 
 export const CategoryRankings: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryData | null>(null);
+  const [modalType, setModalType] = useState<'main' | 'sub'>('main');
+
   // Mock data for category types (main categories)
   const categoryTypes = [
     { name: 'พนักงานและบุคลากร', positive: 245, negative: 89 },
@@ -28,6 +41,22 @@ export const CategoryRankings: React.FC = () => {
     { name: 'ระยะเวลาอนุมัติ', category: 'เงื่อนไขและผลิตภัณฑ์', positive: 34, negative: 28 },
   ].sort((a, b) => b.negative - a.negative).slice(0, 10);
 
+  const handleViewDetails = (category: CategoryData, type: 'main' | 'sub') => {
+    setSelectedCategory(category);
+    setModalType(type);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedCategory(null);
+  };
+
+  const handleViewFeedback = (region?: string) => {
+    console.log(`Navigate to feedback page with region filter: ${region}`);
+    // In a real implementation, this would use navigation with filters
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-foreground">หมวดหมู่ที่ถูกกล่าวถึง และ ทัศนคติ</h2>
@@ -51,15 +80,25 @@ export const CategoryRankings: React.FC = () => {
                     </div>
                     <span className="font-medium text-sm">{item.name}</span>
                   </div>
-                  <div className="flex gap-4 text-sm">
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      <span className="font-medium">{item.positive}</span>
+                  <div className="flex items-center gap-4">
+                    <div className="flex gap-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span className="font-medium">{item.positive}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                        <span className="font-medium">{item.negative}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <span className="font-medium">{item.negative}</span>
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs ml-2"
+                      onClick={() => handleViewDetails(item, 'main')}
+                    >
+                      ดูรายละเอียด
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -88,15 +127,25 @@ export const CategoryRankings: React.FC = () => {
                       <div className="text-xs text-muted-foreground">{item.category}</div>
                     </div>
                   </div>
-                  <div className="flex gap-4 text-sm">
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      <span className="font-medium">{item.positive}</span>
+                  <div className="flex items-center gap-4">
+                    <div className="flex gap-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span className="font-medium">{item.positive}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                        <span className="font-medium">{item.negative}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <span className="font-medium">{item.negative}</span>
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs ml-2"
+                      onClick={() => handleViewDetails(item, 'sub')}
+                    >
+                      ดูรายละเอียด
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -104,6 +153,15 @@ export const CategoryRankings: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Sentiment Analysis Modal */}
+      {isModalOpen && selectedCategory && (
+        <SentimentAnalysisModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onViewFeedback={handleViewFeedback}
+        />
+      )}
     </div>
   );
 };
