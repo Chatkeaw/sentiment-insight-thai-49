@@ -24,58 +24,59 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
 
   // Assessment topics
   const assessmentTopics = [
-    { value: 'staff', label: 'พนักงานและบุคลากร' },
-    { value: 'service', label: 'ระบบและกระบวนการให้บริการ' },
-    { value: 'technology', label: 'เทคโนโลยีและดิจิทัล' },
-    { value: 'products', label: 'เงื่อนไขและผลิตภัณฑ์' },
-    { value: 'environment', label: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก' },
-    { value: 'market-conduct', label: 'Market Conduct' },
-    { value: 'others', label: 'อื่นๆ' }
+    { value: 'staff', label: '1 พนักงานและบุคลากร (8 ข้อ)' },
+    { value: 'service', label: '2 ระบบและกระบวนการให้บริการ (4 ข้อ)' },
+    { value: 'technology', label: '3 เทคโนโลยีและดิจิทัล (7 ข้อ)' },
+    { value: 'products', label: '4 เงื่อนไขและผลิตภัณฑ์ (5 ข้อ)' },
+    { value: 'environment', label: '5 สภาพแวดล้อมและสิ่งอำนวยความสะดวก (11 ข้อ)' }
   ];
 
   // Categories for each topic
   const categoriesByTopic: Record<string, { value: string; label: string }[]> = {
     'staff': [
-      { value: 'politeness', label: 'ความสุภาพ' },
-      { value: 'care', label: 'ความใส่ใจ' },
-      { value: 'consultation', label: 'การให้คำปรึกษา' },
-      { value: 'accuracy', label: 'ความถูกต้อง' },
-      { value: 'speed', label: 'ความรวดเร็ว' }
+      { value: 'politeness', label: '1.1 ความสุภาพและมารยาทของพนักงาน' },
+      { value: 'care', label: '1.2 ความเอาใจใส่ในการให้บริการลูกค้า' },
+      { value: 'consultation', label: '1.3 ความสามารถในการตอบคำถามหรือให้คำแนะนำ' },
+      { value: 'accuracy', label: '1.4 ความถูกต้องในการให้บริการ' },
+      { value: 'speed', label: '1.5 ความรวดเร็วในการให้บริการ' },
+      { value: 'professionalism', label: '1.6 ความเป็นมืออาชีพและการแก้ไขปัญหาเฉพาะหน้า' },
+      { value: 'impression', label: '1.7 ความประทับใจในการให้บริการ' },
+      { value: 'security', label: '1.8 รปภ, แม่บ้าน' }
     ],
     'service': [
-      { value: 'readiness', label: 'ความพร้อม' },
-      { value: 'process', label: 'กระบวนการ' },
-      { value: 'queue', label: 'ระบบคิว' },
-      { value: 'documents', label: 'เอกสาร' }
+      { value: 'readiness', label: '2.1 ความพร้อมในการให้บริการ' },
+      { value: 'process', label: '2.2 กระบวนการให้บริการ ความเป็นธรรมให้บริการ' },
+      { value: 'queue', label: '2.3 ระบบเรียกคิวและจัดการคิว' },
+      { value: 'documents', label: '2.4 ภาระเอกสาร' }
     ],
     'technology': [
-      { value: 'core-system', label: 'ระบบหลัก' },
-      { value: 'queue-system', label: 'ระบบคิว' },
-      { value: 'atm', label: 'เครื่อง ATM' },
-      { value: 'kyc', label: 'ระบบ KYC' },
-      { value: 'mobile-app', label: 'แอปพลิเคชัน' }
+      { value: 'core-system', label: '3.1 ระบบ Core ของธนาคาร' },
+      { value: 'queue-machine', label: '3.2 เครื่องออกบัตรคิว' },
+      { value: 'atm', label: '3.3 ATM ADM CDM' },
+      { value: 'kyc', label: '3.4 E-KYC Scanner' },
+      { value: 'mobile-app', label: '3.5 แอพพลิเคชั่น MyMo' },
+      { value: 'book-update', label: '3.6 เครื่องปรับสมุด' },
+      { value: 'cash-counter', label: '3.7 เครื่องนับเงิน' }
     ],
     'products': [
-      { value: 'details', label: 'รายละเอียดผลิตภัณฑ์' },
-      { value: 'conditions', label: 'เงื่อนไข' },
-      { value: 'approval-time', label: 'เวลาอนุมัติ' },
-      { value: 'flexibility', label: 'ความยืดหยุ่น' }
+      { value: 'details', label: '4.1 รายละเอียด ผลิตภัณฑ์' },
+      { value: 'conditions', label: '4.2 เงื่อนไขอนุมัติ' },
+      { value: 'approval-time', label: '4.3 ระยะเวลาอนุมัติ' },
+      { value: 'flexibility', label: '4.4 ความยืดหยุ่น' },
+      { value: 'simplicity', label: '4.5 ความเรียบง่ายข้อมูล' }
     ],
     'environment': [
-      { value: 'cleanliness', label: 'ความสะอาด' },
-      { value: 'space', label: 'พื้นที่' },
-      { value: 'temperature', label: 'อุณหภูมิ' },
-      { value: 'facilities', label: 'สิ่งอำนวยความสะดวก' }
-    ],
-    'market-conduct': [
-      { value: 'no-deception', label: 'ไม่หลอกลวง' },
-      { value: 'no-advantage', label: 'ไม่เอาเปรียบ' },
-      { value: 'no-forcing', label: 'ไม่บังคับ' },
-      { value: 'no-disturbance', label: 'ไม่รบกวน' }
-    ],
-    'others': [
-      { value: 'impression', label: 'ความประทับใจ' },
-      { value: 'overall', label: 'โดยรวม' }
+      { value: 'cleanliness', label: '5.1 ความสะอาด' },
+      { value: 'space', label: '5.2 พื้นที่และความคับคั่ง' },
+      { value: 'temperature', label: '5.3 อุณหภูมิ' },
+      { value: 'desk', label: '5.4 โต๊ะรับบริการ' },
+      { value: 'waiting-area', label: '5.5 จุดรอรับบริการ' },
+      { value: 'lighting', label: '5.6 แสง' },
+      { value: 'sound', label: '5.7 เสียง' },
+      { value: 'restroom', label: '5.8 ห้องน้ำ' },
+      { value: 'parking', label: '5.9 ที่จอดรถ' },
+      { value: 'signage', label: '5.10 ป้าย-สื่อประชาสัมพันธ์' },
+      { value: 'other-facilities', label: '5.11 สิ่งอำนวยความสะดวกอื่นๆ' }
     ]
   };
 
