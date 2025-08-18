@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface SentimentAnalysisModalProps {
   isOpen: boolean;
@@ -15,56 +16,17 @@ interface SentimentAnalysisModalProps {
 export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
   isOpen,
   onClose,
-  onViewFeedback
+  onViewFeedback,
 }) => {
-  // ตัวกรอง
-  const [selectedTopic, setSelectedTopic] = React.useState<string>('all');
-  const [selectedSubCategory, setSelectedSubCategory] = React.useState<string>('all');
-
-  const evaluationTopics = [
-    { value: 'all', label: 'ทั้งหมด' },
-    { value: 'staff', label: 'พนักงานและบุคลากร' },
-    { value: 'service', label: 'ระบบและกระบวนการให้บริการ' },
-    { value: 'technology', label: 'เทคโนโลยีและดิจิทัล' },
-    { value: 'products', label: 'เงื่อนไขและผลิตภัณฑ์' },
-    { value: 'environment', label: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก' },
-    { value: 'marketConduct', label: 'Market Conduct' },
-    { value: 'other', label: 'อื่นๆ' }
-  ];
-
-  const topicCategoryMap: { [key: string]: Array<{ value: string; label: string }> } = {
-    staff: [
-      { value: 'care', label: 'การดูแลเอาใจใส่' },
-      { value: 'advice', label: 'การตอบคำถามและให้คำแนะนำ' },
-      { value: 'speed', label: 'ความรวดเร็วในการให้บริการ' },
-      { value: 'accuracy', label: 'ความถูกต้องในการทำธุรกรรม' }
-    ],
-    service: [
-      { value: 'readiness', label: 'ความพร้อมของเครื่องมือให้บริการ' }
-    ],
-    environment: [
-      { value: 'branchEnv', label: 'สภาพแวดล้อมของสาขา' }
-    ],
-    other: [
-      { value: 'satisfaction', label: 'ความพึงพอใจในการเข้าใช้บริการ' },
-      { value: 'other', label: 'อื่น ๆ' }
-    ]
-    // สามารถเพิ่มหมวดหมู่ของหัวข้ออื่น ๆ ได้ทีหลัง
-  };
-
-  // subCategories dynamic ตาม topic ที่เลือก
-  const subCategories = useMemo(() => {
-    if (selectedTopic === 'all') return [{ value: 'all', label: 'ทั้งหมด' }];
-    return [{ value: 'all', label: 'ทั้งหมด' }, ...(topicCategoryMap[selectedTopic] || [])];
-  }, [selectedTopic]);
+  const navigate = useNavigate();
 
   // Mock data for 6 months trend
   const trendData = [
-    { month: 'ม.ค. 68', positive: 232, negative: 78 },
-    { month: 'ก.พ. 68', positive: 267, negative: 102 },
-    { month: 'มี.ค. 68', positive: 245, negative: 89 },
-    { month: 'เม.ย. 68', positive: 201, negative: 76 },
-    { month: 'พ.ค. 68', positive: 198, negative: 65 },
+    { month: 'ม.ค. 67', positive: 232, negative: 78 },
+    { month: 'ก.พ. 67', positive: 267, negative: 102 },
+    { month: 'มี.ค. 67', positive: 245, negative: 89 },
+    { month: 'เม.ย. 67', positive: 201, negative: 76 },
+    { month: 'พ.ค. 67', positive: 198, negative: 65 },
     { month: 'มิ.ย. 68', positive: 312, negative: 149 }
   ];
 
@@ -95,38 +57,34 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
 
   // Regional breakdown data (18 regions)
   const regionalData = [
-    { region: 'ภาค 1', total: 78, positive: 41, negative: 15, topic: 'staff', subCategory: 'care' },
-    { region: 'ภาค 2', total: 79, positive: 50, negative: 18, topic: 'staff', subCategory: 'advice' },
-    { region: 'ภาค 3', total: 86, positive: 48, negative: 30, topic: 'service', subCategory: 'readiness' },
-    { region: 'ภาค 4', total: 81, positive: 50, negative: 15, topic: 'environment', subCategory: 'branchEnv' },
-    { region: 'ภาค 5', total: 71, positive: 43, negative: 22, topic: 'other', subCategory: 'satisfaction' },
-    { region: 'ภาค 6', total: 65, positive: 38, negative: 15, topic: 'staff', subCategory: 'speed' },
-    { region: 'ภาค 7', total: 73, positive: 45, negative: 14, topic: 'staff', subCategory: 'accuracy' },
-    { region: 'ภาค 8', total: 69, positive: 41, negative: 15, topic: 'service', subCategory: 'readiness' },
-    { region: 'ภาค 9', total: 82, positive: 52, negative: 12, topic: 'technology', subCategory: 'readiness' },
-    { region: 'ภาค 10', total: 77, positive: 44, negative: 14, topic: 'products', subCategory: 'readiness' },
-    { region: 'ภาค 11', total: 84, positive: 49, negative: 14, topic: 'environment', subCategory: 'branchEnv' },
-    { region: 'ภาค 12', total: 76, positive: 46, negative: 14, topic: 'marketConduct', subCategory: 'other' },
-    { region: 'ภาค 13', total: 88, positive: 53, negative: 15, topic: 'staff', subCategory: 'care' },
-    { region: 'ภาค 14', total: 74, positive: 42, negative: 15, topic: 'service', subCategory: 'readiness' },
-    { region: 'ภาค 15', total: 80, positive: 48, negative: 14, topic: 'technology', subCategory: 'readiness' },
-    { region: 'ภาค 16', total: 75, positive: 44, negative: 15, topic: 'products', subCategory: 'readiness' },
-    { region: 'ภาค 17', total: 83, positive: 51, negative: 13, topic: 'environment', subCategory: 'branchEnv' },
-    { region: 'ภาค 18', total: 72, positive: 43, negative: 14, topic: 'other', subCategory: 'other' },
+    { region: 'ภาค 1', total: 78, positive: 41, negative: 15 },
+    { region: 'ภาค 2', total: 79, positive: 50, negative: 18 },
+    { region: 'ภาค 3', total: 86, positive: 48, negative: 30 },
+    { region: 'ภาค 4', total: 81, positive: 50, negative: 15 },
+    { region: 'ภาค 5', total: 71, positive: 43, negative: 22 },
+    { region: 'ภาค 6', total: 65, positive: 38, negative: 15 },
+    { region: 'ภาค 7', total: 73, positive: 45, negative: 14 },
+    { region: 'ภาค 8', total: 69, positive: 41, negative: 15 },
+    { region: 'ภาค 9', total: 82, positive: 52, negative: 12 },
+    { region: 'ภาค 10', total: 77, positive: 44, negative: 14 },
+    { region: 'ภาค 11', total: 84, positive: 49, negative: 14 },
+    { region: 'ภาค 12', total: 76, positive: 46, negative: 14 },
+    { region: 'ภาค 13', total: 88, positive: 53, negative: 15 },
+    { region: 'ภาค 14', total: 74, positive: 42, negative: 15 },
+    { region: 'ภาค 15', total: 80, positive: 48, negative: 14 },
+    { region: 'ภาค 16', total: 75, positive: 44, negative: 15 },
+    { region: 'ภาค 17', total: 83, positive: 51, negative: 13 },
+    { region: 'ภาค 18', total: 72, positive: 43, negative: 14 }
   ];
 
-  // Filter regional data ตามตัวเลือก
-  const filteredRegionalData = React.useMemo(() => {
-    return regionalData.filter(d => {
-      if (selectedTopic !== 'all' && d.topic !== selectedTopic) return false;
-      if (selectedSubCategory !== 'all' && d.subCategory !== selectedSubCategory) return false;
-      return true;
-    });
-  }, [selectedTopic, selectedSubCategory]);
-
   const handleViewFeedback = (region?: string) => {
-    if (onViewFeedback) onViewFeedback(region);
     onClose();
+    navigate('/');
+    // Use setTimeout to ensure navigation completes before setting the page
+    setTimeout(() => {
+      const event = new CustomEvent('changePage', { detail: 'feedback' });
+      window.dispatchEvent(event);
+    }, 100);
   };
 
   return (
@@ -134,9 +92,7 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4">
           <DialogTitle className="text-xl font-semibold">
-            ประเภท / หมวดหมู่ ความคิดเห็น :{" "}
-            {evaluationTopics.find(t => t.value === selectedTopic)?.label || 'ทั้งหมด'} /{" "}
-            {subCategories.find(s => s.value === selectedSubCategory)?.label || 'ทั้งหมด'}
+            ประเภท / หมวดหมู่ ความคิดเห็น : ทั้งหมด
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
             วิเคราะห์ข้อมูลความคิดเห็นของลูกค้าตามหัวข้อและหมวดหมู่ที่เลือก
