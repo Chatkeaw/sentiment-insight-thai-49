@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, Header, Footer, PageBreak } from 'docx';
 
 export const downloadFile = (content: string | Blob, filename: string, type: string) => {
   const blob = content instanceof Blob ? content : new Blob([content], { type });
@@ -71,6 +72,11 @@ export const exportToPDF = async (elementId: string, filename: string, title?: s
     position = 30;
   }
 
+  // Add export date
+  const exportDate = new Date().toLocaleDateString('th-TH');
+  pdf.setFontSize(10);
+  pdf.text(`ส่งออกข้อมูลเมื่อ: ${exportDate}`, 20, 285);
+
   pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
   heightLeft -= pageHeight;
 
@@ -82,6 +88,118 @@ export const exportToPDF = async (elementId: string, filename: string, title?: s
   }
 
   pdf.save(`${filename}.pdf`);
+};
+
+export const exportToDOCX = async (data: any[], filename: string, title: string, type: 'chart' | 'feedback' | 'table' = 'feedback') => {
+  const exportDate = new Date().toLocaleDateString('th-TH');
+  
+  let children: any[] = [
+    new Paragraph({
+      text: title,
+      heading: HeadingLevel.HEADING_1,
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: `ส่งออกข้อมูลเมื่อ: ${exportDate}`,
+          size: 20,
+        }),
+      ],
+    }),
+    new Paragraph({ text: "" }), // Empty line
+  ];
+
+  if (type === 'feedback') {
+    // Add feedback data as table
+    const tableRows = [
+      new TableRow({
+        children: [
+          new TableCell({ children: [new Paragraph("วันที่")] }),
+          new TableCell({ children: [new Paragraph("สาขา")] }),
+          new TableCell({ children: [new Paragraph("ประเภทบริการ")] }),
+          new TableCell({ children: [new Paragraph("ความคิดเห็น")] }),
+          new TableCell({ children: [new Paragraph("คะแนนรวม")] }),
+        ],
+      }),
+    ];
+
+    data.forEach((item: any) => {
+      tableRows.push(
+        new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph(item['วันที่'] || '')] }),
+            new TableCell({ children: [new Paragraph(item['สาขา'] || '')] }),
+            new TableCell({ children: [new Paragraph(item['ประเภทบริการ'] || '')] }),
+            new TableCell({ children: [new Paragraph(item['ความคิดเห็น'] || '')] }),
+            new TableCell({ children: [new Paragraph(item['คะแนนความพึงพอใจรวม']?.toString() || '')] }),
+          ],
+        })
+      );
+    });
+
+    children.push(
+      new Table({
+        rows: tableRows,
+      })
+    );
+  } else {
+    // Add chart data as simple text
+    data.forEach((item: any) => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `${item['รายการ'] || item.name}: ${item['ค่า'] || item.value} ${item['เปอร์เซ็นต์'] || ''}`,
+              size: 24,
+            }),
+          ],
+        })
+      );
+    });
+  }
+
+  const doc = new Document({
+    sections: [
+      {
+        headers: {
+          default: new Header({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "รายงานข้อมูลลูกค้า",
+                    size: 20,
+                  }),
+                ],
+              }),
+            ],
+          }),
+        },
+        footers: {
+          default: new Footer({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `หน้า {PAGE_NUM} จาก {TOTAL_PAGES} | ส่งออกเมื่อ ${exportDate}`,
+                    size: 18,
+                  }),
+                ],
+              }),
+            ],
+          }),
+        },
+        children,
+      },
+    ],
+  });
+
+  const buffer = await Packer.toBuffer(doc);
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  });
+  
+  downloadFile(blob, `${filename}.docx`, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
 };
 
 const convertToCSV = (data: any[]): string => {
@@ -133,4 +251,15 @@ export const convertFeedbackDataForExport = (feedbackData: any[]) => {
     'อุปกรณ์เครื่องมือ': item.satisfaction?.equipment || '',
     'สภาพแวดล้อม': item.satisfaction?.environment || ''
   }));
+};
+
+// Color management for complaint categories
+export const getComplaintCategoryColor = (category: string, index: number, total: number): string => {
+  if (category === 'Market Conduct' || category.includes('Market') || category.includes('ธรรมาภิบาล')) {
+    return '#DC2626'; // Deep red for Market Conduct
+  }
+  
+  // Generate gradient of red colors for other categories
+  const redShades = ['#EF4444', '#F87171', '#FCA5A5', '#FECACA', '#FEE2E2', '#FEF2F2'];
+  return redShades[index % redShades.length] || '#EF4444';
 };

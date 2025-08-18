@@ -1,184 +1,200 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Download, FileText, FileSpreadsheet, Image, FileDown } from 'lucide-react';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogTrigger 
+} from '@/components/ui/dialog';
+import { Download, FileText, FileSpreadsheet, Image, File } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  exportToCSV as exportCSV, 
-  exportToExcel as exportExcel, 
+  exportToCSV, 
+  exportToExcel, 
   exportChartToPNG, 
-  exportToPDF,
-  convertChartDataForExport,
+  exportToPDF, 
+  exportToDOCX,
+  convertChartDataForExport, 
   convertFeedbackDataForExport 
 } from '@/utils/exportUtils';
 
 interface ExportButtonProps {
-  data?: any;
-  type: 'chart' | 'table' | 'feedback';
-  filename?: string;
-  elementId?: string;
-  chartType?: string;
+  data: any[] | any;
+  type: 'chart' | 'feedback' | 'table';
+  filename: string;
   title?: string;
+  elementId?: string; // Required for chart/PDF exports
+  chartType?: string; // Description of chart type for export
 }
 
-export const ExportButton: React.FC<ExportButtonProps> = ({ 
-  data, 
-  type, 
-  filename = 'export',
+export const ExportButton: React.FC<ExportButtonProps> = ({
+  data,
+  type,
+  filename,
+  title,
   elementId,
   chartType = 'กราฟ',
-  title
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
 
   const prepareDataForExport = () => {
-    if (!data) return [];
-    
-    if (type === 'feedback') {
-      return convertFeedbackDataForExport(data);
-    } else if (type === 'chart') {
-      return convertChartDataForExport(data, chartType);
+    const arrayData = Array.isArray(data) ? data : [data];
+    switch (type) {
+      case 'chart':
+        return convertChartDataForExport(arrayData, chartType);
+      case 'feedback':
+        return convertFeedbackDataForExport(arrayData);
+      default:
+        return arrayData;
     }
-    
-    return Array.isArray(data) ? data : [data];
   };
 
-  const exportToCSV = async () => {
-    setIsExporting(true);
+  const handleExport = async (format: 'csv' | 'excel' | 'png' | 'pdf' | 'docx') => {
     try {
+      setIsExporting(true);
       const exportData = prepareDataForExport();
-      await exportCSV(exportData, filename);
-      
+
+      switch (format) {
+        case 'csv':
+          exportToCSV(exportData, filename);
+          break;
+        case 'excel':
+          exportToExcel(exportData, filename, 'ข้อมูล');
+          break;
+        case 'png':
+          if (!elementId) {
+            throw new Error('Element ID is required for PNG export');
+          }
+          await exportChartToPNG(elementId, filename);
+          break;
+        case 'pdf':
+          if (!elementId) {
+            throw new Error('Element ID is required for PDF export');
+          }
+          await exportToPDF(elementId, filename, title);
+          break;
+        case 'docx':
+          await exportToDOCX(exportData, filename, title || 'รายงานข้อมูล', type);
+          break;
+        default:
+          throw new Error('Unsupported export format');
+      }
+
       toast({
         title: "ส่งออกข้อมูลสำเร็จ",
-        description: `ไฟล์ ${filename}.csv ถูกดาวน์โหลดแล้ว`,
+        description: `ไฟล์ ${filename}.${format} ถูกดาวน์โหลดแล้ว`,
       });
-    } catch (error) {
-      toast({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถส่งออกข้อมูลได้",
-        variant: "destructive"
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const exportToExcel = async () => {
-    setIsExporting(true);
-    try {
-      const exportData = prepareDataForExport();
-      await exportExcel(exportData, filename, 'ข้อมูล');
       
-      toast({
-        title: "ส่งออกข้อมูลสำเร็จ",
-        description: `ไฟล์ ${filename}.xlsx ถูกดาวน์โหลดแล้ว`,
-      });
+      setIsModalOpen(false);
     } catch (error) {
+      console.error('Export error:', error);
       toast({
         title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถส่งออกข้อมูลได้",
-        variant: "destructive"
+        description: "ไม่สามารถส่งออกข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive",
       });
     } finally {
       setIsExporting(false);
     }
   };
 
-  const exportToPNG = async () => {
-    if (!elementId) {
-      toast({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่พบองค์ประกอบที่จะส่งออก",
-        variant: "destructive"
-      });
-      return;
-    }
+  const exportOptions = [
+    {
+      format: 'csv' as const,
+      label: 'CSV',
+      description: 'ไฟล์ข้อมูลที่แยกด้วยเครื่องหมายจุลภาค',
+      icon: FileText,
+      available: type !== 'chart' || false,
+    },
+    {
+      format: 'excel' as const,
+      label: 'Excel (XLSX)',
+      description: 'ไฟล์ Excel สำหรับการวิเคราะห์ข้อมูล',
+      icon: FileSpreadsheet,
+      available: true,
+    },
+    {
+      format: 'png' as const,
+      label: 'PNG',
+      description: 'รูปภาพกราฟความละเอียดสูง',
+      icon: Image,
+      available: type === 'chart' && !!elementId,
+    },
+    {
+      format: 'pdf' as const,
+      label: 'PDF',
+      description: 'เอกสาร PDF พร้อมกราฟและข้อมูล',
+      icon: FileText,
+      available: !!elementId,
+    },
+    {
+      format: 'docx' as const,
+      label: 'Word (DOCX)',
+      description: 'เอกสาร Word สำหรับการแก้ไข',
+      icon: File,
+      available: true,
+    },
+  ];
 
-    setIsExporting(true);
-    try {
-      await exportChartToPNG(elementId, filename);
-      
-      toast({
-        title: "ส่งออกรูปภาพสำเร็จ",
-        description: `ไฟล์ ${filename}.png ถูกดาวน์โหลดแล้ว`,
-      });
-    } catch (error) {
-      toast({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถส่งออกรูปภาพได้",
-        variant: "destructive"
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const exportToPDFFile = async () => {
-    if (!elementId) {
-      toast({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่พบองค์ประกอบที่จะส่งออก",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsExporting(true);
-    try {
-      await exportToPDF(elementId, filename, title);
-      
-      toast({
-        title: "ส่งออก PDF สำเร็จ",
-        description: `ไฟล์ ${filename}.pdf ถูกดาวน์โหลดแล้ว`,
-      });
-    } catch (error) {
-      toast({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถส่งออก PDF ได้",
-        variant: "destructive"
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
+  const availableOptions = exportOptions.filter(option => option.available);
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button 
-          variant="outline" 
+    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
           size="sm"
-          disabled={isExporting}
-          className="gap-2"
+          className="gap-2 hover:bg-primary/10"
         >
           <Download className="w-4 h-4" />
-          {isExporting ? 'กำลังส่งออก...' : 'ส่งออก'}
+          ส่งออก
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        {(type === 'chart' || type === 'table') && elementId && (
-          <>
-            <DropdownMenuItem onClick={exportToPNG}>
-              <Image className="w-4 h-4 mr-2" />
-              ส่งออกเป็นรูปภาพ (PNG)
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={exportToPDFFile}>
-              <FileDown className="w-4 h-4 mr-2" />
-              ส่งออกเป็น PDF
-            </DropdownMenuItem>
-          </>
-        )}
-        <DropdownMenuItem onClick={exportToCSV}>
-          <FileText className="w-4 h-4 mr-2" />
-          ส่งออกเป็น CSV
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={exportToExcel}>
-          <FileSpreadsheet className="w-4 h-4 mr-2" />
-          ส่งออกเป็น Excel
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>เลือกรูปแบบไฟล์</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            เลือกรูปแบบไฟล์ที่ต้องการส่งออกข้อมูล
+          </p>
+          <div className="space-y-2">
+            {availableOptions.map((option) => {
+              const Icon = option.icon;
+              return (
+                <Button
+                  key={option.format}
+                  variant="ghost"
+                  className="w-full justify-start p-4 h-auto"
+                  onClick={() => handleExport(option.format)}
+                  disabled={isExporting}
+                >
+                  <div className="flex items-start gap-3">
+                    <Icon className="w-5 h-5 mt-0.5 text-primary" />
+                    <div className="text-left">
+                      <div className="font-medium">{option.label}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {option.description}
+                      </div>
+                    </div>
+                  </div>
+                </Button>
+              );
+            })}
+          </div>
+          {isExporting && (
+            <div className="text-center py-4">
+              <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                กำลังส่งออกข้อมูล...
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
