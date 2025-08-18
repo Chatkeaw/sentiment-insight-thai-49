@@ -19,8 +19,8 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
   onViewFeedback,
 }) => {
   const navigate = useNavigate();
-  const [selectedTopic, setSelectedTopic] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedTopic, setSelectedTopic] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   // Assessment topics
   const assessmentTopics = [
@@ -80,7 +80,7 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
   };
 
   // Get categories for selected topic
-  const availableCategories = selectedTopic ? categoriesByTopic[selectedTopic] || [] : [];
+  const availableCategories = selectedTopic && selectedTopic !== 'all' ? categoriesByTopic[selectedTopic] || [] : [];
 
   // Mock data for 6 months trend
   const trendData = [
@@ -151,7 +151,7 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
 
   const handleTopicChange = (value: string) => {
     setSelectedTopic(value);
-    setSelectedCategory(''); // Reset category when topic changes
+    setSelectedCategory('all'); // Reset category when topic changes
   };
 
   return (
@@ -175,7 +175,7 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
                 <SelectValue placeholder="เลือกทั้งหมด" />
               </SelectTrigger>
               <SelectContent className="bg-background border shadow-lg z-50">
-                <SelectItem value="">เลือกทั้งหมด</SelectItem>
+                <SelectItem value="all">เลือกทั้งหมด</SelectItem>
                 {assessmentTopics.map((topic) => (
                   <SelectItem key={topic.value} value={topic.value}>
                     {topic.label}
@@ -190,13 +190,13 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
             <Select 
               value={selectedCategory} 
               onValueChange={setSelectedCategory}
-              disabled={!selectedTopic}
+              disabled={selectedTopic === 'all'}
             >
               <SelectTrigger className="w-full bg-background">
                 <SelectValue placeholder="เลือกทั้งหมด" />
               </SelectTrigger>
               <SelectContent className="bg-background border shadow-lg z-50">
-                <SelectItem value="">เลือกทั้งหมด</SelectItem>
+                <SelectItem value="all">เลือกทั้งหมด</SelectItem>
                 {availableCategories.map((category) => (
                   <SelectItem key={category.value} value={category.value}>
                     {category.label}
