@@ -160,14 +160,16 @@ const Index = () => {
               </div>
             </main>
 
-            {/* Scroll to Top Button */}
-            <Button
-              onClick={scrollToTop}
-              className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0 shadow-lg bg-primary hover:bg-primary/90 z-50 transition-all duration-300 hover:scale-110"
-              aria-label="กลับสู่ด้านบน"
-            >
-              <ArrowUp className="w-5 h-5" />
-            </Button>
+            {/* Scroll to Top Button - Hide on AI Agent page */}
+            {activePage !== "ai-agent" && (
+              <Button
+                onClick={scrollToTop}
+                className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0 shadow-lg bg-primary hover:bg-primary/90 z-50 transition-all duration-300 hover:scale-110"
+                aria-label="กลับสู่ด้านบน"
+              >
+                <ArrowUp className="w-5 h-5" />
+              </Button>
+            )}
           </div>
         </AnalyticsProvider>
       </ProtectedRoute>

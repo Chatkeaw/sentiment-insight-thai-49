@@ -181,7 +181,7 @@ export const AIAgentPage: React.FC = () => {
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   placeholder="พิมพ์คำถามของคุณที่นี่..."
-                  className="min-h-[80px] resize-none flex-1 rounded-2xl border-2 focus:border-pink-300 transition-colors"
+                  className="min-h-[80px] resize-none flex-1 rounded-3xl border-2 focus:border-pink-300 transition-colors px-6 py-4"
                   onKeyPress={handleKeyPress}
                   onFocus={handleInputFocus}
                   onBlur={handleInputBlur}
@@ -190,7 +190,7 @@ export const AIAgentPage: React.FC = () => {
                 <Button
                   onClick={handleSendMessage}
                   disabled={!inputMessage.trim() || isLoading}
-                  className="w-12 h-12 rounded-full text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center p-0"
+                  className="w-14 h-14 rounded-full text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center p-0"
                   style={{
                     backgroundColor: '#F13596',
                     borderColor: '#F13596'
