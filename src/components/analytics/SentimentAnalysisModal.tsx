@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
@@ -16,6 +17,8 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
   onClose,
   onViewFeedback,
 }) => {
+  const navigate = useNavigate();
+
   const trendData = [
     { month: 'ม.ค. 67', positive: 232, negative: 78 },
     { month: 'ก.พ. 67', positive: 267, negative: 102 },
@@ -72,10 +75,7 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
 
   const handleViewFeedback = () => {
     onClose();
-    // Navigate to feedback page through the main menu system
-    if (onViewFeedback) {
-      onViewFeedback();
-    }
+    navigate('/feedback');
   };
 
   return (
