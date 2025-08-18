@@ -17,8 +17,7 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
   onClose,
   onViewFeedback,
 }) => {
-  const navigate = useNavigate();
-
+  // Mock data for 6 months trend
   const trendData = [
     { month: 'ม.ค. 67', positive: 232, negative: 78 },
     { month: 'ก.พ. 67', positive: 267, negative: 102 },
@@ -28,6 +27,7 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
     { month: 'มิ.ย. 68', positive: 312, negative: 149 }
   ];
 
+  // Monthly change data
   const monthlyChange = {
     total: {
       current: 364,
@@ -52,6 +52,7 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
     }
   };
 
+  // Regional breakdown data (18 regions)
   const regionalData = [
     { region: 'ภาค 1', total: 78, positive: 41, negative: 15 },
     { region: 'ภาค 2', total: 79, positive: 50, negative: 18 },
@@ -73,9 +74,11 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
     { region: 'ภาค 18', total: 72, positive: 43, negative: 14 }
   ];
 
-  const handleViewFeedback = () => {
+  const handleViewFeedback = (region?: string) => {
+    if (onViewFeedback) {
+      onViewFeedback(region);
+    }
     onClose();
-    navigate('/feedback');
   };
 
   return (
@@ -259,7 +262,7 @@ export const SentimentAnalysisModal: React.FC<SentimentAnalysisModalProps> = ({
                             variant="outline"
                             size="sm"
                             className="text-xs"
-                            onClick={handleViewFeedback}
+                            onClick={() => handleViewFeedback(region.region)}
                           >
                             ดูความคิดเห็น
                           </Button>
