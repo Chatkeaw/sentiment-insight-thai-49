@@ -12,7 +12,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockFeedbackData } from "@/data/mockData";
-import { FeedbackEntry } from "@/types/dashboard";
+import { FeedbackEntry, TimeFilter } from "@/types/dashboard";
+
+interface ComplaintsPageProps {
+  timeFilter?: TimeFilter['value'];
+  onTimeFilterChange?: (value: TimeFilter['value']) => void;
+}
 
 /** ===== Utilities: parse date (รองรับ DD/MM/YYYY พ.ศ. และ YYYY-MM-DD) ===== */
 function parseDateLoose(s: string): Date | null {
@@ -165,7 +170,7 @@ const SERVICE_TYPES = [
   "อื่นๆ",
 ];
 
-export const ComplaintsPage: React.FC = () => {
+export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({ timeFilter, onTimeFilterChange }) => {
   // location
   const [selectedRegion, setSelectedRegion] = useState<string>("all");
   const [selectedDistrict, setSelectedDistrict] = useState<string>("all");
@@ -175,7 +180,7 @@ export const ComplaintsPage: React.FC = () => {
   const [endDate, setEndDate] = useState<string>("");
   // service + channel
   const [selectedServiceType, setSelectedServiceType] = useState<string>("all");
-  const [selectedChannel, setSelectedChannel] = useState<string>("");
+  const [selectedChannel, setSelectedChannel] = useState<string>("all");
   // category
   const [selectedMainCategory, setSelectedMainCategory] =
     useState<string>("all");
@@ -252,7 +257,7 @@ export const ComplaintsPage: React.FC = () => {
 
         // channel (เดโม่: ใช้ field serviceChannel ถ้ามี, มิฉะนั้นผ่าน)
         const ch = (feedback as any).serviceChannel as string | undefined;
-        if (selectedChannel && ch && ch !== selectedChannel) return false;
+        if (selectedChannel && selectedChannel !== "all" && ch && ch !== selectedChannel) return false;
 
         // category by tag code 1.x–5.x
         if (prefix) {
@@ -284,7 +289,7 @@ export const ComplaintsPage: React.FC = () => {
     setStartDate("");
     setEndDate("");
     setSelectedServiceType("all");
-    setSelectedChannel("");
+    setSelectedChannel("all");
     setSelectedMainCategory("all");
   };
 
@@ -406,7 +411,7 @@ export const ComplaintsPage: React.FC = () => {
                   <SelectValue placeholder="เลือกช่องทาง" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">ทั้งหมด</SelectItem>
+                  <SelectItem value="all">ทั้งหมด</SelectItem>
                   {SUB_SERVICE_TYPES.map((c) => (
                     <SelectItem key={c} value={c}>
                       {c}

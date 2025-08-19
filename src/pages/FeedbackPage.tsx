@@ -129,7 +129,7 @@ export const FeedbackPage: React.FC = () => {
   const [endDate, setEndDate] = useState("");
   // service + channel
   const [serviceType, setServiceType] = useState("all");
-  const [channel, setChannel] = useState("");
+  const [channel, setChannel] = useState("all");
   // categories + sentiment
   const [mainCat, setMainCat] = useState("all");
   const [subCat, setSubCat] = useState("all");
@@ -186,7 +186,7 @@ export const FeedbackPage: React.FC = () => {
 
         // channel (demo)
         const ch = (fb as any).serviceChannel as string | undefined;
-        if (channel && ch && ch !== channel) return false;
+        if (channel && channel !== "all" && ch && ch !== channel) return false;
 
         // sentiment
         if (sentiment !== "all") {
@@ -259,7 +259,7 @@ export const FeedbackPage: React.FC = () => {
     setStartDate("");
     setEndDate("");
     setServiceType("all");
-    setChannel("");
+    setChannel("all");
     setMainCat("all");
     setSubCat("all");
     setSentiment("all");
@@ -378,7 +378,7 @@ export const FeedbackPage: React.FC = () => {
                   <SelectValue placeholder="เลือกช่องทาง" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">ทั้งหมด</SelectItem>
+                  <SelectItem value="all">ทั้งหมด</SelectItem>
                   {SUB_SERVICE_TYPES.map((c) => (
                     <SelectItem key={c} value={c}>
                       {c}
