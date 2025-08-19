@@ -11,14 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// ===== utils: ใช้เฉพาะฟังก์ชันส่งออก (ไม่แตะ UI อื่น) =====
+// ===== Utilities สำหรับการส่งออก (มีอยู่แล้วในโปรเจ็กต์) =====
 import {
-  // เดี่ยวตามชนิด
   exportChartToPNG,
   exportToCSV,
   exportToExcel,
 
-  // ใช้กับ Export All
   withThaiMonthYear,
   domTableToRows,
   saveTableAsCSV_XLSX,
@@ -27,31 +25,26 @@ import {
 } from "@/utils/exportUtils";
 
 type ExportButtonProps = {
-  /** chart | table */
+  /** ประเภทที่ปุ่มนี้แทน: "chart" | "table" (ผลต่อรายการเมนูเดี่ยว) */
   type: "chart" | "table";
-  /** id ของ element ที่ใช้จับภาพกราฟ หรือ wrapper ที่มี <table> ข้างใน */
+  /** id ของ element ที่จะจับภาพกราฟ หรือ wrapper ที่มี <table> ข้างใน */
   elementId?: string;
-  /** ข้อมูล table (ถ้ามี) สำหรับ export CSV/XLSX แบบตรง ๆ */
+  /** ข้อมูลตาราง (ถ้ามี) ใช้ส่งออก CSV/XLSX ตรง ๆ */
   data?: any[];
   /** ชื่อไฟล์หลัก (ไม่ต้องใส่นามสกุล) */
   filename?: string;
-  /** ชื่อที่จะแสดง (optional) */
+  /** ข้อความหัวเมนู */
   title?: string;
-  /** ประเภทกราฟ (optional) */
-  chartType?: string;
-  /** ปิด/เปิด Export All (defaults true) */
-  showExportAll?: boolean;
 };
 
-export const ExportButton: React.FC<ExportButtonProps> = ({
+const ExportButton: React.FC<ExportButtonProps> = ({
   type,
   elementId,
   data,
   filename,
   title,
-  showExportAll = true,
 }) => {
-  // ------- เดี่ยวตามชนิด -------
+  // ---------- Export เฉพาะรายการ ----------
   const handleExportPNG = async () => {
     if (!elementId) return;
     const name = withThaiMonthYear(filename || title || "chart");
@@ -60,12 +53,14 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
 
   const handleExportCSV = () => {
     const name = withThaiMonthYear(filename || title || "table");
-    // ถ้ามี data → ส่งออกตรง ๆ
+
+    // มี data → ส่งออกตรง
     if (data && Array.isArray(data) && data.length) {
       exportToCSV(data, `${name}.csv`);
       return;
     }
-    // ถ้าไม่มี data → หา <table> ใน elementId แล้วแปลง
+
+    // ไม่มี data → หา <table> ภายใน elementId
     if (elementId) {
       const root = document.getElementById(elementId);
       const table = root?.querySelector("table");
@@ -78,10 +73,12 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
 
   const handleExportXLSX = () => {
     const name = withThaiMonthYear(filename || title || "table");
+
     if (data && Array.isArray(data) && data.length) {
       exportToExcel(data, `${name}.xlsx`);
       return;
     }
+
     if (elementId) {
       const root = document.getElementById(elementId);
       const table = root?.querySelector("table");
@@ -92,7 +89,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
     }
   };
 
-  // ------- Export All (ทั้งหน้า) -------
+  // ---------- Export All (ทั้งหน้า) ----------
   const exportAllCurrentPage = async () => {
     try {
       // 1) Charts → PNG
@@ -106,6 +103,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
           node.getAttribute("aria-label") ||
           node.id ||
           `Chart-${cIdx++}`;
+
         let id = node.id;
         if (!id) {
           id = `__exp_chart_${Date.now()}_${Math.random().toString(36).slice(2)}`;
@@ -122,6 +120,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
         ...holders.flatMap((h) => Array.from(h.querySelectorAll("table"))),
         ...Array.from(document.querySelectorAll("table")), // fallback
       ]);
+
       let tIdx = 1;
       for (const tb of tables) {
         const base =
@@ -130,23 +129,23 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
           ) ||
           tb.getAttribute("aria-label") ||
           `Table-${tIdx++}`;
+
         const rows = domTableToRows(tb);
-        // บันทึกทั้ง CSV + XLSX
+        // ส่งออกทั้ง CSV และ XLSX
         saveTableAsCSV_XLSX(rows, base);
       }
 
-      // 3) Comments → XLSX (รวมเป็นไฟล์เดียว)
+      // 3) Comments → XLSX (รวมไฟล์เดียว)
       const comments = extractCommentsFromDOM();
       if (comments.length) {
         exportCommentsRowsToXLSX(comments, "ความคิดเห็นทั้งหมด");
       }
-    } catch (e) {
-      console.error("Export All failed:", e);
+    } catch (err) {
+      console.error("Export All failed:", err);
     }
   };
 
-  // ------- UI: ใช้ dropdown เดิม ไม่เปลี่ยน layout -------
-  // ใช้สไตล์เดียวกับโปรเจกต์ (shadcn/ui)
+  // ---------- UI (Dropdown เดิม, เพิ่มเมนู Export All เสมอ) ----------
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -156,37 +155,4 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>{title || "Export"}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-
-        {type === "chart" && (
-          <DropdownMenuItem onClick={handleExportPNG}>
-            บันทึกกราฟเป็น PNG
-          </DropdownMenuItem>
-        )}
-
-        {type === "table" && (
-          <>
-            <DropdownMenuItem onClick={handleExportCSV}>
-              ส่งออกตารางเป็น CSV
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleExportXLSX}>
-              ส่งออกตารางเป็น Excel (XLSX)
-            </DropdownMenuItem>
-          </>
-        )}
-
-        {showExportAll && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={exportAllCurrentPage}>
-              Export All (This Page)
-            </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-
-export default ExportButton;
+        <DropdownMenuL
