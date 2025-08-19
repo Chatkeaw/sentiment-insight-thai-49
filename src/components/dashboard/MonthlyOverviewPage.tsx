@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ExportButton } from '@/components/shared/ExportButton';
@@ -43,10 +44,22 @@ function getInitialMonth(): MonthState {
 }
 
 export const MonthlyOverviewPage: React.FC = () => {
+  const navigate = useNavigate();
+  
   // ---- ตั้งค่าเริ่มต้นเป็น "เดือนล่าสุด" และ "ปีปัจจุบัน" (หรือค่าที่เคยถูกเลือกไว้) ----
   const initial = useMemo(getInitialMonth, []);
   const [selectedMonth, setSelectedMonth] = useState<string>(initial.month);
   const [selectedYear, setSelectedYear] = useState<string>(initial.year);
+
+  const handleNavigateToFeedback = (category: string) => {
+    navigate('/feedback', { 
+      state: { 
+        filterCategory: category,
+        month: selectedMonth,
+        year: selectedYear
+      }
+    });
+  };
 
   // บันทึกลง localStorage และ broadcast ให้ส่วนอื่นทราบ (เช่น dropdown มุมขวาบน)
   const saveAndBroadcast = (state: MonthState) => {
