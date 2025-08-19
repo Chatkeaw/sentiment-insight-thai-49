@@ -8,15 +8,10 @@ import { ExportButton } from '@/components/shared/ExportButton';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
 import { mockFeedbackData } from '@/data/mockData';
 import { FeedbackEntry } from '@/types/dashboard';
-import { Search, Calendar, RotateCw } from 'lucide-react';
 
-/* ---------- style helpers (UI เท่านั้น) ---------- */
-const sectionBox =
-  "rounded-2xl border border-pink-100 bg-pink-50/20 p-4 md:p-5";
-const selectTrigger =
-  "h-11 pl-9 rounded-lg border-pink-200 focus:ring-2 focus:ring-pink-200/60";
-const dateInput =
-  "h-11 w-full rounded-lg border border-pink-200 bg-white px-9 text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-pink-200/60 focus:border-pink-300";
+// NEW
+import { Button } from '@/components/ui/button';
+import { Search, Calendar, RefreshCcw } from 'lucide-react';
 
 interface FeedbackPageProps {
   timeFilter: TimeFilterType['value'];
@@ -32,12 +27,12 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>('all');
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>('all');
-  const [selectedServiceType, setSelectedServiceType] = useState<string>('ทั้งหมด');
+  const [selectedServiceType, setSelectedServiceType] = useState<string>('all');
   const [selectedSentiment, setSelectedSentiment] = useState<string>('all');
 
-  // วันที่ (UI เท่านั้น)
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  // NEW: date range
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
   const clearFilters = () => {
     setSelectedRegion('all');
@@ -45,7 +40,7 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({
     setSelectedBranch('all');
     setSelectedMainCategory('all');
     setSelectedSubCategory('all');
-    setSelectedServiceType('ทั้งหมด');
+    setSelectedServiceType('all');
     setSelectedSentiment('all');
     setStartDate('');
     setEndDate('');
@@ -162,34 +157,57 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({
     'อื่นๆ'
   ];
 
+  const parseDate = (d: string) => (d ? new Date(d) : null);
+
   // Filter feedback data
   const filteredFeedback = useMemo(() => {
+    const s = parseDate(startDate);
+    const e = parseDate(endDate);
+
     return mockFeedbackData.filter(feedback => {
       // Location filters
       if (selectedRegion !== 'all' && feedback.branch.region !== selectedRegion) return false;
       if (selectedDistrict !== 'all' && feedback.branch.district !== selectedDistrict) return false;
       if (selectedBranch !== 'all' && feedback.branch.branch !== selectedBranch) return false;
-      
+
+      // Date range
+      const d = new Date(feedback.date);
+      if (s && d < s) return false;
+      if (e && d > e) return false;
+
       // Service type filter
       if (selectedServiceType !== 'all' && selectedServiceType !== 'ทั้งหมด' && feedback.serviceType !== selectedServiceType) return false;
-      
+
       // Sentiment filter
       if (selectedSentiment !== 'all') {
-        const hasPositive = Object.values(feedback.sentiment).some(s => s === 1);
-        const hasNegative = Object.values(feedback.sentiment).some(s => s === -1);
+        const hasPositive = Object.values(feedback.sentiment).some(sen => sen === 1);
+        const hasNegative = Object.values(feedback.sentiment).some(sen => sen === -1);
+        
         if (selectedSentiment === 'positive' && !hasPositive) return false;
         if (selectedSentiment === 'negative' && !hasNegative) return false;
       }
-      
-      // Category filters (main only)
+
+      // Category filters (main)
       if (selectedMainCategory !== 'all') {
         const categoryValue = feedback.sentiment[selectedMainCategory as keyof typeof feedback.sentiment];
         if (categoryValue === 0) return false;
       }
-      
+
+      // Sub-category (detailedSentiment)
+      if (selectedSubCategory !== 'all') {
+        if (feedback.detailedSentiment[selectedSubCategory as keyof typeof feedback.detailedSentiment] === 0) {
+          return false;
+        }
+      }
+
       return true;
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [selectedRegion, selectedDistrict, selectedBranch, selectedMainCategory, selectedSubCategory, selectedServiceType, selectedSentiment]);
+  }, [
+    selectedRegion, selectedDistrict, selectedBranch,
+    selectedMainCategory, selectedSubCategory,
+    selectedServiceType, selectedSentiment,
+    startDate, endDate
+  ]);
 
   // Get sentiment color
   const getSentimentColor = (sentiment: number) => {
@@ -245,42 +263,36 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({
         />
       </div>
 
-      {/* Filter Controls – UI แบบอ้างอิง */}
-      <Card className="border-pink-200/60 shadow-[0_0_0_1px_rgba(244,114,182,.08),0_6px_20px_rgba(244,114,182,.06)]">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">ตัวกรองการแสดงผล</CardTitle>
-            <div className="flex gap-2">
-              <button
-                onClick={clearFilters}
-                className="inline-flex items-center gap-2 rounded-md border border-pink-200 bg-white px-3 py-2 text-sm text-pink-700 hover:bg-pink-50"
-              >
-                <RotateCw className="h-4 w-4" />
-                ล้างตัวกรอง
-              </button>
-              <button
-                className="rounded-md bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700"
-              >
-                ค้นหา
-              </button>
-            </div>
+      {/* Filter Controls (ใหม่) */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-lg font-semibold">ตัวกรองการแสดงผล</CardTitle>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              ล้างตัวกรอง
+            </Button>
+            <Button size="sm">ค้นหา</Button>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {/* พื้นที่ให้บริการ */}
-          <div className={sectionBox}>
-            <div className="mb-2 text-sm font-medium text-foreground">พื้นที่ให้บริการ</div>
+          <div className="rounded-lg border border-pink-200/50 bg-pink-50/10 p-4 space-y-2">
+            <label className="text-sm font-medium text-foreground">พื้นที่ให้บริการ</label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* ภาค */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Select value={selectedRegion} onValueChange={(value) => {
-                  setSelectedRegion(value);
-                  setSelectedDistrict('all');
-                  setSelectedBranch('all');
-                }}>
-                  <SelectTrigger className={selectTrigger}>
+                <Select
+                  value={selectedRegion}
+                  onValueChange={(value) => {
+                    setSelectedRegion(value);
+                    setSelectedDistrict('all');
+                    setSelectedBranch('all');
+                  }}
+                >
+                  <SelectTrigger className="pl-9 pr-8">
                     <SelectValue placeholder="เลือกภาค" />
                   </SelectTrigger>
                   <SelectContent>
@@ -295,11 +307,14 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({
               {/* เขต */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Select value={selectedDistrict} onValueChange={(value) => {
-                  setSelectedDistrict(value);
-                  setSelectedBranch('all');
-                }}>
-                  <SelectTrigger className={selectTrigger}>
+                <Select
+                  value={selectedDistrict}
+                  onValueChange={(value) => {
+                    setSelectedDistrict(value);
+                    setSelectedBranch('all');
+                  }}
+                >
+                  <SelectTrigger className="pl-9 pr-8">
                     <SelectValue placeholder="เลือกเขต" />
                   </SelectTrigger>
                   <SelectContent>
@@ -316,7 +331,7 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                  <SelectTrigger className={selectTrigger}>
+                  <SelectTrigger className="pl-9 pr-8">
                     <SelectValue placeholder="เลือกสาขา" />
                   </SelectTrigger>
                   <SelectContent>
@@ -331,99 +346,64 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({
             </div>
           </div>
 
-          {/* ช่วงเวลา + ประเภทบริการ + หมวดหมู่/หมวดย่อย/ทัศนคติ */}
-          <div className={sectionBox}>
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-              {/* ประเภทบริการ */}
-              <div className="md:col-span-4">
-                <div className="mb-1 text-sm font-medium">ประเภทการให้บริการ</div>
-                <Select value={selectedServiceType} onValueChange={setSelectedServiceType}>
-                  <SelectTrigger className="h-11 rounded-lg border-pink-200 focus:ring-2 focus:ring-pink-200/60">
-                    <SelectValue placeholder="เลือกประเภทบริการ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {serviceTypes.map(type => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* ตั้งแต่ */}
-              <div className="md:col-span-4 relative">
-                <div className="mb-1 text-sm font-medium">ตั้งแต่</div>
-                <Calendar className="absolute left-3 top-[42px] h-4 w-4 text-muted-foreground" />
+          {/* ช่วงเวลาการประเมิน */}
+          <div className="rounded-lg border border-pink-200/50 bg-pink-50/10 p-4 space-y-2">
+            <label className="text-sm font-medium text-foreground">ช่วงเวลาการประเมิน</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className={dateInput}
+                  className="w-full rounded-md border border-input bg-background px-9 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder="ตั้งแต่"
                 />
               </div>
 
-              {/* ถึง */}
-              <div className="md:col-span-4 relative">
-                <div className="mb-1 text-sm font-medium">ถึง</div>
-                <Calendar className="absolute left-3 top-[42px] h-4 w-4 text-muted-foreground" />
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className={dateInput}
+                  className="w-full rounded-md border border-input bg-background px-9 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder="ถึง"
                 />
               </div>
+            </div>
+          </div>
 
-              {/* หมวดหมู่หลัก */}
-              <div className="md:col-span-4">
-                <div className="mb-1 text-sm font-medium">หมวดหมู่</div>
-                <Select value={selectedMainCategory} onValueChange={(value) => {
-                  setSelectedMainCategory(value);
-                  setSelectedSubCategory('all');
-                }}>
-                  <SelectTrigger className="h-11 rounded-lg border-pink-200 focus:ring-2 focus:ring-pink-200/60">
-                    <SelectValue placeholder="เลือกหมวดหมู่หลัก" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mainCategories.map(category => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* ประเภทการให้บริการ + หมวดหมู่ */}
+          <div className="rounded-lg border border-pink-200/50 bg-pink-50/10 p-4 space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">ประเภทการให้บริการ</label>
+              <Select value={selectedServiceType} onValueChange={setSelectedServiceType}>
+                <SelectTrigger className="pl-3 pr-8">
+                  <SelectValue placeholder="เลือกประเภทการให้บริการ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {serviceTypes.map(type => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              {/* หมวดหมู่ย่อย */}
-              <div className="md:col-span-4">
-                <div className="mb-1 text-sm font-medium">หมวดหมู่ย่อย</div>
-                <Select value={selectedSubCategory} onValueChange={setSelectedSubCategory}>
-                  <SelectTrigger className="h-11 rounded-lg border-pink-200 focus:ring-2 focus:ring-pink-200/60">
-                    <SelectValue placeholder="เลือกหมวดหมู่ย่อย" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subCategories.map(category => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* ทัศนคติ */}
-              <div className="md:col-span-4">
-                <div className="mb-1 text-sm font-medium">ทัศนคติ</div>
-                <Select value={selectedSentiment} onValueChange={setSelectedSentiment}>
-                  <SelectTrigger className="h-11 rounded-lg border-pink-200 focus:ring-2 focus:ring-pink-200/60">
-                    <SelectValue placeholder="เลือกทัศนคติ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">ทั้งหมด</SelectItem>
-                    <SelectItem value="positive">เชิงบวก</SelectItem>
-                    <SelectItem value="negative">เชิงลบ</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">หมวดหมู่</label>
+              <Select value={selectedMainCategory} onValueChange={(v) => { setSelectedMainCategory(v); setSelectedSubCategory('all'); }}>
+                <SelectTrigger className="pl-3 pr-8">
+                  <SelectValue placeholder="เลือกหมวดหมู่" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mainCategories.map(category => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>
@@ -445,46 +425,36 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({
         <CardContent>
           <div className="max-h-96 overflow-y-auto space-y-4">
             {filteredFeedback.map((feedback) => {
-              const results: Array<{ category: string; subcategory: string; sentiment: number }> = [];
-              Object.entries(feedback.detailedSentiment).forEach(([key, value]) => {
-                if (value !== 0) {
-                  const mainCat = mainCategories.find(cat => subCategoryMap[cat.value]?.some(sub => sub.value === key));
-                  const subCat = subCategoryMap[mainCat?.value || '']?.find(sub => sub.value === key);
-                  if (mainCat && subCat) {
-                    results.push({ category: mainCat.label, subcategory: subCat.label, sentiment: value });
-                  }
-                }
-              });
-
-              const sentiments = Object.values(feedback.sentiment);
-              const hasPositive = sentiments.some(s => s === 1);
-              const hasNegative = sentiments.some(s => s === -1);
-              const box =
-                hasPositive && hasNegative ? 'bg-yellow-100'
-                : hasPositive ? 'bg-green-100'
-                : hasNegative ? 'bg-red-100'
-                : 'bg-gray-100';
-
-              const tagColor = (s: number) => s === 1 ? 'bg-green-100' : s === -1 ? 'bg-red-100' : 'bg-gray-100';
-
+              const detailedSentiments = getDetailedSentiments(feedback);
+              
               return (
-                <div key={feedback.id} className={`p-4 rounded-lg border ${box}`}>
+                <div
+                  key={feedback.id}
+                  className={`p-4 rounded-lg border ${getFeedbackColor(feedback)}`}
+                >
+                  {/* Header Info */}
                   <div className="flex flex-wrap gap-4 mb-3 text-sm text-gray-600">
                     <span><strong>วันที่:</strong> {feedback.date} {feedback.timestamp}</span>
                     <span><strong>บริการ:</strong> {feedback.serviceType}</span>
                     <span><strong>สาขา:</strong> {feedback.branch.branch} / {feedback.branch.district} / {feedback.branch.region}</span>
                   </div>
 
+                  {/* Comment Content */}
                   <div className="mb-3">
                     <p className="text-gray-800 leading-relaxed">{feedback.comment}</p>
                   </div>
 
+                  {/* Sentiment Categories */}
                   <div className="space-y-2">
                     <div className="text-sm font-medium text-gray-700">หมวดหมู่ที่เกี่ยวข้อง:</div>
                     <div className="flex flex-wrap gap-2">
-                      {results.map((item, index) => (
-                        <Badge key={index} className={`${tagColor(item.sentiment)} text-gray-800 border-0`}>
-                          {item.category}: {item.subcategory}{item.sentiment === 1 ? ' 👍' : ' 👎'}
+                      {detailedSentiments.map((item, index) => (
+                        <Badge
+                          key={index}
+                          className={`${getSentimentColor(item.sentiment)} text-gray-800 border-0`}
+                        >
+                          {item.category}: {item.subcategory}
+                          {item.sentiment === 1 ? ' 👍' : ' 👎'}
                         </Badge>
                       ))}
                     </div>
