@@ -1,14 +1,11 @@
-
 import React, { useState, useEffect } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
-import { OverviewPage } from "./OverviewPage";
 import { RegionalPage } from "./RegionalPage";
 import { AnalyticsPage } from "./AnalyticsPage";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import DashboardHeader from "@/components/DashboardHeader";
-import GlobalFilters from "@/components/GlobalFilters";
 import { TimeFilter as TimeFilterType } from "@/types/dashboard";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +26,6 @@ const Index = () => {
   });
   const [timeFilter, setTimeFilter] = useState<TimeFilterType['value']>("1month");
   const [lastUpdate, setLastUpdate] = useState<string>("");
-  const [globalFilters, setGlobalFilters] = useState<any>({});
 
   const handlePageChange = (page: string) => {
     setActivePage(page);
@@ -61,11 +57,6 @@ const Index = () => {
     setLastUpdate(`${day}-${month}-${year} ${hours}:${minutes}`);
   };
 
-  const handleFiltersChange = (filters: any) => {
-    console.log('Filters changed:', filters);
-    setGlobalFilters(filters);
-  };
-
   useEffect(() => {
     localStorage.setItem('sidebar_open', JSON.stringify(isSidebarOpen));
   }, [isSidebarOpen]);
@@ -81,7 +72,6 @@ const Index = () => {
     };
 
     window.addEventListener('changePage', handleCustomPageChange as EventListener);
-    
     return () => {
       window.removeEventListener('changePage', handleCustomPageChange as EventListener);
     };
@@ -99,7 +89,7 @@ const Index = () => {
         return <RegionalPage />;
       case "analytics":
         return (
-          <AnalyticsPage 
+          <AnalyticsPage
             onBack={handleBackToOverview}
             timeFilter={timeFilter}
             onTimeFilterChange={setTimeFilter}
@@ -109,7 +99,7 @@ const Index = () => {
         return <CustomerFeedbackSystem />;
       case "complaints":
         return (
-          <ComplaintsPage 
+          <ComplaintsPage
             timeFilter={timeFilter}
             onTimeFilterChange={setTimeFilter}
           />
@@ -140,38 +130,32 @@ const Index = () => {
           <div className="min-h-screen w-full bg-white flex relative">
             {/* Mobile Overlay */}
             {isSidebarOpen && (
-              <div 
+              <div
                 className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden"
                 onClick={() => setIsSidebarOpen(false)}
               />
             )}
-            
+
             {/* Sidebar */}
-            <AppSidebar 
-              activePage={activePage} 
+            <AppSidebar
+              activePage={activePage}
               onPageChange={handlePageChange}
               isOpen={isSidebarOpen}
               onToggle={toggleSidebar}
             />
-            
+
             {/* Main Content */}
             <main className={`flex-1 transition-all duration-300 ease-out ${isSidebarOpen ? 'lg:ml-[256px]' : 'lg:ml-[72px]'}`}>
-              
               {/* Dashboard Header */}
               <header className="flex items-center gap-2 px-4 py-4 pl-16 border-b bg-white/80 backdrop-blur-sm sticky top-0 z-40">
                 <div className="flex-1">
-                  <DashboardHeader 
+                  <DashboardHeader
                     lastUpdate={lastUpdate}
                     onRefresh={handleRefreshData}
                   />
                 </div>
               </header>
-              
-              {/* Global Filters */}
-              <div className="container mx-auto px-6 pt-6">
-                <GlobalFilters onFiltersChange={handleFiltersChange} />
-              </div>
-              
+
               {/* Dashboard Content */}
               <div className="container mx-auto px-6 pb-6 bg-white">
                 {renderContent()}
