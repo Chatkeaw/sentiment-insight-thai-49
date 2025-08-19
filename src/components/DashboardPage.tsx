@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -7,22 +6,48 @@ import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import { SatisfactionDetailModal } from './SatisfactionDetailModal';
 import { SentimentAnalysisModal } from './analytics/SentimentAnalysisModal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DashboardPageProps {
   onPageChange?: (page: string) => void;
 }
 
-const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
-  // Generate month options from มกราคม 2567 to สิงหาคม 2568
-  const monthOptions = [
-    "มกราคม 2567", "กุมภาพันธ์ 2567", "มีนาคม 2567", "เมษายน 2567", "พฤษภาคม 2567", "มิถุนายน 2567",
-    "กรกฎาคม 2567", "สิงหาคม 2567", "กันยายน 2567", "ตุลาคม 2567", "พฤศจิกายน 2567", "ธันวาคม 2567",
-    "มกราคม 2568", "กุมภาพันธ์ 2568", "มีนาคม 2568", "เมษายน 2568", "พฤษภาคม 2568", "มิถุนายน 2568",
-    "กรกฎาคม 2568", "สิงหาคม 2568"
-  ];
+const MONTHS = [
+  { value: "1", label: "มกราคม" },
+  { value: "2", label: "กุมภาพันธ์" },
+  { value: "3", label: "มีนาคม" },
+  { value: "4", label: "เมษายน" },
+  { value: "5", label: "พฤษภาคม" },
+  { value: "6", label: "มิถุนายน" },
+  { value: "7", label: "กรกฎาคม" },
+  { value: "8", label: "สิงหาคม" },
+  { value: "9", label: "กันยายน" },
+  { value: "10", label: "ตุลาคม" },
+  { value: "11", label: "พฤศจิกายน" },
+  { value: "12", label: "ธันวาคม" }
+];
 
-  // State to manage selected month
-  const [selectedMonth, setSelectedMonth] = useState("มิถุนายน 2568");
+type MonthState = { month: string; year: string };
+
+function readInitial(): MonthState {
+  try {
+    const saved = localStorage.getItem("dashboard.month");
+    if (saved) {
+      const v = JSON.parse(saved) as MonthState;
+      if (v && MONTHS.some(m => m.value === v.month) && /^\d{4}$/.test(v.year)) {
+        return v;
+      }
+    }
+  } catch (_) {}
+  const now = new Date();
+  return { month: String(now.getMonth() + 1), year: String(now.getFullYear()) };
+}
+
+const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
+  // Month/Year state management
+  const initial = readInitial();
+  const [month, setMonth] = useState(initial.month);
+  const [year, setYear] = useState(initial.year);
 
   // State for satisfaction detail modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,6 +59,37 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
 
   // State for customer feedback section
   const [selectedSentimentType, setSelectedSentimentType] = useState<'positive' | 'negative'>('positive');
+
+  // Listen to month change events from GlobalFilters
+  useEffect(() => {
+    const handler = (e: any) => { 
+      const v = e.detail; 
+      if (v?.month && v?.year) { 
+        setMonth(v.month); 
+        setYear(v.year);
+      } 
+    };
+    window.addEventListener("dashboard:month-change", handler);
+    return () => window.removeEventListener("dashboard:month-change", handler);
+  }, []);
+
+  // Persist changes and dispatch event
+  useEffect(() => {
+    const v = { month, year };
+    localStorage.setItem("dashboard.month", JSON.stringify(v));
+    window.dispatchEvent(new CustomEvent("dashboard:month-change", { detail: v }));
+  }, [month, year]);
+
+  // Compute header label
+  const yearBE = Number(year) + 543;
+  const monthTH = MONTHS.find(m => m.value === month)?.label ?? "";
+  const headerLabel = `${monthTH} ${yearBE}`;
+
+  // Generate years for dropdown
+  const years = Array.from({ length: 5 }, (_, i) => {
+    const yearValue = new Date().getFullYear() - i;
+    return { value: String(yearValue), label: String(yearValue + 543) };
+  });
 
   // Data for branch types donut chart
   const branchTypeData = [
@@ -154,10 +210,6 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
     clickable: false
   }];
 
-  const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedMonth(event.target.value);
-  };
-
   const handleTopicClick = () => {
     setSelectedTopic("การดูแล เอาใจใส่ ความสบายใจเมื่อมาใช้บริการ");
     setSelectedScore(overallAverage);
@@ -234,20 +286,33 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-foreground">สรุปภาพรวมประจำเดือน {selectedMonth}</h1>
+          <h1 className="text-3xl font-bold text-foreground">สรุปภาพรวมประจำเดือน - {headerLabel}</h1>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">เลือกเดือน:</span>
-            <select 
-              className="px-3 py-1 border rounded-md bg-background text-foreground"
-              value={selectedMonth}
-              onChange={handleMonthChange}
-            >
-              {monthOptions.map((month, index) => (
-                <option key={index} value={month}>
-                  {month}
-                </option>
-              ))}
-            </select>
+            <Select value={month} onValueChange={setMonth}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="เลือกเดือน" />
+              </SelectTrigger>
+              <SelectContent>
+                {MONTHS.map((m) => (
+                  <SelectItem key={m.value} value={m.value}>
+                    {m.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={year} onValueChange={setYear}>
+              <SelectTrigger className="w-20">
+                <SelectValue placeholder="ปี" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((y) => (
+                  <SelectItem key={y.value} value={y.value}>
+                    {y.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
