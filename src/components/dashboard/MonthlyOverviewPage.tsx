@@ -1,24 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartData } from '@/types/dashboard';
 import { ExportButton } from '@/components/shared/ExportButton';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { getComplaintCategoryColor, sortComplaintData } from '@/utils/exportUtils';
 
 export const MonthlyOverviewPage: React.FC = () => {
-  const [selectedMonth, setSelectedMonth] = useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<string>('');
+  // ---- NEW: ตั้งค่าเริ่มต้นเป็น "เดือนล่าสุด" และ "ปีปัจจุบัน" ตั้งแต่ useState ----
+  const now = new Date();
+  const initialMonth = String(now.getMonth() + 1); // '1'..'12'
+  const initialYear = String(now.getFullYear());   // '2025' เป็นต้น
 
-  // Initialize with current month and year
-  useEffect(() => {
-    const now = new Date();
-    const currentMonth = (now.getMonth() + 1).toString();
-    const currentYear = now.getFullYear().toString();
-    
-    setSelectedMonth(currentMonth);
-    setSelectedYear(currentYear);
-  }, []);
+  const [selectedMonth, setSelectedMonth] = useState<string>(initialMonth);
+  const [selectedYear, setSelectedYear] = useState<string>(initialYear);
+  // ---------------------------------------------------------------------------
 
   // Mock data based on selected month/year
   const rawComplaintTopics = [
