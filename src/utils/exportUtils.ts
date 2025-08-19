@@ -3,6 +3,43 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, Header, Footer, PageBreak } from 'docx';
 
+// Thai month names for filename generation
+export const THAI_MONTHS = [
+  "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+  "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+];
+
+// Helper to get Thai month and Buddhist Era year
+export function getThaiMonthYearLabel(ctx?: { month?: string; year?: string }): string {
+  let m = ctx?.month, y = ctx?.year;
+  try {
+    if (!m || !y) {
+      const raw = localStorage.getItem("dashboard.month");
+      if (raw) { 
+        const v = JSON.parse(raw); 
+        m = m ?? v?.month; 
+        y = y ?? v?.year; 
+      }
+    }
+  } catch {}
+  if (!m || !y) { 
+    const now = new Date(); 
+    m = String(now.getMonth() + 1); 
+    y = String(now.getFullYear()); 
+  }
+  const idx = Math.max(1, Math.min(12, parseInt(m, 10))) - 1;
+  const monthTH = THAI_MONTHS[idx] ?? "";
+  const yearBE = Number(y) + 543;
+  return `${monthTH} ${yearBE}`;
+}
+
+// Helper to create filename with Thai month/year
+export function withThaiMonthYear(base: string, ctx?: { month?: string; year?: string }): string {
+  const label = getThaiMonthYearLabel(ctx);
+  const safe = (s: string) => s.replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, "-");
+  return `${safe(base)}-${safe(label)}`;
+}
+
 export const downloadFile = (content: string | Blob, filename: string, type: string) => {
   const blob = content instanceof Blob ? content : new Blob([content], { type });
   const url = window.URL.createObjectURL(blob);
@@ -281,74 +318,58 @@ export const sortComplaintData = (data: any[], complaintKey: string = 'negative'
   });
 };
 
-// Thai month and year helpers for export filenames
-export const THAI_MONTHS = [
-  "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-  "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
-];
-
-export function getThaiMonthYearLabel(ctx?: { month?: string; year?: string }): string {
-  let m = ctx?.month, y = ctx?.year;
-  try {
-    if (!m || !y) {
-      const raw = localStorage.getItem("dashboard.month");
-      if (raw) {
-        const v = JSON.parse(raw);
-        m = m ?? v?.month;
-        y = y ?? v?.year;
-      }
-    }
-  } catch {}
-  if (!m || !y) {
-    const now = new Date();
-    m = String(now.getMonth() + 1);
-    y = String(now.getFullYear());
-  }
-  const idx = Math.max(1, Math.min(12, parseInt(m, 10))) - 1;
-  const monthTH = THAI_MONTHS[idx] ?? "";
-  const yearBE = Number(y) + 543;
-  return `${monthTH} ${yearBE}`;
-}
-
-export function withThaiMonthYear(base: string, ctx?: { month?: string; year?: string }): string {
-  const label = getThaiMonthYearLabel(ctx);
-  const safe = (s: string) => s.replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, "-");
-  return `${safe(base)}-${safe(label)}`;
-}
-
-// DOM helpers for export all functionality
+// Helper to extract table data from DOM
 export function domTableToRows(table: HTMLTableElement) {
   const headers: string[] = [];
   const rows: string[][] = [];
+  
+  // Extract headers
   const ths = table.querySelectorAll("thead th");
   if (ths.length) {
     ths.forEach(th => headers.push((th as HTMLElement).innerText.trim()));
   } else {
     const first = table.querySelector("tr");
-    if (first) first.querySelectorAll("th,td").forEach(c => headers.push((c as HTMLElement).innerText.trim()));
+    if (first) {
+      first.querySelectorAll("th,td").forEach(c => 
+        headers.push((c as HTMLElement).innerText.trim())
+      );
+    }
   }
+  
+  // Extract rows
   table.querySelectorAll("tbody tr").forEach(tr => {
     const r: string[] = [];
-    tr.querySelectorAll("td").forEach(td => r.push((td as HTMLElement).innerText.trim()));
+    tr.querySelectorAll("td").forEach(td => 
+      r.push((td as HTMLElement).innerText.trim())
+    );
     if (r.length) rows.push(r);
   });
+  
   return { headers, rows };
 }
 
+// Save table data as CSV and XLSX
 export function saveTableAsCSV_XLSX(tab: { headers: string[]; rows: string[][] }, baseName: string) {
   // CSV
-  const csv = [tab.headers.join(","), ...tab.rows.map(r => r.map(c => `"${(c ?? "").replace(/"/g, '""')}"`).join(","))].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  downloadFile(blob, `${withThaiMonthYear(baseName)}.csv`, "text/csv;charset=utf-8");
+  const csv = [
+    tab.headers.join(","),
+    ...tab.rows.map(r => 
+      r.map(c => `"${(c ?? "").replace(/"/g, '""')}"`).join(",")
+    )
+  ].join("\n");
+  const csvBlob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  downloadFile(csvBlob, `${withThaiMonthYear(baseName)}.csv`, "text/csv");
   
   // XLSX
   const ws = XLSX.utils.aoa_to_sheet([tab.headers, ...tab.rows]);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Table");
   const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-  downloadFile(new Blob([wbout], { type: "application/octet-stream" }), `${withThaiMonthYear(baseName)}.xlsx`, "application/octet-stream");
+  const xlsxBlob = new Blob([wbout], { type: "application/octet-stream" });
+  downloadFile(xlsxBlob, `${withThaiMonthYear(baseName)}.xlsx`, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 }
 
+// Extract comments from DOM
 export function extractCommentsFromDOM() {
   const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-comment-item]"));
   const rows = nodes.map(n => {
@@ -369,7 +390,7 @@ export function extractCommentsFromDOM() {
     };
   });
   
-  // fallback to window.__COMMENTS__ if exists and DOM empty
+  // Fallback to window.__COMMENTS__ if exists and DOM empty
   // @ts-ignore
   if (!rows.length && Array.isArray(window.__COMMENTS__)) {
     // @ts-ignore
@@ -390,6 +411,7 @@ export function extractCommentsFromDOM() {
   return rows;
 }
 
+// Export comments to XLSX
 export function exportCommentsRowsToXLSX(rows: any[], baseName: string) {
   const headers = ["Date", "Region", "District", "Branch", "Topic", "Category", "Sentiment", "Rating", "Comment", "Source", "Tags"];
   const aoa = [headers, ...rows.map(r => headers.map(h => r[h] ?? ""))];
@@ -397,5 +419,58 @@ export function exportCommentsRowsToXLSX(rows: any[], baseName: string) {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Comments");
   const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-  downloadFile(new Blob([wbout], { type: "application/octet-stream" }), `${withThaiMonthYear(baseName)}.xlsx`, "application/octet-stream");
+  const blob = new Blob([wbout], { type: "application/octet-stream" });
+  downloadFile(blob, `${withThaiMonthYear(baseName)}.xlsx`, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+}
+
+// Helper to ensure element has an ID for canvas capture
+export function ensureTempId(element: HTMLElement): string {
+  if (element.id) return element.id;
+  const tempId = `temp-export-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  element.id = tempId;
+  return tempId;
+}
+
+// Export all content on current page
+export async function exportAllCurrentPage() {
+  try {
+    // 1. Export Charts
+    const chartNodes = Array.from(document.querySelectorAll<HTMLElement>("[data-export-chart], .recharts-wrapper"));
+    for (const node of chartNodes) {
+      const name = node.dataset.exportChart || node.id || node.getAttribute("aria-label") || "Chart";
+      const elementId = ensureTempId(node);
+      await exportChartToPNG(elementId, withThaiMonthYear(name));
+    }
+
+    // 2. Export Tables
+    const tableContainers = Array.from(document.querySelectorAll<HTMLElement>("[data-export-table]"));
+    const tables = new Set<HTMLTableElement>([
+      ...tableContainers.flatMap(c => Array.from(c.querySelectorAll("table"))),
+      ...Array.from(document.querySelectorAll("table"))
+    ]);
+    
+    for (const table of tables) {
+      const baseName = (table.closest("[data-export-table]")?.getAttribute("data-export-name")) || 
+                       table.getAttribute("aria-label") || "Table";
+      const tab = domTableToRows(table);
+      if (tab.headers.length && tab.rows.length) {
+        saveTableAsCSV_XLSX(tab, baseName);
+      }
+    }
+
+    // 3. Export Comments
+    const rows = extractCommentsFromDOM();
+    if (rows.length) {
+      exportCommentsRowsToXLSX(rows, "ความคิดเห็นทั้งหมด");
+    }
+
+    return { 
+      charts: chartNodes.length, 
+      tables: tables.size, 
+      comments: rows.length 
+    };
+  } catch (error) {
+    console.error('Export all error:', error);
+    throw error;
+  }
 }

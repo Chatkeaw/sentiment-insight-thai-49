@@ -1,169 +1,234 @@
-// src/components/shared/ExportButton.tsx
-import * as React from "react";
-import { Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogTrigger 
+} from '@/components/ui/dialog';
+import { Download, FileText, FileSpreadsheet, Image, File, Package } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  exportToCSV, 
+  exportToExcel, 
+  exportChartToPNG, 
+  exportToPDF, 
+  exportToDOCX,
+  convertChartDataForExport, 
+  convertFeedbackDataForExport,
+  exportAllCurrentPage
+} from '@/utils/exportUtils';
 
-import {
-  exportChartToPNG,
-  exportToCSV,
-  exportToExcel,
-  withThaiMonthYear,
-  domTableToRows,
-  saveTableAsCSV_XLSX,
-  extractCommentsFromDOM,
-  exportCommentsRowsToXLSX,
-} from "@/utils/exportUtils";
-
-type ExportButtonProps = {
-  type: "chart" | "table";
-  elementId?: string;   // id ของกราฟหรือ wrapper ที่มี <table>
-  data?: any[];         // ส่ง data โดยตรงกรณี table
-  filename?: string;
+interface ExportButtonProps {
+  data: any[] | any;
+  type: 'chart' | 'feedback' | 'table';
+  filename: string;
   title?: string;
-  showExportAll?: boolean; // เปิดเมนู Export All
-};
+  elementId?: string; // Required for chart/PDF exports
+  chartType?: string; // Description of chart type for export
+}
 
 export const ExportButton: React.FC<ExportButtonProps> = ({
-  type,
-  elementId,
   data,
+  type,
   filename,
   title,
-  showExportAll = true,
+  elementId,
+  chartType = 'กราฟ',
 }) => {
-  const handleExportPNG = async () => {
-    if (!elementId) return;
-    const name = withThaiMonthYear(filename || title || "chart");
-    await exportChartToPNG(elementId, `${name}.png`);
-  };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
 
-  const handleExportCSV = () => {
-    const name = withThaiMonthYear(filename || title || "table");
-    if (data?.length) {
-      exportToCSV(data, `${name}.csv`);
-      return;
-    }
-    if (elementId) {
-      const root = document.getElementById(elementId);
-      const table = root?.querySelector("table");
-      if (table) {
-        const rows = domTableToRows(table as HTMLTableElement);
-        saveTableAsCSV_XLSX(rows, name);
-      }
+  const prepareDataForExport = () => {
+    const arrayData = Array.isArray(data) ? data : [data];
+    switch (type) {
+      case 'chart':
+        return convertChartDataForExport(arrayData, chartType);
+      case 'feedback':
+        return convertFeedbackDataForExport(arrayData);
+      default:
+        return arrayData;
     }
   };
 
-  const handleExportXLSX = () => {
-    const name = withThaiMonthYear(filename || title || "table");
-    if (data?.length) {
-      exportToExcel(data, `${name}.xlsx`);
-      return;
-    }
-    if (elementId) {
-      const root = document.getElementById(elementId);
-      const table = root?.querySelector("table");
-      if (table) {
-        const rows = domTableToRows(table as HTMLTableElement);
-        saveTableAsCSV_XLSX(rows, name);
-      }
-    }
-  };
-
-  // ===== Export All: กราฟ(PNG) + ตาราง(CSV+XLSX) + คอมเมนต์(XLSX) =====
-  const exportAllCurrentPage = async () => {
+  const handleExportAll = async () => {
     try {
-      // Charts
-      const chartNodes = Array.from(
-        document.querySelectorAll<HTMLElement>("[data-export-chart], .recharts-wrapper")
-      );
-      let cIdx = 1;
-      for (const node of chartNodes) {
-        const base =
-          node.dataset.exportChart ||
-          node.getAttribute("aria-label") ||
-          node.id ||
-          `Chart-${cIdx++}`;
-        let id = node.id;
-        if (!id) {
-          id = `__exp_chart_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-          node.id = id;
-        }
-        await exportChartToPNG(id, `${withThaiMonthYear(base)}.png`);
-      }
-
-      // Tables
-      const holders = Array.from(
-        document.querySelectorAll<HTMLElement>("[data-export-table]")
-      );
-      const tables = new Set<HTMLTableElement>([
-        ...holders.flatMap((h) => Array.from(h.querySelectorAll("table"))),
-        ...Array.from(document.querySelectorAll("table")),
-      ]);
-      let tIdx = 1;
-      for (const tb of tables) {
-        const base =
-          (tb.closest("[data-export-table]") as HTMLElement | null)
-            ?.getAttribute("data-export-name") ||
-          tb.getAttribute("aria-label") ||
-          `Table-${tIdx++}`;
-        const rows = domTableToRows(tb);
-        saveTableAsCSV_XLSX(rows, base); // บันทึกทั้ง CSV + XLSX
-      }
-
-      // Comments
-      const comments = extractCommentsFromDOM();
-      if (comments.length) {
-        exportCommentsRowsToXLSX(comments, "ความคิดเห็นทั้งหมด");
-      }
-    } catch (e) {
-      console.error("Export All failed:", e);
+      setIsExporting(true);
+      const result = await exportAllCurrentPage();
+      
+      toast({
+        title: "ส่งออกข้อมูลทั้งหมดสำเร็จ",
+        description: `ส่งออกกราฟ ${result.charts} รายการ, ตาราง ${result.tables} รายการ, และความคิดเห็น ${result.comments} รายการ`,
+      });
+      
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Export all error:', error);
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถส่งออกข้อมูลทั้งหมดได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
     }
   };
+
+  const handleExport = async (format: 'csv' | 'excel' | 'png' | 'pdf' | 'docx' | 'all') => {
+    try {
+      setIsExporting(true);
+      const exportData = prepareDataForExport();
+
+      switch (format) {
+        case 'csv':
+          exportToCSV(exportData, filename);
+          break;
+        case 'excel':
+          exportToExcel(exportData, filename, 'ข้อมูล');
+          break;
+        case 'png':
+          if (!elementId) {
+            throw new Error('Element ID is required for PNG export');
+          }
+          await exportChartToPNG(elementId, filename);
+          break;
+        case 'pdf':
+          if (!elementId) {
+            throw new Error('Element ID is required for PDF export');
+          }
+          await exportToPDF(elementId, filename, title);
+          break;
+        case 'docx':
+          await exportToDOCX(exportData, filename, title || 'รายงานข้อมูล', type);
+          break;
+        case 'all':
+          await handleExportAll();
+          return; // Exit early, handleExportAll manages its own toast/modal
+        default:
+          throw new Error('Unsupported export format');
+      }
+
+      toast({
+        title: "ส่งออกข้อมูลสำเร็จ",
+        description: `ไฟล์ ${filename}.${format} ถูกดาวน์โหลดแล้ว`,
+      });
+      
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถส่งออกข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const exportOptions = [
+    {
+      format: 'all' as const,
+      label: 'Export All (This Page)',
+      description: 'ส่งออกกราฟ ตาราง และความคิดเห็นทั้งหมดในหน้านี้',
+      icon: Package,
+      available: true,
+    },
+    {
+      format: 'csv' as const,
+      label: 'CSV',
+      description: 'ไฟล์ข้อมูลที่แยกด้วยเครื่องหมายจุลภาค',
+      icon: FileText,
+      available: type !== 'chart' || false,
+    },
+    {
+      format: 'excel' as const,
+      label: 'Excel (XLSX)',
+      description: 'ไฟล์ Excel สำหรับการวิเคราะห์ข้อมูล',
+      icon: FileSpreadsheet,
+      available: true,
+    },
+    {
+      format: 'png' as const,
+      label: 'PNG',
+      description: 'รูปภาพกราฟความละเอียดสูง',
+      icon: Image,
+      available: type === 'chart' && !!elementId,
+    },
+    {
+      format: 'pdf' as const,
+      label: 'PDF',
+      description: 'เอกสาร PDF พร้อมกราฟและข้อมูล',
+      icon: FileText,
+      available: !!elementId,
+    },
+    {
+      format: 'docx' as const,
+      label: 'Word (DOCX)',
+      description: 'เอกสาร Word สำหรับการแก้ไข',
+      icon: File,
+      available: true,
+    },
+  ];
+
+  const availableOptions = exportOptions.filter(option => option.available);
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 px-2" aria-label="Export">
-          <Download className="h-4 w-4" />
+    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 hover:bg-primary/10"
+        >
+          <Download className="w-4 h-4" />
+          ส่งออก
         </Button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>{title || "Export"}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-
-        {type === "chart" && (
-          <DropdownMenuItem onClick={handleExportPNG}>บันทึกกราฟเป็น PNG</DropdownMenuItem>
-        )}
-
-        {type === "table" && (
-          <>
-            <DropdownMenuItem onClick={handleExportCSV}>ส่งออกตารางเป็น CSV</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleExportXLSX}>
-              ส่งออกตารางเป็น Excel (XLSX)
-            </DropdownMenuItem>
-          </>
-        )}
-
-        {showExportAll && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={exportAllCurrentPage}>
-              Export All (This Page)
-            </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>เลือกรูปแบบไฟล์</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            เลือกรูปแบบไฟล์ที่ต้องการส่งออกข้อมูล
+          </p>
+          <div className="space-y-2">
+            {availableOptions.map((option) => {
+              const Icon = option.icon;
+              return (
+                <Button
+                  key={option.format}
+                  variant="ghost"
+                  className="w-full justify-start p-4 h-auto"
+                  onClick={() => handleExport(option.format)}
+                  disabled={isExporting}
+                >
+                  <div className="flex items-start gap-3">
+                    <Icon className="w-5 h-5 mt-0.5 text-primary" />
+                    <div className="text-left">
+                      <div className="font-medium">{option.label}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {option.description}
+                      </div>
+                    </div>
+                  </div>
+                </Button>
+              );
+            })}
+          </div>
+          {isExporting && (
+            <div className="text-center py-4">
+              <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                กำลังส่งออกข้อมูล...
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
-
-export default ExportButton;
