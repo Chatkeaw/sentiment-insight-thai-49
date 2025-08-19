@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger 
 } from '@/components/ui/dialog';
-import { Download, FileText, FileSpreadsheet, Image, File } from 'lucide-react';
+import { Download, FileText, FileSpreadsheet, Image, File, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { 
   exportToCSV, 
@@ -16,7 +16,8 @@ import {
   exportToPDF, 
   exportToDOCX,
   convertChartDataForExport, 
-  convertFeedbackDataForExport 
+  convertFeedbackDataForExport,
+  exportAllCurrentPage
 } from '@/utils/exportUtils';
 
 interface ExportButtonProps {
@@ -52,7 +53,30 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
     }
   };
 
-  const handleExport = async (format: 'csv' | 'excel' | 'png' | 'pdf' | 'docx') => {
+  const handleExportAll = async () => {
+    try {
+      setIsExporting(true);
+      const result = await exportAllCurrentPage();
+      
+      toast({
+        title: "ส่งออกข้อมูลทั้งหมดสำเร็จ",
+        description: `ส่งออกกราฟ ${result.charts} รายการ, ตาราง ${result.tables} รายการ, และความคิดเห็น ${result.comments} รายการ`,
+      });
+      
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Export all error:', error);
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถส่งออกข้อมูลทั้งหมดได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExport = async (format: 'csv' | 'excel' | 'png' | 'pdf' | 'docx' | 'all') => {
     try {
       setIsExporting(true);
       const exportData = prepareDataForExport();
@@ -79,6 +103,9 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
         case 'docx':
           await exportToDOCX(exportData, filename, title || 'รายงานข้อมูล', type);
           break;
+        case 'all':
+          await handleExportAll();
+          return; // Exit early, handleExportAll manages its own toast/modal
         default:
           throw new Error('Unsupported export format');
       }
@@ -102,6 +129,13 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
   };
 
   const exportOptions = [
+    {
+      format: 'all' as const,
+      label: 'Export All (This Page)',
+      description: 'ส่งออกกราฟ ตาราง และความคิดเห็นทั้งหมดในหน้านี้',
+      icon: Package,
+      available: true,
+    },
     {
       format: 'csv' as const,
       label: 'CSV',
