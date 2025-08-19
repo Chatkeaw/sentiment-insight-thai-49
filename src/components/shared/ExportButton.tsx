@@ -56,7 +56,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
       const table = root?.querySelector("table");
       if (table) {
         const rows = domTableToRows(table as HTMLTableElement);
-        saveTableAsCSV_XLSX(rows, name, { only: "csv" });
+        saveTableAsCSV_XLSX(rows, name);
       }
     }
   };
@@ -72,7 +72,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
       const table = root?.querySelector("table");
       if (table) {
         const rows = domTableToRows(table as HTMLTableElement);
-        saveTableAsCSV_XLSX(rows, name, { only: "xlsx" });
+        saveTableAsCSV_XLSX(rows, name);
       }
     }
   };
