@@ -1,347 +1,278 @@
-// src/pages/ComplaintsPage.tsx
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import TimeFilter from '@/components/TimeFilter';
-import { TimeFilter as TimeFilterType } from '@/types/dashboard';
-import { mockFeedbackData } from '@/data/mockData';
-import { FeedbackEntry } from '@/types/dashboard';
+import React from "react";
+import { RefreshCw, Info, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { UserProfile } from "@/components/layout/UserProfile";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface ComplaintsPageProps {
-  timeFilter: TimeFilterType['value'];
-  onTimeFilterChange: (value: TimeFilterType['value']) => void;
+interface DashboardHeaderProps {
+  lastUpdate?: string;
+  onRefresh?: () => void;
 }
 
-/** labels ของรหัสย่อย 1.x–5.x */
-const COMMENT_TAG_LABELS: Record<string, string> = {
-  '1.1': 'ความสุภาพและมารยาทของพนักงาน',
-  '1.2': 'ความเอาใจใส่ในการให้บริการลูกค้า',
-  '1.3': 'ความสามารถในการตอบคำถามหรือให้คำแนะนำ',
-  '1.4': 'ความถูกต้องในการให้บริการ',
-  '1.5': 'ความรวดเร็วในการให้บริการ',
-  '1.6': 'ความเป็นมืออาชีพและการแก้ไขปัญหาเฉพาะหน้า',
-  '1.7': 'ความประทับใจในการให้บริการ',
-  '1.8': 'รปภ, แม่บ้าน',
-  '2.1': 'ความพร้อมในการให้บริการ',
-  '2.2': 'กระบวนการ/ความเป็นธรรมในการให้บริการ',
-  '2.3': 'ระบบเรียกคิวและจัดการคิว',
-  '2.4': 'ภาระเอกสาร',
-  '3.1': 'ระบบ Core ของธนาคาร',
-  '3.2': 'เครื่องออกบัตรคิว',
-  '3.3': 'ATM / ADM / CDM',
-  '3.4': 'E-KYC / Scanner',
-  '3.5': 'แอพพลิเคชัน MyMo',
-  '3.6': 'เครื่องปรับสมุด',
-  '3.7': 'เครื่องนับเงิน',
-  '4.1': 'รายละเอียดผลิตภัณฑ์',
-  '4.2': 'เงื่อนไขอนุมัติ',
-  '4.3': 'ระยะเวลาอนุมัติ',
-  '4.4': 'ความยืดหยุ่น',
-  '4.5': 'ความเรียบง่ายของข้อมูล',
-  '5.1': 'ความสะอาด',
-  '5.2': 'พื้นที่และความคับคั่ง',
-  '5.3': 'อุณหภูมิ',
-  '5.4': 'โต๊ะรับบริการ',
-  '5.5': 'จุดรอรับบริการ',
-  '5.6': 'แสง',
-  '5.7': 'เสียง',
-  '5.8': 'ห้องน้ำ',
-  '5.9': 'ที่จอดรถ',
-  '5.10': 'ป้าย-สื่อประชาสัมพันธ์',
-  '5.11': 'สิ่งอำนวยความสะดวกอื่นๆ',
+/** ===== helpers ภายในไฟล์เดียว เพื่อกันปัญหา import/deps ===== */
+type Row = Array<string | number | null | undefined>;
+type Rows = Row[];
+
+const withThaiMonthYear = (base: string) => {
+  const now = new Date();
+  const thMonths = [
+    "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
+    "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม",
+  ];
+  return `${base}-${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
 };
 
-/** map คีย์เดิม -> รหัส 1.x–5.x (ใช้กรณียังไม่ได้เพิ่ม commentTags ใน mockData) */
-const LEGACY_KEY_TO_CODE: Record<string, string> = {
-  // staff
-  staffPoliteness: '1.1',
-  staffCare: '1.2',
-  staffConsultation: '1.3',
-  staffAccuracy: '1.4',
-  staffSpeed: '1.5',
-  staffProfessionalism: '1.6',
-  staffImpression: '1.7',
-  staffSecurity: '1.8',
-  // service
-  serviceReadiness: '2.1',
-  serviceProcess: '2.2',
-  serviceQueue: '2.3',
-  serviceDocuments: '2.4',
-  // tech
-  techCore: '3.1',
-  techQueue: '3.2',
-  techATM: '3.3',
-  techKYC: '3.4',
-  techApp: '3.5',
-  techBookUpdate: '3.6',
-  techCashCounter: '3.7',
-  // products
-  productDetails: '4.1',
-  productConditions: '4.2',
-  productApprovalTime: '4.3',
-  productFlexibility: '4.4',
-  productSimplicity: '4.5',
-  // environment
-  envCleanliness: '5.1',
-  envSpace: '5.2',
-  envTemperature: '5.3',
-  envDesk: '5.4',
-  envWaitingArea: '5.5',
-  envLighting: '5.6',
-  envSound: '5.7',
-  envRestroom: '5.8',
-  envParking: '5.9',
-  envSignage: '5.10',
-  envOtherFacilities: '5.11',
+const downloadBlob = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 };
 
-/** ใช้กรองด้วย prefix 1.–5. ตามหมวดหลักในดรอปดาวน์ */
-const MAIN_CATEGORY_PREFIX: Record<string, string | null> = {
-  all: null,
-  staff: '1.',
-  service: '2.',
-  technology: '3.',
-  products: '4.',
-  environment: '5.',
-  marketConduct: null,
-  other: null,
+const saveRowsAsCSV = (rows: Rows, base: string) => {
+  const name = withThaiMonthYear(base);
+  const csv = rows
+    .map((r) =>
+      r
+        .map((v) => {
+          if (v == null) return "";
+          const s = String(v).replace(/"/g, '""');
+          return /[",\n]/.test(s) ? `"${s}"` : s;
+        })
+        .join(",")
+    )
+    .join("\n");
+  downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), `${name}.csv`);
 };
 
-/** ดึงแท็ก 1.x–5.x จาก feedback: ใช้ commentTags ถ้ามี; มิฉะนั้น map จาก detailedSentiment ที่เป็น -1 */
-function pickTagCodes(feedback: FeedbackEntry): string[] {
-  const tagsFromNew = (feedback as any).commentTags as string[] | undefined;
-  if (Array.isArray(tagsFromNew) && tagsFromNew.length) return tagsFromNew;
+const saveRowsAsXLSX = async (rows: Rows, base: string) => {
+  const name = withThaiMonthYear(base);
+  const XLSX: any = await import("xlsx");
+  const ws = XLSX.utils.aoa_to_sheet(rows as any);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  downloadBlob(new Blob([wbout], { type: "application/octet-stream" }), `${name}.xlsx`);
+};
 
-  const detailed = (feedback as any).detailedSentiment as Record<string, number> | undefined;
-  if (!detailed) return [];
-  const codes: string[] = [];
-  for (const [k, v] of Object.entries(detailed)) {
-    if (v === -1 && LEGACY_KEY_TO_CODE[k]) {
-      codes.push(LEGACY_KEY_TO_CODE[k]);
-    }
+const tableToRows = (table: HTMLTableElement): Rows => {
+  const rows: Rows = [];
+  const trAll = Array.from(table.querySelectorAll("tr"));
+  for (const tr of trAll) {
+    const cells = Array.from(tr.children) as Array<HTMLTableCellElement>;
+    rows.push(cells.map((c) => c.innerText.trim()));
   }
-  // unique
-  return Array.from(new Set(codes));
-}
+  return rows;
+};
 
-export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
-  timeFilter,
-  onTimeFilterChange
+const exportChartPNG = async (elementId: string, base: string) => {
+  try {
+    const { default: html2canvas } = await import("html2canvas");
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff" });
+    const dataUrl = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `${withThaiMonthYear(base)}.png`;
+    a.click();
+  } catch (e) {
+    // ไม่มี html2canvas → ข้ามกราฟไป แต่ยัง export อย่างอื่นได้
+    console.warn("Skip charts (html2canvas not available).", e);
+  }
+};
+
+const extractComments = (): Rows => {
+  const header = [
+    "วันที่","สาขา","เขต","ภาค","ประเภทบริการ","ความคิดเห็น","คะแนนความพึงพอใจรวม",
+  ];
+  const items = Array.from(
+    document.querySelectorAll<HTMLElement>(
+      "[data-comment-item], .comment-item, .feedback-item"
+    )
+  );
+  if (!items.length) return [header];
+
+  const get = (el: HTMLElement, sel: string) =>
+    el.querySelector(sel)?.textContent?.trim() || "";
+
+  const rows: Rows = [header];
+  for (const el of items) {
+    rows.push([
+      get(el, "[data-date], .date"),
+      get(el, "[data-branch], .branch"),
+      get(el, "[data-district], .district"),
+      get(el, "[data-region], .region"),
+      get(el, "[data-service], .service"),
+      get(el, "[data-comment], .comment, .content"),
+      get(el, "[data-score], .score"),
+    ]);
+  }
+  return rows;
+};
+
+const exportAllThisPage = async () => {
+  // 1) กราฟ → PNG
+  const chartNodes = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-export-chart], .recharts-wrapper")
+  );
+  let cIdx = 1;
+  for (const node of chartNodes) {
+    const base =
+      node.dataset.exportChart ||
+      node.getAttribute("aria-label") ||
+      node.id ||
+      `Chart-${cIdx++}`;
+    let id = node.id;
+    if (!id) {
+      id = `__exp_chart_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      node.id = id;
+    }
+    await exportChartPNG(id, base);
+  }
+
+  // 2) ตาราง → CSV + XLSX
+  const holders = Array.from(document.querySelectorAll<HTMLElement>("[data-export-table]"));
+  const tables = new Set<HTMLTableElement>([
+    ...holders.flatMap((h) => Array.from(h.querySelectorAll("table"))),
+    ...Array.from(document.querySelectorAll("table")),
+  ]);
+  let tIdx = 1;
+  for (const tb of tables) {
+    const base =
+      (tb.closest("[data-export-table]") as HTMLElement | null)?.getAttribute(
+        "data-export-name"
+      ) ||
+      tb.getAttribute("aria-label") ||
+      `Table-${tIdx++}`;
+    const rows = tableToRows(tb);
+    saveRowsAsCSV(rows, base);
+    await saveRowsAsXLSX(rows, base);
+  }
+
+  // 3) ความคิดเห็น → XLSX (รวมไฟล์เดียว)
+  const comments = extractComments();
+  if (comments.length > 1) {
+    await saveRowsAsXLSX(comments, "ความคิดเห็นทั้งหมด");
+  }
+};
+/** ===== end helpers ===== */
+
+const DashboardHeader: React.FC<DashboardHeaderProps> = ({
+  lastUpdate,
+  onRefresh,
 }) => {
-  const [selectedRegion, setSelectedRegion] = useState<string>('all');
-  const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
-  const [selectedBranch, setSelectedBranch] = useState<string>('all');
-  const [selectedMainCategory, setSelectedMainCategory] = useState<string>('all');
-  const [selectedServiceType, setSelectedServiceType] = useState<string>('all');
-
-  const regions = useMemo(() => {
-    const unique = Array.from(new Set(mockFeedbackData.map(f => f.branch.region))).sort();
-    return ['all', ...unique];
-  }, []);
-
-  const districts = useMemo(() => {
-    if (selectedRegion === 'all') return ['all'];
-    const unique = Array.from(new Set(
-      mockFeedbackData.filter(f => f.branch.region === selectedRegion).map(f => f.branch.district)
-    )).sort();
-    return ['all', ...unique];
-  }, [selectedRegion]);
-
-  const branches = useMemo(() => {
-    if (selectedDistrict === 'all') return ['all'];
-    const unique = Array.from(new Set(
-      mockFeedbackData
-        .filter(f =>
-          (selectedRegion === 'all' || f.branch.region === selectedRegion) &&
-          f.branch.district === selectedDistrict
-        )
-        .map(f => f.branch.branch)
-    )).sort();
-    return ['all', ...unique];
-  }, [selectedRegion, selectedDistrict]);
-
-  const mainCategories = [
-    { value: 'all', label: 'ทั้งหมด' },
-    { value: 'staff', label: 'พนักงานและบุคลากร' },
-    { value: 'service', label: 'ระบบและกระบวนการให้บริการ' },
-    { value: 'technology', label: 'เทคโนโลยีและดิจิทัล' },
-    { value: 'products', label: 'เงื่อนไขและผลิตภัณฑ์' },
-    { value: 'environment', label: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก' },
-    { value: 'marketConduct', label: 'การปฏิบัติตลาด' },
-    { value: 'other', label: 'อื่นๆ' }
-  ];
-
-  const serviceTypes = [
-    'ทั้งหมด',
-    'การฝากเงิน/ถอนเงิน',
-    'การซื้อผลิตภัณฑ์',
-    'การชำระค่าบริการ/ค่าธรรมเนียม',
-    'อื่นๆ'
-  ];
-
-  const timePeriods = [
-    { value: 'monthly', label: 'รายเดือน' },
-    { value: 'quarterly', label: 'ไตรมาส' },
-    { value: 'custom', label: 'กำหนดเอง' }
-  ];
-  const [selectedTimePeriod, setSelectedTimePeriod] = useState('monthly');
-
-  /** กรองข้อมูลด้วย prefix 1.–5. จากแท็ก */
-  const filteredComplaints = useMemo(() => {
-    const prefix = MAIN_CATEGORY_PREFIX[selectedMainCategory] ?? null;
-    return mockFeedbackData
-      .filter((feedback: FeedbackEntry) => {
-        if (selectedRegion !== 'all' && feedback.branch.region !== selectedRegion) return false;
-        if (selectedDistrict !== 'all' && feedback.branch.district !== selectedDistrict) return false;
-        if (selectedBranch !== 'all' && feedback.branch.branch !== selectedBranch) return false;
-
-        if (selectedServiceType !== 'all' && selectedServiceType !== 'ทั้งหมด' && feedback.serviceType !== selectedServiceType) {
-          return false;
-        }
-
-        if (prefix) {
-          const codes = pickTagCodes(feedback);
-          if (!codes.some(c => c.startsWith(prefix))) return false;
-        }
-        return true;
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [selectedRegion, selectedDistrict, selectedBranch, selectedMainCategory, selectedServiceType]);
+  const { state } = useAuth();
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    const day = now.getDate().toString().padStart(2, "0");
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
+    const year = now.getFullYear();
+    const hours = now.getHours().toString().padStart(2, "0");
+    const minutes = now.getMinutes().toString().padStart(2, "0");
+    return `${day}-${month}-${year} ${hours}:${minutes}`;
+  };
 
   return (
-    <div className="space-y-6 max-w-full">
-      {/* Header */}
-      <div className="flex flex-col space-y-2">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-foreground">ข้อร้องเรียนลูกค้า</h1>
-          <TimeFilter value={timeFilter} onChange={onTimeFilterChange} />
+    <header className="relative bg-white">
+      <div className="flex items-center justify-between">
+        {/* ซ้าย */}
+        <div className="flex-1">
+          <h1 className="text-header-main font-bold text-foreground mb-1">
+            Dashboard ข้อเสนอแนะ ข้อร้องเรียน การใช้บริการสาขา (Mockup)
+          </h1>
+          <h2 className="text-header-sub text-muted-foreground">
+            ระบบติดตามและวิเคราะห์ข้อร้องเรียนลูกค้าธนาคารออมสิน
+          </h2>
         </div>
-        <p className="text-muted-foreground">รายงานข้อร้องเรียนสำคัญจากลูกค้า</p>
-      </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>ตัวกรองข้อมูล</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">เขต/ภาค</label>
-              <Select value={selectedRegion} onValueChange={(value) => {
-                setSelectedRegion(value);
-                setSelectedDistrict('all');
-                setSelectedBranch('all');
-              }}>
-                <SelectTrigger><SelectValue placeholder="เลือกภาค" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">ทั้งหมด</SelectItem>
-                  {regions.filter(r => r !== 'all').map(region => (
-                    <SelectItem key={region} value={region}>{region}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">สาขา</label>
-              <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                <SelectTrigger><SelectValue placeholder="เลือกสาขา" /></SelectTrigger>
-                <SelectContent>
-                  {branches.map(branch => (
-                    <SelectItem key={branch} value={branch}>
-                      {branch === 'all' ? 'ทั้งหมด' : branch}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">ประเภทเวลา</label>
-              <Select value={selectedTimePeriod} onValueChange={setSelectedTimePeriod}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {timePeriods.map(period => (
-                    <SelectItem key={period.value} value={period.value}>{period.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">หมวดหมู่</label>
-              <Select value={selectedMainCategory} onValueChange={setSelectedMainCategory}>
-                <SelectTrigger><SelectValue placeholder="เลือกหมวดหมู่" /></SelectTrigger>
-                <SelectContent>
-                  {mainCategories.map(category => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        {/* ขวา */}
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-sm text-muted-foreground">ข้อมูลอัพเดทล่าสุด</p>
+            <p className="text-body font-medium text-foreground">
+              {lastUpdate || getCurrentDateTime()}
+            </p>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            📋 รายการข้อร้องเรียน ({filteredComplaints.length} รายการ)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4 max-h-96 overflow-y-auto">
-            {filteredComplaints.map((complaint) => {
-              const codes = pickTagCodes(complaint);
-              return (
-                <Card key={complaint.id} className="border-l-4 border-l-destructive">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3 mb-3">
-                      <span className="text-xl">⚠️</span>
-                      <div className="flex-1">
-                        <div className="flex flex-wrap gap-4 mb-2 text-sm text-muted-foreground">
-                          <span>📅 {complaint.date}</span>
-                          <span>🏢 {complaint.branch.branch}</span>
-                          <span>🔧 {complaint.serviceType}</span>
-                        </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRefresh}
+            className="h-9 w-9 p-0 border-primary/20 hover:bg-primary/5"
+            aria-label="รีเฟรชข้อมูล"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </Button>
 
-                        <p className="text-foreground leading-relaxed mb-3">
-                          {complaint.comment}
-                        </p>
+          {/* ปุ่ม Export All (เพิ่มแค่ปุ่มเดียว ไม่แตะ UI อื่น) */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportAllThisPage}
+            className="h-9 w-9 p-0 border-primary/20 hover:bg-primary/5"
+            aria-label="ส่งออกข้อมูลหน้านี้"
+            title="Export All (This Page)"
+          >
+            <Download className="w-4 h-4" />
+          </Button>
 
-                        {codes.length > 0 && (
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium text-muted-foreground">หมวดหมู่ย่อย (ความคิดเห็น):</p>
-                            <div className="flex flex-wrap gap-2">
-                              {codes.map(code => (
-                                <Badge key={code} variant="destructive" className="text-xs">
-                                  {code} {COMMENT_TAG_LABELS[code] ?? ''}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-
-            {filteredComplaints.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground">
-                <p className="text-lg">ไม่พบข้อร้องเรียนที่ตรงกับเงื่อนไขที่เลือก</p>
-                <p className="text-sm mt-2">ลองปรับเปลี่ยนตัวกรองเพื่อดูข้อมูลเพิ่มเติม</p>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 w-9 p-0 border-primary/20 hover:bg-primary/5"
+                aria-label="เกี่ยวกับ"
+              >
+                <Info className="w-4 h-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-header-sub">
+                  เกี่ยวกับระบบ
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 text-body">
+                <div>
+                  <h3 className="font-semibold mb-2">Customer Feedback Management System</h3>
+                  <p className="text-muted-foreground">Version 2.1.0</p>
+                  <p className="text-muted-foreground">สร้างเมื่อ: มกราคม 2025</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">ผู้ใช้งานปัจจุบัน</h3>
+                  <p className="text-muted-foreground">{state.user?.fullName}</p>
+                  <p className="text-muted-foreground">{state.user?.department}</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">หน่วยงานผู้พัฒนา</h3>
+                  <p className="text-muted-foreground">ฝ่ายนวัตกรรมสารสนเทศ</p>
+                  <p className="text-muted-foreground">ธนาคารออมสิน</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">ติดต่อกลับ</h3>
+                  <p className="text-muted-foreground">โทร: 02-xxx-xxxx</p>
+                  <p className="text-muted-foreground">อีเมล: innovation@gsb.or.th</p>
+                </div>
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+            </DialogContent>
+          </Dialog>
+
+          <UserProfile />
+        </div>
+      </div>
+    </header>
   );
 };
+
+export default DashboardHeader;
