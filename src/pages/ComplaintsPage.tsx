@@ -7,15 +7,15 @@ import TimeFilter from '@/components/TimeFilter';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
 import { mockFeedbackData } from '@/data/mockData';
 import { FeedbackEntry } from '@/types/dashboard';
-import { Search, Calendar, RotateCw } from 'lucide-react';
 
-/* ---------- style helpers (UI เท่านั้น) ---------- */
-const sectionBox =
-  "rounded-2xl border border-pink-100 bg-pink-50/20 p-4 md:p-5";
-const selectTrigger =
-  "h-11 pl-9 rounded-lg border-pink-200 focus:ring-2 focus:ring-pink-200/60";
-const dateInput =
-  "h-11 w-full rounded-lg border border-pink-200 bg-white px-9 text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-pink-200/60 focus:border-pink-300";
+// NEW
+import { Button } from '@/components/ui/button';
+import { Search, Calendar, RefreshCcw } from 'lucide-react';
+
+interface ComplaintsPageProps {
+  timeFilter: TimeFilterType['value'];
+  onTimeFilterChange: (value: TimeFilterType['value']) => void;
+}
 
 /** labels ของรหัสย่อย 1.x–5.x */
 const COMMENT_TAG_LABELS: Record<string, string> = {
@@ -100,7 +100,7 @@ const LEGACY_KEY_TO_CODE: Record<string, string> = {
   envOtherFacilities: '5.11',
 };
 
-/** ใช้กรองด้วย prefix 1.–5. ตามหมวดหลักในดรอปดาวน์ */
+/** ใช้กรองด้วย prefix 1.–5. ตามหมวดหลัก */
 const MAIN_CATEGORY_PREFIX: Record<string, string | null> = {
   all: null,
   staff: '1.',
@@ -112,7 +112,6 @@ const MAIN_CATEGORY_PREFIX: Record<string, string | null> = {
   other: null,
 };
 
-/** ดึงแท็ก 1.x–5.x จาก feedback: ใช้ commentTags ถ้ามี; มิฉะนั้น map จาก detailedSentiment ที่เป็น -1 */
 function pickTagCodes(feedback: FeedbackEntry): string[] {
   const tagsFromNew = (feedback as any).commentTags as string[] | undefined;
   if (Array.isArray(tagsFromNew) && tagsFromNew.length) return tagsFromNew;
@@ -125,13 +124,7 @@ function pickTagCodes(feedback: FeedbackEntry): string[] {
       codes.push(LEGACY_KEY_TO_CODE[k]);
     }
   }
-  // unique
   return Array.from(new Set(codes));
-}
-
-interface ComplaintsPageProps {
-  timeFilter: TimeFilterType['value'];
-  onTimeFilterChange: (value: TimeFilterType['value']) => void;
 }
 
 export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
@@ -142,18 +135,18 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
   const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>('all');
-  const [selectedServiceType, setSelectedServiceType] = useState<string>('ทั้งหมด');
+  const [selectedServiceType, setSelectedServiceType] = useState<string>('all');
 
-  // วันที่ (UI เท่านั้น)
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  // NEW: date range
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
   const clearFilters = () => {
     setSelectedRegion('all');
     setSelectedDistrict('all');
     setSelectedBranch('all');
     setSelectedMainCategory('all');
-    setSelectedServiceType('ทั้งหมด');
+    setSelectedServiceType('all');
     setStartDate('');
     setEndDate('');
   };
@@ -184,9 +177,33 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
     return ['all', ...unique];
   }, [selectedRegion, selectedDistrict]);
 
-  /** กรองข้อมูลด้วย prefix 1.–5. จากแท็ก */
+  const mainCategories = [
+    { value: 'all', label: 'ทั้งหมด' },
+    { value: 'staff', label: 'พนักงานและบุคลากร' },
+    { value: 'service', label: 'ระบบและกระบวนการให้บริการ' },
+    { value: 'technology', label: 'เทคโนโลยีและดิจิทัล' },
+    { value: 'products', label: 'เงื่อนไขและผลิตภัณฑ์' },
+    { value: 'environment', label: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก' },
+    { value: 'marketConduct', label: 'การปฏิบัติตลาด' },
+    { value: 'other', label: 'อื่นๆ' }
+  ];
+
+  const serviceTypes = [
+    'ทั้งหมด',
+    'การฝากเงิน/ถอนเงิน',
+    'การซื้อผลิตภัณฑ์',
+    'การชำระค่าบริการ/ค่าธรรมเนียม',
+    'อื่นๆ'
+  ];
+
+  const parseDate = (d: string) => (d ? new Date(d) : null);
+
+  /** กรองข้อมูล */
   const filteredComplaints = useMemo(() => {
     const prefix = MAIN_CATEGORY_PREFIX[selectedMainCategory] ?? null;
+    const s = parseDate(startDate);
+    const e = parseDate(endDate);
+
     return mockFeedbackData
       .filter((feedback: FeedbackEntry) => {
         if (selectedRegion !== 'all' && feedback.branch.region !== selectedRegion) return false;
@@ -197,6 +214,11 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
           return false;
         }
 
+        // date range
+        const d = new Date(feedback.date);
+        if (s && d < s) return false;
+        if (e && d > e) return false;
+
         if (prefix) {
           const codes = pickTagCodes(feedback);
           if (!codes.some(c => c.startsWith(prefix))) return false;
@@ -204,7 +226,7 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
         return true;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [selectedRegion, selectedDistrict, selectedBranch, selectedMainCategory, selectedServiceType]);
+  }, [selectedRegion, selectedDistrict, selectedBranch, selectedMainCategory, selectedServiceType, startDate, endDate]);
 
   return (
     <div className="space-y-6 max-w-full">
@@ -217,32 +239,23 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
         <p className="text-muted-foreground">รายงานข้อร้องเรียนสำคัญจากลูกค้า</p>
       </div>
 
-      {/* Filters – UI แบบอ้างอิง */}
-      <Card className="border-pink-200/60 shadow-[0_0_0_1px_rgba(244,114,182,.08),0_6px_20px_rgba(244,114,182,.06)]">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">ตัวกรองการแสดงผล</CardTitle>
-            <div className="flex gap-2">
-              <button
-                onClick={clearFilters}
-                className="inline-flex items-center gap-2 rounded-md border border-pink-200 bg-white px-3 py-2 text-sm text-pink-700 hover:bg-pink-50"
-              >
-                <RotateCw className="h-4 w-4" />
-                ล้างตัวกรอง
-              </button>
-              <button
-                className="rounded-md bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700"
-              >
-                ค้นหา
-              </button>
-            </div>
+      {/* Filters (ใหม่) */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-lg font-semibold">ตัวกรองการแสดงผล</CardTitle>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              ล้างตัวกรอง
+            </Button>
+            <Button size="sm">ค้นหา</Button>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {/* พื้นที่ให้บริการ */}
-          <div className={sectionBox}>
-            <div className="mb-2 text-sm font-medium text-foreground">พื้นที่ให้บริการ</div>
+          <div className="rounded-lg border border-pink-200/50 bg-pink-50/10 p-4 space-y-2">
+            <label className="text-sm font-medium text-foreground">พื้นที่ให้บริการ</label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* ภาค */}
               <div className="relative">
@@ -253,8 +266,9 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
                     setSelectedRegion(value);
                     setSelectedDistrict('all');
                     setSelectedBranch('all');
-                  }}>
-                  <SelectTrigger className={selectTrigger}>
+                  }}
+                >
+                  <SelectTrigger className="pl-9 pr-8">
                     <SelectValue placeholder="เลือกภาค" />
                   </SelectTrigger>
                   <SelectContent>
@@ -274,8 +288,9 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
                   onValueChange={(value) => {
                     setSelectedDistrict(value);
                     setSelectedBranch('all');
-                  }}>
-                  <SelectTrigger className={selectTrigger}>
+                  }}
+                >
+                  <SelectTrigger className="pl-9 pr-8">
                     <SelectValue placeholder="เลือกเขต" />
                   </SelectTrigger>
                   <SelectContent>
@@ -292,7 +307,7 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                  <SelectTrigger className={selectTrigger}>
+                  <SelectTrigger className="pl-9 pr-8">
                     <SelectValue placeholder="เลือกสาขา" />
                   </SelectTrigger>
                   <SelectContent>
@@ -307,73 +322,64 @@ export const ComplaintsPage: React.FC<ComplaintsPageProps> = ({
             </div>
           </div>
 
-          {/* ช่วงเวลา + ประเภทบริการ + หมวดหมู่ */}
-          <div className={sectionBox}>
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-              {/* ประเภทบริการ */}
-              <div className="md:col-span-4">
-                <div className="mb-1 text-sm font-medium">ประเภทการให้บริการ</div>
-                <Select value={selectedServiceType} onValueChange={setSelectedServiceType}>
-                  <SelectTrigger className="h-11 rounded-lg border-pink-200 focus:ring-2 focus:ring-pink-200/60">
-                    <SelectValue placeholder="เลือกประเภทบริการ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {['ทั้งหมด','การฝากเงิน/ถอนเงิน','การซื้อผลิตภัณฑ์','การชำระค่าบริการ/ค่าธรรมเนียม','อื่นๆ'].map(type => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* ตั้งแต่ */}
-              <div className="md:col-span-4 relative">
-                <div className="mb-1 text-sm font-medium">ตั้งแต่</div>
-                <Calendar className="absolute left-3 top-[42px] h-4 w-4 text-muted-foreground" />
+          {/* ช่วงเวลาการประเมิน */}
+          <div className="rounded-lg border border-pink-200/50 bg-pink-50/10 p-4 space-y-2">
+            <label className="text-sm font-medium text-foreground">ช่วงเวลาการประเมิน</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className={dateInput}
+                  className="w-full rounded-md border border-input bg-background px-9 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder="ตั้งแต่"
                 />
               </div>
 
-              {/* ถึง */}
-              <div className="md:col-span-4 relative">
-                <div className="mb-1 text-sm font-medium">ถึง</div>
-                <Calendar className="absolute left-3 top-[42px] h-4 w-4 text-muted-foreground" />
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className={dateInput}
+                  className="w-full rounded-md border border-input bg-background px-9 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder="ถึง"
                 />
               </div>
+            </div>
+          </div>
 
-              {/* หมวดหมู่ */}
-              <div className="md:col-span-4">
-                <div className="mb-1 text-sm font-medium">หมวดหมู่</div>
-                <Select value={selectedMainCategory} onValueChange={setSelectedMainCategory}>
-                  <SelectTrigger className="h-11 rounded-lg border-pink-200 focus:ring-2 focus:ring-pink-200/60">
-                    <SelectValue placeholder="เลือกหมวดหมู่" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[
-                      { value: 'all', label: 'ทั้งหมด' },
-                      { value: 'staff', label: 'พนักงานและบุคลากร' },
-                      { value: 'service', label: 'ระบบและกระบวนการให้บริการ' },
-                      { value: 'technology', label: 'เทคโนโลยีและดิจิทัล' },
-                      { value: 'products', label: 'เงื่อนไขและผลิตภัณฑ์' },
-                      { value: 'environment', label: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก' },
-                      { value: 'marketConduct', label: 'การปฏิบัติตลาด' },
-                      { value: 'other', label: 'อื่นๆ' },
-                    ].map(category => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* ประเภทการให้บริการ + หมวดหมู่ */}
+          <div className="rounded-lg border border-pink-200/50 bg-pink-50/10 p-4 space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">ประเภทการให้บริการ</label>
+              <Select value={selectedServiceType} onValueChange={setSelectedServiceType}>
+                <SelectTrigger className="pl-3 pr-8">
+                  <SelectValue placeholder="เลือกประเภทการให้บริการ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {serviceTypes.map(type => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">หมวดหมู่</label>
+              <Select value={selectedMainCategory} onValueChange={setSelectedMainCategory}>
+                <SelectTrigger className="pl-3 pr-8">
+                  <SelectValue placeholder="เลือกหมวดหมู่" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mainCategories.map(category => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>
