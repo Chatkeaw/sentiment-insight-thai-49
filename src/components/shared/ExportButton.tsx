@@ -1,4 +1,3 @@
-// src/components/shared/ExportButton.tsx
 import * as React from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,16 +10,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Fallback libs (เผื่อไม่มี util เดิม)
-import html2canvas from "html2canvas";
-import * as XLSX from "xlsx";
-
-/** ---------- Safe utils (dynamic import + fallback) ---------- */
+// ---------- Safe utils (dynamic import + fallback) ----------
 type Rows = Array<Array<string | number | null | undefined>>;
 
 const tryImportUtils = async (): Promise<any> => {
   try {
-    // dynamic import เพื่อไม่ให้ build พังถ้าไม่มีฟังก์ชันตามชื่อ
     const mod = await import("@/utils/exportUtils");
     return mod || {};
   } catch {
@@ -28,31 +22,17 @@ const tryImportUtils = async (): Promise<any> => {
   }
 };
 
-const toThaiMonthYear = (base: string) => {
-  // ถ้ามี util จริง ให้ใช้
-  return tryImportUtils().then((U) => {
-    if (typeof U.withThaiMonthYear === "function") {
-      return U.withThaiMonthYear(base);
-    }
-    // fallback: ใช้เดือน/ปีปัจจุบัน (พ.ศ.)
-    const now = new Date();
-    const thMonths = [
-      "มกราคม",
-      "กุมภาพันธ์",
-      "มีนาคม",
-      "เมษายน",
-      "พฤษภาคม",
-      "มิถุนายน",
-      "กรกฎาคม",
-      "สิงหาคม",
-      "กันยายน",
-      "ตุลาคม",
-      "พฤศจิกายน",
-      "ธันวาคม",
-    ];
-    const label = `${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
-    return `${base}-${label}`;
-  });
+const toThaiMonthYear = async (base: string) => {
+  const U = await tryImportUtils();
+  if (typeof U.withThaiMonthYear === "function") return U.withThaiMonthYear(base);
+
+  const now = new Date();
+  const thMonths = [
+    "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
+    "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม",
+  ];
+  const label = `${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+  return `${base}-${label}`;
 };
 
 const download = (blob: Blob, filename: string) => {
@@ -66,10 +46,10 @@ const download = (blob: Blob, filename: string) => {
 
 const exportChartPNG_safe = async (elementId: string, filename: string) => {
   const U = await tryImportUtils();
-  if (typeof U.exportChartToPNG === "function") {
-    return U.exportChartToPNG(elementId, filename);
-  }
-  // fallback with html2canvas
+  if (typeof U.exportChartToPNG === "function") return U.exportChartToPNG(elementId, filename);
+
+  // fallback: dynamic import html2canvas
+  const { default: html2canvas } = await import("html2canvas");
   const el = document.getElementById(elementId);
   if (!el) return;
   const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff" });
@@ -105,7 +85,8 @@ const saveRowsAsCSV = (rows: Rows, filenameNoExt: string) => {
   download(new Blob([csv], { type: "text/csv;charset=utf-8" }), `${filenameNoExt}.csv`);
 };
 
-const saveRowsAsXLSX = (rows: Rows, filenameNoExt: string) => {
+const saveRowsAsXLSX = async (rows: Rows, filenameNoExt: string) => {
+  const XLSX: any = await import("xlsx");
   const ws = XLSX.utils.aoa_to_sheet(rows as any);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
@@ -121,15 +102,12 @@ const saveRowsCSV_XLSX_safe = async (
   const U = await tryImportUtils();
   const name = await toThaiMonthYear(base);
 
-  if (typeof U.saveTableAsCSV_XLSX === "function") {
-    return U.saveTableAsCSV_XLSX(rows, name, opts);
-  }
+  if (typeof U.saveTableAsCSV_XLSX === "function") return U.saveTableAsCSV_XLSX(rows, name, opts);
   if (opts?.only === "csv") return saveRowsAsCSV(rows, name);
   if (opts?.only === "xlsx") return saveRowsAsXLSX(rows, name);
 
-  // default ทั้งสองแบบ
-  saveRowsAsCSV(rows, name);
-  saveRowsAsXLSX(rows, name);
+  await saveRowsAsCSV(rows, name);
+  await saveRowsAsXLSX(rows, name);
 };
 
 const exportToCSV_safe = async (data: any[], filenameNoExt: string) => {
@@ -157,26 +135,19 @@ const exportToExcel_safe = async (data: any[], filenameNoExt: string) => {
     rows.push(headers);
     for (const row of data) rows.push(headers.map((h) => row[h]));
   }
-  saveRowsAsXLSX(rows, name);
+  await saveRowsAsXLSX(rows, name);
 };
 
 const extractComments_safe = async (): Promise<Rows> => {
   const U = await tryImportUtils();
-  if (typeof U.extractCommentsFromDOM === "function") {
-    return U.extractCommentsFromDOM();
-  }
+  if (typeof U.extractCommentsFromDOM === "function") return U.extractCommentsFromDOM();
+
   // fallback selector
   const items = Array.from(
     document.querySelectorAll<HTMLElement>("[data-comment-item], .comment-item, .feedback-item")
   );
   const header = [
-    "วันที่",
-    "สาขา",
-    "เขต",
-    "ภาค",
-    "ประเภทบริการ",
-    "ความคิดเห็น",
-    "คะแนนความพึงพอใจรวม",
+    "วันที่","สาขา","เขต","ภาค","ประเภทบริการ","ความคิดเห็น","คะแนนความพึงพอใจรวม",
   ];
   const rows: Rows = [header];
   for (const el of items) {
@@ -197,23 +168,20 @@ const extractComments_safe = async (): Promise<Rows> => {
 const exportCommentsXLSX_safe = async (rows: Rows, filenameNoExt: string) => {
   const U = await tryImportUtils();
   const name = await toThaiMonthYear(filenameNoExt);
-  if (typeof U.exportCommentsRowsToXLSX === "function") {
-    return U.exportCommentsRowsToXLSX(rows, name);
-  }
-  saveRowsAsXLSX(rows, name);
+  if (typeof U.exportCommentsRowsToXLSX === "function") return U.exportCommentsRowsToXLSX(rows, name);
+  await saveRowsAsXLSX(rows, name);
 };
 
-/** ---------- Props ---------- */
+// ---------- Props ----------
 type ExportButtonProps = {
-  type: "chart" | "table" | "feedback";
+  type: "chart" | "table";
   elementId?: string;
-  data?: any;
+  data?: any[];
   filename?: string;
   title?: string;
-  chartType?: string;
 };
 
-/** ---------- Component ---------- */
+// ---------- Component ----------
 const ExportButton: React.FC<ExportButtonProps> = ({
   type,
   elementId,
@@ -221,7 +189,6 @@ const ExportButton: React.FC<ExportButtonProps> = ({
   filename,
   title,
 }) => {
-  // เดี่ยวตามชนิด
   const onPNG = async () => {
     if (!elementId) return;
     const name = await toThaiMonthYear(filename || title || "chart");
@@ -230,11 +197,8 @@ const ExportButton: React.FC<ExportButtonProps> = ({
 
   const onCSV = async () => {
     const base = filename || title || "table";
-    // มี data → ส่งออกตรง
-    if (data && Array.isArray(data) && data.length) {
-      return exportToCSV_safe(data, base);
-    }
-    // ไม่มี data → หา table จาก elementId
+    if (data && Array.isArray(data) && data.length) return exportToCSV_safe(data, base);
+
     if (elementId) {
       const root = document.getElementById(elementId);
       const table = root?.querySelector("table");
@@ -247,9 +211,8 @@ const ExportButton: React.FC<ExportButtonProps> = ({
 
   const onXLSX = async () => {
     const base = filename || title || "table";
-    if (data && Array.isArray(data) && data.length) {
-      return exportToExcel_safe(data, base);
-    }
+    if (data && Array.isArray(data) && data.length) return exportToExcel_safe(data, base);
+
     if (elementId) {
       const root = document.getElementById(elementId);
       const table = root?.querySelector("table");
@@ -260,7 +223,6 @@ const ExportButton: React.FC<ExportButtonProps> = ({
     }
   };
 
-  // Export All
   const onExportAll = async () => {
     try {
       // charts
@@ -284,9 +246,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       }
 
       // tables
-      const holders = Array.from(
-        document.querySelectorAll<HTMLElement>("[data-export-table]")
-      );
+      const holders = Array.from(document.querySelectorAll<HTMLElement>("[data-export-table]"));
       const tables = new Set<HTMLTableElement>([
         ...holders.flatMap((h) => Array.from(h.querySelectorAll("table"))),
         ...Array.from(document.querySelectorAll("table")),
@@ -305,9 +265,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
 
       // comments
       const comments = await extractComments_safe();
-      if (comments.length > 1) {
-        await exportCommentsXLSX_safe(comments, "ความคิดเห็นทั้งหมด");
-      }
+      if (comments.length > 1) await exportCommentsXLSX_safe(comments, "ความคิดเห็นทั้งหมด");
     } catch (e) {
       console.error("Export All failed:", e);
     }
@@ -332,9 +290,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         {type === "table" && (
           <>
             <DropdownMenuItem onClick={onCSV}>ส่งออกตารางเป็น CSV</DropdownMenuItem>
-            <DropdownMenuItem onClick={onXLSX}>
-              ส่งออกตารางเป็น Excel (XLSX)
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onXLSX}>ส่งออกตารางเป็น Excel (XLSX)</DropdownMenuItem>
           </>
         )}
 
@@ -346,4 +302,3 @@ const ExportButton: React.FC<ExportButtonProps> = ({
 };
 
 export default ExportButton;
-export { ExportButton };
