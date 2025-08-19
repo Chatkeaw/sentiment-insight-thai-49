@@ -1,18 +1,89 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ExportButton } from '@/components/shared/ExportButton';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { getComplaintCategoryColor, sortComplaintData } from '@/utils/exportUtils';
 
-export const MonthlyOverviewPage: React.FC = () => {
-  // ---- NEW: ตั้งค่าเริ่มต้นเป็น "เดือนล่าสุด" และ "ปีปัจจุบัน" ตั้งแต่ useState ----
-  const now = new Date();
-  const initialMonth = String(now.getMonth() + 1); // '1'..'12'
-  const initialYear = String(now.getFullYear());   // '2025' เป็นต้น
+type MonthState = { month: string; year: string };
 
-  const [selectedMonth, setSelectedMonth] = useState<string>(initialMonth);
-  const [selectedYear, setSelectedYear] = useState<string>(initialYear);
+const MONTHS = [
+  { value: '1', label: 'มกราคม' },
+  { value: '2', label: 'กุมภาพันธ์' },
+  { value: '3', label: 'มีนาคม' },
+  { value: '4', label: 'เมษายน' },
+  { value: '5', label: 'พฤษภาคม' },
+  { value: '6', label: 'มิถุนายน' },
+  { value: '7', label: 'กรกฎาคม' },
+  { value: '8', label: 'สิงหาคม' },
+  { value: '9', label: 'กันยายน' },
+  { value: '10', label: 'ตุลาคม' },
+  { value: '11', label: 'พฤศจิกายน' },
+  { value: '12', label: 'ธันวาคม' },
+];
+
+function getInitialMonth(): MonthState {
+  // 1) ถ้ามีใน localStorage ให้ใช้ค่านั้น
+  try {
+    const saved = localStorage.getItem('dashboard.month');
+    if (saved) {
+      const parsed = JSON.parse(saved) as MonthState;
+      if (
+        parsed &&
+        MONTHS.some((m) => m.value === parsed.month) &&
+        /^\d{4}$/.test(parsed.year)
+      ) {
+        return parsed;
+      }
+    }
+  } catch {}
+  // 2) ไม่มีก็ใช้เดือน/ปีปัจจุบัน
+  const now = new Date();
+  return { month: String(now.getMonth() + 1), year: String(now.getFullYear()) };
+}
+
+export const MonthlyOverviewPage: React.FC = () => {
+  // ---- ตั้งค่าเริ่มต้นเป็น "เดือนล่าสุด" และ "ปีปัจจุบัน" (หรือค่าที่เคยถูกเลือกไว้) ----
+  const initial = useMemo(getInitialMonth, []);
+  const [selectedMonth, setSelectedMonth] = useState<string>(initial.month);
+  const [selectedYear, setSelectedYear] = useState<string>(initial.year);
+
+  // บันทึกลง localStorage และ broadcast ให้ส่วนอื่นทราบ (เช่น dropdown มุมขวาบน)
+  const saveAndBroadcast = (state: MonthState) => {
+    localStorage.setItem('dashboard.month', JSON.stringify(state));
+    window.dispatchEvent(new CustomEvent('dashboard:month-change', { detail: state }));
+  };
+
+  // เขียนค่าเริ่มต้นกลับไป (ครั้งแรกที่เข้า) เผื่อส่วนอื่นจะอ่าน
+  useEffect(() => {
+    saveAndBroadcast({ month: selectedMonth, year: selectedYear });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // สร้างรายการปี (ปีล่าสุดอยู่หัว)
+  const years = useMemo(() => {
+    const nowY = new Date().getFullYear();
+    return Array.from({ length: 5 }, (_, i) => {
+      const y = nowY - i;
+      return { value: String(y), label: String(y) };
+    });
+  }, []);
+
+  const yearBE = Number(selectedYear) + 543;
+  const getCurrentMonthLabel = () => {
+    const month = MONTHS.find((m) => m.value === selectedMonth);
+    return month ? `${month.label} ${yearBE}` : 'เลือกเดือน';
+  };
+
+  const onChangeMonth = (m: string) => {
+    setSelectedMonth(m);
+    saveAndBroadcast({ month: m, year: selectedYear });
+  };
+  const onChangeYear = (y: string) => {
+    setSelectedYear(y);
+    saveAndBroadcast({ month: selectedMonth, year: y });
+  };
+
   // ---------------------------------------------------------------------------
 
   // Mock data based on selected month/year
@@ -70,44 +141,6 @@ export const MonthlyOverviewPage: React.FC = () => {
     feedback: Math.floor(Math.random() * 100) + 50,
   }));
 
-  const months = [
-    { value: '1', label: 'มกราคม' },
-    { value: '2', label: 'กุมภาพันธ์' },
-    { value: '3', label: 'มีนาคม' },
-    { value: '4', label: 'เมษายน' },
-    { value: '5', label: 'พฤษภาคม' },
-    { value: '6', label: 'มิถุนายน' },
-    { value: '7', label: 'กรกฎาคม' },
-    { value: '8', label: 'สิงหาคม' },
-    { value: '9', label: 'กันยายน' },
-    { value: '10', label: 'ตุลาคม' },
-    { value: '11', label: 'พฤศจิกายน' },
-    { value: '12', label: 'ธันวาคม' },
-  ];
-
-  const years = Array.from({ length: 5 }, (_, i) => {
-    const year = new Date().getFullYear() - i;
-    return { value: year.toString(), label: year.toString() };
-  });
-
-  const getCurrentMonthLabel = () => {
-    const month = months.find(m => m.value === selectedMonth);
-    return month ? `${month.label} ${selectedYear}` : 'เลือกเดือน';
-  };
-
-  const handleNavigateToFeedback = (topic: string) => {
-    // Navigate to feedback page with pre-filtered topic
-    const event = new CustomEvent('changePage', { detail: 'feedback' });
-    window.dispatchEvent(event);
-    
-    // Store the selected topic filter
-    localStorage.setItem('feedbackFilter', JSON.stringify({ 
-      topic, 
-      month: selectedMonth, 
-      year: selectedYear 
-    }));
-  };
-
   return (
     <div className="space-y-6">
       {/* Header with Month/Year Selection */}
@@ -116,26 +149,26 @@ export const MonthlyOverviewPage: React.FC = () => {
           สรุปภาพรวมประจำเดือน - {getCurrentMonthLabel()}
         </h2>
         <div className="flex gap-3">
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-32">
+          <Select value={selectedMonth} onValueChange={onChangeMonth}>
+            <SelectTrigger className="w-40">
               <SelectValue placeholder="เลือกเดือน" />
             </SelectTrigger>
             <SelectContent>
-              {months.map(month => (
-                <SelectItem key={month.value} value={month.value}>
-                  {month.label}
+              {MONTHS.map((m) => (
+                <SelectItem key={m.value} value={m.value}>
+                  {m.label} {yearBE}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <Select value={selectedYear} onValueChange={onChangeYear}>
             <SelectTrigger className="w-24">
               <SelectValue placeholder="ปี" />
             </SelectTrigger>
             <SelectContent>
-              {years.map(year => (
-                <SelectItem key={year.value} value={year.value}>
-                  {year.label}
+              {years.map((y) => (
+                <SelectItem key={y.value} value={y.value}>
+                  {y.label}
                 </SelectItem>
               ))}
             </SelectContent>
