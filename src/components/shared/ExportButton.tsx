@@ -25,16 +25,18 @@ import {
 } from "@/utils/exportUtils";
 
 type ExportButtonProps = {
-  /** ประเภทที่ปุ่มนี้แทน: "chart" | "table" (ผลต่อรายการเมนูเดี่ยว) */
-  type: "chart" | "table";
+  /** ประเภทที่ปุ่มนี้แทน: "chart" | "table" | "feedback" (ผลต่อรายการเมนูเดี่ยว) */
+  type: "chart" | "table" | "feedback";
   /** id ของ element ที่จะจับภาพกราฟ หรือ wrapper ที่มี <table> ข้างใน */
   elementId?: string;
   /** ข้อมูลตาราง (ถ้ามี) ใช้ส่งออก CSV/XLSX ตรง ๆ */
-  data?: any[];
+  data?: any;
   /** ชื่อไฟล์หลัก (ไม่ต้องใส่นามสกุล) */
   filename?: string;
   /** ข้อความหัวเมนู */
   title?: string;
+  /** ประเภทชาร์ต (optional for backward compatibility) */
+  chartType?: string;
 };
 
 const ExportButton: React.FC<ExportButtonProps> = ({
@@ -66,7 +68,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       const table = root?.querySelector("table");
       if (table) {
         const rows = domTableToRows(table as HTMLTableElement);
-        saveTableAsCSV_XLSX(rows, name, { only: "csv" });
+        saveTableAsCSV_XLSX(rows, name);
       }
     }
   };
@@ -84,7 +86,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       const table = root?.querySelector("table");
       if (table) {
         const rows = domTableToRows(table as HTMLTableElement);
-        saveTableAsCSV_XLSX(rows, name, { only: "xlsx" });
+        saveTableAsCSV_XLSX(rows, name);
       }
     }
   };
@@ -155,4 +157,34 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuL
+        <DropdownMenuLabel>{title || "Export Options"}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        
+        {type === "chart" && (
+          <DropdownMenuItem onClick={handleExportPNG}>
+            Export as PNG
+          </DropdownMenuItem>
+        )}
+        
+        {type === "table" && (
+          <>
+            <DropdownMenuItem onClick={handleExportCSV}>
+              Export as CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportXLSX}>
+              Export as XLSX
+            </DropdownMenuItem>
+          </>
+        )}
+
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={exportAllCurrentPage}>
+          Export All (This Page)
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+export default ExportButton;
+export { ExportButton };
