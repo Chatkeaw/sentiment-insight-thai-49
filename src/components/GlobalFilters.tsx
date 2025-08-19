@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface GlobalFiltersProps {
-  onFiltersChange?: (filters: FilterState) => void;
+  onFiltersChange?: (filters: FilterState & { value: string }) => void;
 }
 
 interface FilterState {
@@ -126,17 +126,17 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
     [filters.district]
   );
 
-  // Update localStorage when month/year changes
+  // Update localStorage and dispatch event when month/year changes
   useEffect(() => {
-    localStorage.setItem("dashboard.month", JSON.stringify({
-      month: filters.month,
-      year: filters.year
-    }));
+    const monthState = { month: filters.month, year: filters.year };
+    localStorage.setItem("dashboard.month", JSON.stringify(monthState));
+    window.dispatchEvent(new CustomEvent("dashboard:month-change", { detail: monthState }));
   }, [filters.month, filters.year]);
 
   // Notify parent component of filter changes
   useEffect(() => {
-    onFiltersChange?.(filters);
+    const value = `${filters.year}-${filters.month.padStart(2, "0")}`;
+    onFiltersChange?.({ ...filters, value });
   }, [filters, onFiltersChange]);
 
   const updateFilters = (updates: Partial<FilterState>) => {
@@ -299,9 +299,10 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
               <SelectContent>
                 {Array.from({ length: 5 }, (_, i) => {
                   const year = new Date().getFullYear() - i;
+                  const yearBE = year + 543;
                   return (
                     <SelectItem key={year} value={String(year)}>
-                      {year}
+                      {yearBE}
                     </SelectItem>
                   );
                 })}
