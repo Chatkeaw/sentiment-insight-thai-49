@@ -1,15 +1,31 @@
-// src/components/GlobalFilters.tsx
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Card } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface GlobalFiltersProps {
-  onFiltersChange?: (filters: any) => void;
+  onFiltersChange?: (filters: FilterState) => void;
+}
+
+interface FilterState {
+  serviceTypes: string[];
+  region: string;
+  district: string;
+  branch: string;
+  timeRange: string;
+  // เพิ่มเดือน/ปี เพื่อใช้เป็นตัวกรองกลางของทั้งแอป
+  month: string;  // '1'..'12'
+  year: string;   // '2025'
 }
 
 type MonthState = { month: string; year: string };
@@ -26,11 +42,11 @@ const MONTHS = [
   { value: "9", label: "กันยายน" },
   { value: "10", label: "ตุลาคม" },
   { value: "11", label: "พฤศจิกายน" },
-  { value: "12", label: "ธันวาคม" },
+  { value: "12", label: "ธันวาคม" }
 ];
 
-function getInitial(): MonthState {
-  // ใช้ค่าที่เคยเลือกไว้ก่อน (ถ้ามี)
+function getInitialMonth(): MonthState {
+  // 1) ถ้ามีค่าที่เคยเลือกใน localStorage ให้ใช้ก่อน
   try {
     const saved = localStorage.getItem("dashboard.month");
     if (saved) {
@@ -39,67 +55,66 @@ function getInitial(): MonthState {
         return v;
       }
     }
-  } catch {}
-  // ไม่งั้นใช้เดือน/ปีปัจจุบัน
+  } catch (_) {}
+  // 2) ไม่งั้นใช้เดือน/ปีปัจจุบัน
   const now = new Date();
   return { month: String(now.getMonth() + 1), year: String(now.getFullYear()) };
 }
 
 const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
-  const init = React.useMemo(getInitial, []);
-  const [month, setMonth] = React.useState(init.month);
-  const [year, setYear] = React.useState(init.year);
+  // --- ตัวเลือกแบบ mock ---
+  const serviceTypes = [
+    "การฝากเงิน/ถอนเงิน",
+    "การซื้อผลิตภัณฑ์",
+    "การชำระค่าบริการ/ค่าธรรมเนียม",
+    "อื่นๆ"
+  ];
 
-  const years = React.useMemo(() => {
-    const y0 = new Date().getFullYear();
-    return Array.from({ length: 5 }, (_, i) => String(y0 - i));
-  }, []);
-
-  const yearBE = Number(year) + 543;
-
-  // บันทึก + broadcast + แจ้ง parent ทุกครั้งที่มีการเปลี่ยน
-  React.useEffect(() => {
-    const state = { month, year };
-    localStorage.setItem("dashboard.month", JSON.stringify(state));
-    window.dispatchEvent(new CustomEvent("dashboard:month-change", { detail: state }));
-    onFiltersChange?.({
-      month,
-      year,
-      value: `${year}-${month.padStart(2, "0")}`, // เผื่อเอาไป query ข้อมูล
-    });
-  }, [month, year]); // eslint-disable-line
-
-  return (
-    <div className="w-full flex items-center justify-end gap-2">
-      <span className="text-sm text-muted-foreground">เลือกเดือน:</span>
-
-      <Select value={month} onValueChange={setMonth}>
-        <SelectTrigger className="w-40">
-          <SelectValue placeholder="เลือกเดือน" />
-        </SelectTrigger>
-        <SelectContent>
-          {MONTHS.map((m) => (
-            <SelectItem key={m.value} value={m.value}>
-              {m.label} {yearBE}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select value={year} onValueChange={setYear}>
-        <SelectTrigger className="w-24">
-          <SelectValue placeholder="ปี" />
-        </SelectTrigger>
-        <SelectContent>
-          {years.map((y) => (
-            <SelectItem key={y} value={y}>
-              {y}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+  const regions = useMemo(
+    () =>
+      Array.from({ length: 18 }, (_, i) => ({
+        value: `ภาค ${i + 1}`,
+        label: `ภาค ${i + 1}`
+      })),
+    []
   );
-};
 
-export default GlobalFilters;
+  const getDistrictsForRegion = (region: string) => {
+    if (!region || region === "All") return [];
+    return Array.from({ length: 3 }, (_, i) => ({
+      value: `${region} เขต ${i + 1}`,
+      label: `เขต ${i + 1}`
+    }));
+  };
+
+  const getBranchesForDistrict = (district: string) => {
+    if (!district || district === "All") return [];
+    return Array.from({ length: 5 }, (_, i) => ({
+      value: `${district} สาขา ${i + 1}`,
+      label: `สาขา ${i + 1}`
+    }));
+  };
+
+  const timeRanges = [
+    { value: "1day", label: "วันนี้" },
+    { value: "1week", label: "1 สัปดาห์ล่าสุด" },
+    { value: "1month", label: "1 เดือนล่าสุด" },
+    { value: "3months", label: "3 เดือนล่าสุด" },
+    { value: "6months", label: "6 เดือนล่าสุด" },
+    { value: "1year", label: "1 ปีล่าสุด" }
+  ];
+
+  // --- สร้างค่าเริ่มต้นของเดือน/ปี (เดือนล่าสุด) ---
+  const initialMonth = useMemo(getInitialMonth, []);
+  const [filters, setFilters] = useState<FilterState>({
+    serviceTypes: [],
+    region: "",
+    district: "",
+    branch: "",
+    timeRange: "1month",
+    month: initialMonth.month,
+    year: initialMonth.year
+  });
+
+  const districts = useMemo(
+    () => getDist
