@@ -33,48 +33,6 @@ interface ExportButtonProps {
   chartType?: string; // Description of chart type for export
 }
 
-const exportAllCurrentPage = async () => {
-  // 1) Charts → PNG
-  const chartNodes = Array.from(
-    document.querySelectorAll<HTMLElement>("[data-export-chart], .recharts-wrapper")
-  );
-  let cIdx = 1;
-  for (const node of chartNodes) {
-    const base =
-      node.dataset.exportChart ||
-      node.getAttribute("aria-label") ||
-      node.id ||
-      `Chart-${cIdx++}`;
-    let id = node.id;
-    if (!id) {
-      id = `__exp_chart_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-      node.id = id;
-    }
-    await exportChartToPNG(id, `${withThaiMonthYear(base)}`);
-  }
-
-  // 2) Tables → CSV + XLSX
-  const holders = Array.from(document.querySelectorAll<HTMLElement>("[data-export-table]"));
-  const tables = new Set<HTMLTableElement>([
-    ...holders.flatMap(h => Array.from(h.querySelectorAll("table"))),
-    ...Array.from(document.querySelectorAll("table")),
-  ]);
-  let tIdx = 1;
-  for (const tb of tables) {
-    const base =
-      (tb.closest("[data-export-table]") as HTMLElement | null)?.getAttribute("data-export-name") ||
-      tb.getAttribute("aria-label") ||
-      `Table-${tIdx++}`;
-    const tab = domTableToRows(tb);
-    saveTableAsCSV_XLSX(tab, base);
-  }
-
-  // 3) Comments → XLSX (single workbook)
-  const comments = extractCommentsFromDOM();
-  if (comments.length) {
-    exportCommentsRowsToXLSX(comments, "ความคิดเห็นทั้งหมด");
-  }
-};
 
 export const ExportButton: React.FC<ExportButtonProps> = ({
   data,
@@ -87,6 +45,54 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
+
+  const exportAllCurrentPage = async () => {
+    try {
+      // 1) Charts → PNG
+      const chartNodes = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-export-chart], .recharts-wrapper")
+      );
+      let cIdx = 1;
+      for (const node of chartNodes) {
+        const base =
+          node.dataset.exportChart ||
+          node.getAttribute("aria-label") ||
+          node.id ||
+          `Chart-${cIdx++}`;
+        let id = node.id;
+        if (!id) {
+          id = `__exp_chart_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+          node.id = id;
+        }
+        await exportChartToPNG(id, `${withThaiMonthYear(base)}`);
+      }
+
+      // 2) Tables → CSV + XLSX
+      const holders = Array.from(document.querySelectorAll<HTMLElement>("[data-export-table]"));
+      const tables = new Set<HTMLTableElement>([
+        ...holders.flatMap(h => Array.from(h.querySelectorAll("table"))),
+        ...Array.from(document.querySelectorAll("table")),
+      ]);
+      let tIdx = 1;
+      for (const tb of tables) {
+        const base =
+          (tb.closest("[data-export-table]") as HTMLElement | null)?.getAttribute("data-export-name") ||
+          tb.getAttribute("aria-label") ||
+          `Table-${tIdx++}`;
+        const tab = domTableToRows(tb);
+        saveTableAsCSV_XLSX(tab, base);
+      }
+
+      // 3) Comments → XLSX (single workbook)
+      const comments = extractCommentsFromDOM();
+      if (comments.length) {
+        exportCommentsRowsToXLSX(comments, "ความคิดเห็นทั้งหมด");
+      }
+    } catch (e) {
+      console.error("Export All failed:", e);
+      throw e; // Re-throw to be caught by handleExport
+    }
+  };
 
   const prepareDataForExport = () => {
     const arrayData = Array.isArray(data) ? data : [data];
