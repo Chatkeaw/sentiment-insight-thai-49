@@ -80,7 +80,7 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
   );
 
   const getDistrictsForRegion = (region: string) => {
-    if (!region || region === "All") return [];
+    if (!region || region === "all") return [];
     return Array.from({ length: 3 }, (_, i) => ({
       value: `${region} เขต ${i + 1}`,
       label: `เขต ${i + 1}`
@@ -88,7 +88,7 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
   };
 
   const getBranchesForDistrict = (district: string) => {
-    if (!district || district === "All") return [];
+    if (!district || district === "all") return [];
     return Array.from({ length: 5 }, (_, i) => ({
       value: `${district} สาขา ${i + 1}`,
       label: `สาขา ${i + 1}`
@@ -108,9 +108,9 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
   const initialMonth = useMemo(getInitialMonth, []);
   const [filters, setFilters] = useState<FilterState>({
     serviceTypes: [],
-    region: "",
-    district: "",
-    branch: "",
+    region: "all",
+    district: "all",
+    branch: "all",
     timeRange: "1month",
     month: initialMonth.month,
     year: initialMonth.year
@@ -144,11 +144,11 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
       const newFilters = { ...prev, ...updates };
       // Reset dependent filters when parent changes
       if (updates.region !== undefined && updates.region !== prev.region) {
-        newFilters.district = "";
-        newFilters.branch = "";
+        newFilters.district = "all";
+        newFilters.branch = "all";
       }
       if (updates.district !== undefined && updates.district !== prev.district) {
-        newFilters.branch = "";
+        newFilters.branch = "all";
       }
       return newFilters;
     });
@@ -163,9 +163,9 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
   const clearAllFilters = () => {
     setFilters({
       serviceTypes: [],
-      region: "",
-      district: "",
-      branch: "",
+      region: "all",
+      district: "all", 
+      branch: "all",
       timeRange: "1month",
       month: initialMonth.month,
       year: initialMonth.year
@@ -222,7 +222,7 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
               <SelectValue placeholder="เลือกภาค" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">ทั้งหมด</SelectItem>
+              <SelectItem value="all">ทั้งหมด</SelectItem>
               {regions.map((region) => (
                 <SelectItem key={region.value} value={region.value}>
                   {region.label}
@@ -238,13 +238,13 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
           <Select 
             value={filters.district} 
             onValueChange={(value) => updateFilters({ district: value })}
-            disabled={!filters.region}
+            disabled={filters.region === "all"}
           >
             <SelectTrigger className="w-32">
               <SelectValue placeholder="เลือกเขต" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">ทั้งหมด</SelectItem>
+              <SelectItem value="all">ทั้งหมด</SelectItem>
               {districts.map((district) => (
                 <SelectItem key={district.value} value={district.value}>
                   {district.label}
@@ -260,13 +260,13 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
           <Select 
             value={filters.branch} 
             onValueChange={(value) => updateFilters({ branch: value })}
-            disabled={!filters.district}
+            disabled={filters.district === "all"}
           >
             <SelectTrigger className="w-32">
               <SelectValue placeholder="เลือกสาขา" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">ทั้งหมด</SelectItem>
+              <SelectItem value="all">ทั้งหมด</SelectItem>
               {branches.map((branch) => (
                 <SelectItem key={branch.value} value={branch.value}>
                   {branch.label}
