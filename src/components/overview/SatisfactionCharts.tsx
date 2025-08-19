@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, LineChart, Line } from 'recharts';
 import { ChartData } from '@/types/dashboard';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
-import { ExportButton } from '@/components/shared/ExportButton';
+import ExportButton from '@/components/shared/ExportButton';
 import { MonthlyComparison } from '@/components/shared/MonthlyComparison';
 
 interface SatisfactionChartsProps {

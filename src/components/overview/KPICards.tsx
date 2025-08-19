@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KPIData } from "@/types/dashboard";
-import { ExportButton } from "@/components/shared/ExportButton";
+import ExportButton from "@/components/shared/ExportButton";
 import { MonthlyComparison } from "@/components/shared/MonthlyComparison";
 
 interface KPICardsProps {
@@ -48,7 +48,7 @@ const KPICards: React.FC<KPICardsProps> = ({ data }) => {
           <h2 className="text-lg font-semibold text-foreground">ภาพรวมประจำเดือน สิงหาคม 2024</h2>
           <p className="text-sm text-muted-foreground">เปรียบเทียบกับเดือนกรกฎาคม 2024</p>
         </div>
-        <ExportButton data={data} type="table" filename="monthly-overview" />
+        <ExportButton data={[data]} type="table" filename="monthly-overview" />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

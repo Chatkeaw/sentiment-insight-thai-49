@@ -7,7 +7,7 @@ import { SentimentCharts } from '@/components/overview/SentimentCharts';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ExportButton } from '@/components/shared/ExportButton';
+import ExportButton from '@/components/shared/ExportButton';
 import { Eye, MessageCircle } from 'lucide-react';
 import { getKPIData, getServiceTypeData, getSatisfactionData, getRegionSatisfactionData, getSentimentData } from '@/data/mockData';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
@@ -226,7 +226,6 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
               data={trendData}
               type="chart"
               elementId="form-submission-trend-chart"
-              chartType="กราฟเส้นแนวโน้มการส่งแบบประเมิน"
               filename="แนวโน้ม-แบบประเมิน"
               title="แนวโน้มการส่งแบบประเมิน"
             />
@@ -286,7 +285,6 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
               data={categoryTrendData}
               type="chart"
               elementId="comment-category-trend-chart"
-              chartType="กราฟเส้นแนวโน้มหมวดหมู่ความคิดเห็น"
               filename="แนวโน้ม-หมวดหมู่ความคิดเห็น"
               title="แนวโน้มหมวดหมู่ความคิดเห็น"
             />

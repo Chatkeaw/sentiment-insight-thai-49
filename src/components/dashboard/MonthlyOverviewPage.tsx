@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ExportButton } from '@/components/shared/ExportButton';
+import ExportButton from '@/components/shared/ExportButton';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { getComplaintCategoryColor, sortComplaintData } from '@/utils/exportUtils';
 
@@ -242,7 +242,6 @@ export const MonthlyOverviewPage: React.FC = () => {
               data={complaintTopics}
               type="chart"
               elementId="complaint-topics-chart"
-              chartType="กราฟแท่งหัวข้อร้องเรียน"
               filename="หัวข้อร้องเรียน-รายเดือน"
               title={`หัวข้อที่ลูกค้าร้องเรียน - ${getCurrentMonthLabel()}`}
             />
@@ -307,7 +306,6 @@ export const MonthlyOverviewPage: React.FC = () => {
               data={complaintCategories}
               type="chart"
               elementId="complaint-categories-chart"
-              chartType="กราฟวงกลมหมวดหมู่ร้องเรียน"
               filename="หมวดหมู่ร้องเรียน-รายเดือน"
               title={`หมวดหมู่ที่ลูกค้าร้องเรียน - ${getCurrentMonthLabel()}`}
             />
@@ -367,7 +365,6 @@ export const MonthlyOverviewPage: React.FC = () => {
             data={monthlyTrend}
             type="chart"
             elementId="monthly-trend-chart"
-            chartType="กราฟเส้นแนวโน้มรายเดือน"
             filename="แนวโน้ม-รายเดือน"
             title={`แนวโน้มรายเดือน - ${selectedYear}`}
           />

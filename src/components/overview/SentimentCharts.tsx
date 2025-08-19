@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, Legend } from 'recharts';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
 import { SentimentAnalysisModal } from '@/components/analytics/SentimentAnalysisModal';
-import { ExportButton } from '@/components/shared/ExportButton';
+import ExportButton from '@/components/shared/ExportButton';
 
 interface SentimentData {
   positive: { count: number; percentage: number };
@@ -72,7 +72,6 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
               data={donutData}
               type="chart"
               elementId="sentiment-complaints-chart"
-              chartType="กราฟวงกลมหัวข้อร้องเรียน"
               filename="ร้องเรียน-หัวข้อ"
               title="หัวข้อที่ลูกค้าร้องเรียน"
             />
@@ -137,7 +136,6 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
               data={trendData}
               type="chart"
               elementId="sentiment-trend-chart"
-              chartType="กราฟเส้นแนวโน้มทัศนคติ"
               filename="แนวโน้ม-ทัศนคติ"
               title="แนวโน้มทัศนคติต่อการให้บริการ"
             />
@@ -194,7 +192,6 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
             data={regionalSentimentData}
             type="chart"
             elementId="regional-sentiment-chart"
-            chartType="กราฟแท่งทัศนคติรายภาค"
             filename="ทัศนคติ-รายภาค"
             title="ทัศนคติการให้บริการ รายภาค"
           />

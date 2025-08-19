@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import TimeFilter from '@/components/TimeFilter';
-import { ExportButton } from '@/components/shared/ExportButton';
+import ExportButton from '@/components/shared/ExportButton';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
 import { mockFeedbackData } from '@/data/mockData';
 import { FeedbackEntry } from '@/types/dashboard';
@@ -356,7 +356,7 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({
           </CardTitle>
           <ExportButton 
             data={filteredFeedback}
-            type="feedback"
+            type="table"
             filename="ความคิดเห็นลูกค้า"
             title="รายการความคิดเห็นลูกค้า"
           />
