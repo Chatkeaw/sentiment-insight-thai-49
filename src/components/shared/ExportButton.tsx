@@ -205,11 +205,12 @@ const exportCommentsXLSX_safe = async (rows: Rows, filenameNoExt: string) => {
 
 /** ---------- Props ---------- */
 type ExportButtonProps = {
-  type: "chart" | "table";
+  type: "chart" | "table" | "feedback";
   elementId?: string;
-  data?: any[];
+  data?: any;
   filename?: string;
   title?: string;
+  chartType?: string;
 };
 
 /** ---------- Component ---------- */
@@ -345,3 +346,4 @@ const ExportButton: React.FC<ExportButtonProps> = ({
 };
 
 export default ExportButton;
+export { ExportButton };
