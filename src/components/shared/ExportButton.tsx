@@ -16,7 +16,12 @@ import {
   exportToPDF, 
   exportToDOCX,
   convertChartDataForExport, 
-  convertFeedbackDataForExport 
+  convertFeedbackDataForExport,
+  withThaiMonthYear,
+  domTableToRows,
+  saveTableAsCSV_XLSX,
+  extractCommentsFromDOM,
+  exportCommentsRowsToXLSX
 } from '@/utils/exportUtils';
 
 interface ExportButtonProps {
@@ -27,6 +32,49 @@ interface ExportButtonProps {
   elementId?: string; // Required for chart/PDF exports
   chartType?: string; // Description of chart type for export
 }
+
+const exportAllCurrentPage = async () => {
+  // 1) Charts → PNG
+  const chartNodes = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-export-chart], .recharts-wrapper")
+  );
+  let cIdx = 1;
+  for (const node of chartNodes) {
+    const base =
+      node.dataset.exportChart ||
+      node.getAttribute("aria-label") ||
+      node.id ||
+      `Chart-${cIdx++}`;
+    let id = node.id;
+    if (!id) {
+      id = `__exp_chart_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      node.id = id;
+    }
+    await exportChartToPNG(id, `${withThaiMonthYear(base)}`);
+  }
+
+  // 2) Tables → CSV + XLSX
+  const holders = Array.from(document.querySelectorAll<HTMLElement>("[data-export-table]"));
+  const tables = new Set<HTMLTableElement>([
+    ...holders.flatMap(h => Array.from(h.querySelectorAll("table"))),
+    ...Array.from(document.querySelectorAll("table")),
+  ]);
+  let tIdx = 1;
+  for (const tb of tables) {
+    const base =
+      (tb.closest("[data-export-table]") as HTMLElement | null)?.getAttribute("data-export-name") ||
+      tb.getAttribute("aria-label") ||
+      `Table-${tIdx++}`;
+    const tab = domTableToRows(tb);
+    saveTableAsCSV_XLSX(tab, base);
+  }
+
+  // 3) Comments → XLSX (single workbook)
+  const comments = extractCommentsFromDOM();
+  if (comments.length) {
+    exportCommentsRowsToXLSX(comments, "ความคิดเห็นทั้งหมด");
+  }
+};
 
 export const ExportButton: React.FC<ExportButtonProps> = ({
   data,
@@ -52,7 +100,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
     }
   };
 
-  const handleExport = async (format: 'csv' | 'excel' | 'png' | 'pdf' | 'docx') => {
+  const handleExport = async (format: 'csv' | 'excel' | 'png' | 'pdf' | 'docx' | 'all') => {
     try {
       setIsExporting(true);
       const exportData = prepareDataForExport();
@@ -79,13 +127,18 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
         case 'docx':
           await exportToDOCX(exportData, filename, title || 'รายงานข้อมูล', type);
           break;
+        case 'all':
+          await exportAllCurrentPage();
+          break;
         default:
           throw new Error('Unsupported export format');
       }
 
       toast({
         title: "ส่งออกข้อมูลสำเร็จ",
-        description: `ไฟล์ ${filename}.${format} ถูกดาวน์โหลดแล้ว`,
+        description: format === 'all' 
+          ? "ส่งออกข้อมูลทั้งหมดในหน้านี้เรียบร้อยแล้ว"
+          : `ไฟล์ ${filename}.${format} ถูกดาวน์โหลดแล้ว`,
       });
       
       setIsModalOpen(false);
@@ -184,6 +237,26 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
                 </Button>
               );
             })}
+            
+            {/* Export All Option */}
+            <div className="border-t pt-2 mt-2">
+              <Button
+                variant="ghost"
+                className="w-full justify-start p-4 h-auto bg-primary/5 hover:bg-primary/10"
+                onClick={() => handleExport('all')}
+                disabled={isExporting}
+              >
+                <div className="flex items-start gap-3">
+                  <Download className="w-5 h-5 mt-0.5 text-primary" />
+                  <div className="text-left">
+                    <div className="font-medium text-primary">Export All (This Page)</div>
+                    <div className="text-sm text-muted-foreground">
+                      ส่งออกทุกกราฟ ตาราง และความคิดเห็นในหน้านี้
+                    </div>
+                  </div>
+                </div>
+              </Button>
+            </div>
           </div>
           {isExporting && (
             <div className="text-center py-4">

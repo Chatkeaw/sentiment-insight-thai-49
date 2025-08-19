@@ -280,3 +280,122 @@ export const sortComplaintData = (data: any[], complaintKey: string = 'negative'
     return bCount - aCount;
   });
 };
+
+// Thai month and year helpers for export filenames
+export const THAI_MONTHS = [
+  "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+  "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+];
+
+export function getThaiMonthYearLabel(ctx?: { month?: string; year?: string }): string {
+  let m = ctx?.month, y = ctx?.year;
+  try {
+    if (!m || !y) {
+      const raw = localStorage.getItem("dashboard.month");
+      if (raw) {
+        const v = JSON.parse(raw);
+        m = m ?? v?.month;
+        y = y ?? v?.year;
+      }
+    }
+  } catch {}
+  if (!m || !y) {
+    const now = new Date();
+    m = String(now.getMonth() + 1);
+    y = String(now.getFullYear());
+  }
+  const idx = Math.max(1, Math.min(12, parseInt(m, 10))) - 1;
+  const monthTH = THAI_MONTHS[idx] ?? "";
+  const yearBE = Number(y) + 543;
+  return `${monthTH} ${yearBE}`;
+}
+
+export function withThaiMonthYear(base: string, ctx?: { month?: string; year?: string }): string {
+  const label = getThaiMonthYearLabel(ctx);
+  const safe = (s: string) => s.replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, "-");
+  return `${safe(base)}-${safe(label)}`;
+}
+
+// DOM helpers for export all functionality
+export function domTableToRows(table: HTMLTableElement) {
+  const headers: string[] = [];
+  const rows: string[][] = [];
+  const ths = table.querySelectorAll("thead th");
+  if (ths.length) {
+    ths.forEach(th => headers.push((th as HTMLElement).innerText.trim()));
+  } else {
+    const first = table.querySelector("tr");
+    if (first) first.querySelectorAll("th,td").forEach(c => headers.push((c as HTMLElement).innerText.trim()));
+  }
+  table.querySelectorAll("tbody tr").forEach(tr => {
+    const r: string[] = [];
+    tr.querySelectorAll("td").forEach(td => r.push((td as HTMLElement).innerText.trim()));
+    if (r.length) rows.push(r);
+  });
+  return { headers, rows };
+}
+
+export function saveTableAsCSV_XLSX(tab: { headers: string[]; rows: string[][] }, baseName: string) {
+  // CSV
+  const csv = [tab.headers.join(","), ...tab.rows.map(r => r.map(c => `"${(c ?? "").replace(/"/g, '""')}"`).join(","))].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  downloadFile(blob, `${withThaiMonthYear(baseName)}.csv`, "text/csv;charset=utf-8");
+  
+  // XLSX
+  const ws = XLSX.utils.aoa_to_sheet([tab.headers, ...tab.rows]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Table");
+  const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  downloadFile(new Blob([wbout], { type: "application/octet-stream" }), `${withThaiMonthYear(baseName)}.xlsx`, "application/octet-stream");
+}
+
+export function extractCommentsFromDOM() {
+  const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-comment-item]"));
+  const rows = nodes.map(n => {
+    const get = (k: string) => n.dataset[k] ?? "";
+    const tags = get("tags");
+    return {
+      Date: get("date"),
+      Region: get("region"),
+      District: get("district"),
+      Branch: get("branch"),
+      Topic: get("topic"),
+      Category: get("category"),
+      Sentiment: get("sentiment"),
+      Rating: get("rating"),
+      Comment: get("text") || n.innerText.trim(),
+      Source: get("source"),
+      Tags: tags
+    };
+  });
+  
+  // fallback to window.__COMMENTS__ if exists and DOM empty
+  // @ts-ignore
+  if (!rows.length && Array.isArray(window.__COMMENTS__)) {
+    // @ts-ignore
+    return window.__COMMENTS__.map((c: any) => ({
+      Date: c.date ?? "",
+      Region: c.region ?? "",
+      District: c.district ?? "",
+      Branch: c.branch ?? "",
+      Topic: c.topic ?? "",
+      Category: c.category ?? "",
+      Sentiment: c.sentiment ?? "",
+      Rating: c.rating ?? "",
+      Comment: c.text ?? c.comment ?? "",
+      Source: c.source ?? "",
+      Tags: Array.isArray(c.tags) ? c.tags.join(",") : (c.tags ?? "")
+    }));
+  }
+  return rows;
+}
+
+export function exportCommentsRowsToXLSX(rows: any[], baseName: string) {
+  const headers = ["Date", "Region", "District", "Branch", "Topic", "Category", "Sentiment", "Rating", "Comment", "Source", "Tags"];
+  const aoa = [headers, ...rows.map(r => headers.map(h => r[h] ?? ""))];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Comments");
+  const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  downloadFile(new Blob([wbout], { type: "application/octet-stream" }), `${withThaiMonthYear(baseName)}.xlsx`, "application/octet-stream");
+}
