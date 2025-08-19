@@ -48,8 +48,8 @@ export const MonthlyOverviewPage: React.FC = () => {
   
   // ---- ตั้งค่าเริ่มต้นเป็น "เดือนล่าสุด" และ "ปีปัจจุบัน" (หรือค่าที่เคยถูกเลือกไว้) ----
   const initial = useMemo(getInitialMonth, []);
-  const [selectedMonth, setSelectedMonth] = useState<string>(initial.month);
-  const [selectedYear, setSelectedYear] = useState<string>(initial.year);
+  const [selectedMonth, setSelectedMonth] = useState<string>(initial.month || "1");
+  const [selectedYear, setSelectedYear] = useState<string>(initial.year || String(new Date().getFullYear()));
 
   const handleNavigateToFeedback = (category: string) => {
     navigate('/feedback', { 
