@@ -14,6 +14,9 @@ import { useAuth } from "@/contexts/AuthContext";
 interface DashboardHeaderProps {
   lastUpdate?: string;
   onRefresh?: () => void;
+  // Allow optional passthrough props used by Index.tsx without affecting behavior
+  timeFilter?: "1day" | "1week" | "1month" | "3months" | "6months" | "1year";
+  onTimeFilterChange?: (value: "1day" | "1week" | "1month" | "3months" | "6months" | "1year") => void;
 }
 
 /** ===== helpers ภายในไฟล์เดียว เพื่อกันปัญหา import/deps ===== */

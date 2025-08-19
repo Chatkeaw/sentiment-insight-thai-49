@@ -10,7 +10,7 @@ import { TimeFilter as TimeFilterType } from "@/types/dashboard";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomerFeedbackSystem } from "@/components/feedback/CustomerFeedbackSystem";
-import { ComplaintsPage } from "./ComplaintsPage";
+import ComplaintsPage from "./ComplaintsPage";
 import { AIAgentPage } from "./AIAgentPage";
 import { UserManagementPage } from "./UserManagementPage";
 import { SystemManagementPage } from "./SystemManagementPage";
