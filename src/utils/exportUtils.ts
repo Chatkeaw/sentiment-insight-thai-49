@@ -280,3 +280,42 @@ export const sortComplaintData = (data: any[], complaintKey: string = 'negative'
     return bCount - aCount;
   });
 };
+
+// Generate filename with Thai month and Buddhist year
+export const withThaiMonthYear = (baseFilename: string) => {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+  
+  const MONTHS = [
+    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+  ];
+  
+  const thaiMonth = MONTHS[month - 1];
+  const buddhistYear = year + 543;
+  
+  return `${baseFilename}-${thaiMonth}-${buddhistYear}`;
+};
+
+// Export all charts as PNG from elements with data-export-chart attribute
+export const exportAllCharts = async () => {
+  const nodes = Array.from(document.querySelectorAll('[data-export-chart]')) as HTMLElement[];
+  
+  for (const node of nodes) {
+    if (node.id) {
+      const filename = withThaiMonthYear(node.id);
+      await exportChartToPNG(node.id, filename);
+    }
+  }
+};
+
+// Export comments data to Excel
+export const exportCommentsToExcel = (data: any[], filename: string) => {
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Comments');
+  const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  downloadFile(blob, `${filename}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+};

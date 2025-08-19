@@ -16,7 +16,10 @@ import {
   exportToPDF, 
   exportToDOCX,
   convertChartDataForExport, 
-  convertFeedbackDataForExport 
+  convertFeedbackDataForExport,
+  exportAllCharts,
+  exportCommentsToExcel,
+  withThaiMonthYear
 } from '@/utils/exportUtils';
 
 interface ExportButtonProps {

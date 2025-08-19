@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
+import { Users, MessageSquare, AlertTriangle, Phone, Download } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import { SatisfactionDetailModal } from './SatisfactionDetailModal';
 import { SentimentAnalysisModal } from './analytics/SentimentAnalysisModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from '@/hooks/use-toast';
+import { exportAllCharts, exportCommentsToExcel, convertFeedbackDataForExport, withThaiMonthYear } from '@/utils/exportUtils';
 
 interface DashboardPageProps {
   onPageChange?: (page: string) => void;
@@ -59,6 +61,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
 
   // State for customer feedback section
   const [selectedSentimentType, setSelectedSentimentType] = useState<'positive' | 'negative'>('positive');
+  
+  // Export functionality
+  const { toast } = useToast();
 
   // Listen to month change events from GlobalFilters
   useEffect(() => {
@@ -281,38 +286,96 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
     setIsSentimentModalOpen(false);
   };
 
+  const handleExportAll = async () => {
+    try {
+      // Export all charts
+      await exportAllCharts();
+      
+      // Create mock comments data for export
+      const allComments = [
+        {
+          date: '2024-08-15',
+          branch: { branch: 'สาขาสยาม', district: 'ปทุมวัน', region: 'กรุงเทพมหานคร' },
+          serviceType: 'สินเชื่อ',
+          comment: 'พนักงานบริการดีมาก ให้คำแนะนำชัดเจน',
+          satisfaction: { overall: 4.5, care: 4.8, consultation: 4.6, speed: 4.2, accuracy: 4.9, equipment: 4.1, environment: 4.3 }
+        },
+        {
+          date: '2024-08-14',
+          branch: { branch: 'สาขาสีลม', district: 'บางรัก', region: 'กรุงเทพมหานคร' },
+          serviceType: 'เงินฝาก',
+          comment: 'รอคิวนานมาก ควรเพิ่มพนักงานให้บริการ',
+          satisfaction: { overall: 2.8, care: 3.2, consultation: 3.5, speed: 1.8, accuracy: 4.0, equipment: 3.8, environment: 3.1 }
+        },
+        {
+          date: '2024-08-13',
+          branch: { branch: 'สาขาลาดพร้าว', district: 'จตุจักร', region: 'กรุงเทพมหานคร' },
+          serviceType: 'บัตรเครดิต',
+          comment: 'สถานที่สะอาด บรรยากาศดี พนักงานเป็นกันเอง',
+          satisfaction: { overall: 4.2, care: 4.4, consultation: 4.1, speed: 4.0, accuracy: 4.3, equipment: 4.5, environment: 4.8 }
+        }
+      ];
+      
+      const commentsData = convertFeedbackDataForExport(allComments);
+      const commentsFilename = withThaiMonthYear('ความคิดเห็นทั้งหมด');
+      exportCommentsToExcel(commentsData, commentsFilename);
+      
+      toast({
+        title: "ส่งออกข้อมูลทั้งหมดสำเร็จ",
+        description: "กราฟทั้งหมดและความคิดเห็นถูกดาวน์โหลดแล้ว",
+      });
+    } catch (error) {
+      console.error('Export all error:', error);
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถส่งออกข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-foreground">สรุปภาพรวมประจำเดือน - {headerLabel}</h1>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">เลือกเดือน:</span>
-            <Select value={month} onValueChange={setMonth}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="เลือกเดือน" />
-              </SelectTrigger>
-              <SelectContent>
-                {MONTHS.map((m) => (
-                  <SelectItem key={m.value} value={m.value}>
-                    {m.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={year} onValueChange={setYear}>
-              <SelectTrigger className="w-20">
-                <SelectValue placeholder="ปี" />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map((y) => (
-                  <SelectItem key={y.value} value={y.value}>
-                    {y.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={handleExportAll}
+              className="gap-2"
+              size="sm"
+            >
+              <Download className="w-4 h-4" />
+              ส่งออกทั้งหมด
+            </Button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">เลือกเดือน:</span>
+              <Select value={month} onValueChange={setMonth}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="เลือกเดือน" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MONTHS.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>
+                      {m.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={year} onValueChange={setYear}>
+                <SelectTrigger className="w-20">
+                  <SelectValue placeholder="ปี" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((y) => (
+                    <SelectItem key={y.value} value={y.value}>
+                      {y.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </div>
@@ -362,8 +425,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
               <CardTitle className="text-lg font-medium text-foreground">ประเภทของสาขา</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
+              <div id="branch-type-chart" data-export-chart="branch-type-chart">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
                   <Pie
                     data={branchTypeData}
                     cx="50%"
@@ -382,6 +446,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   <Tooltip content={<CustomTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
 
@@ -391,8 +456,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
               <CardTitle className="text-lg font-medium text-foreground">ประเภทการให้บริการ</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={serviceTypeData} margin={{ bottom: 5, right: 30 }}>
+              <div id="service-type-chart" data-export-chart="service-type-chart">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={serviceTypeData} margin={{ bottom: 5, right: 30 }}>
                   <XAxis 
                     dataKey="name" 
                     fontSize={12}
@@ -418,6 +484,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   <Bar dataKey="pink" name="pink" fill="#EC4899" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </div>
               
               {/* Legend */}
               <div className="flex justify-center gap-6 mt-4">
@@ -467,8 +534,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
               </button>
             </CardHeader>
             <CardContent className="flex justify-center items-center">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={regionalSatisfactionData} margin={{ top: 40, bottom: 30 }} barCategoryGap="20%">
+              <div id="regional-satisfaction-chart" data-export-chart="regional-satisfaction-chart">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={regionalSatisfactionData} margin={{ top: 40, bottom: 30 }} barCategoryGap="20%">
                   <XAxis 
                     dataKey="name" 
                     fontSize={12}
@@ -511,6 +579,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   />
                 </BarChart>
               </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -528,8 +597,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
               <CardTitle className="text-lg font-medium text-foreground">ทัศนคติของลูกค้า</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
+              <div id="customer-sentiment-chart" data-export-chart="customer-sentiment-chart">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
                   <Pie
                     data={customerSentimentData}
                     cx="50%"
@@ -556,6 +626,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   />
                 </PieChart>
               </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
 
@@ -671,8 +742,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
             </div>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={regionalFeedbackData} margin={{ bottom: 40 }}>
+            <div id="regional-feedback-chart" data-export-chart="regional-feedback-chart">
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={regionalFeedbackData} margin={{ bottom: 40 }}>
                 <XAxis 
                   dataKey="region" 
                   fontSize={12}
@@ -714,6 +786,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                 )}
               </BarChart>
             </ResponsiveContainer>
+            </div>
             
             {/* Legend */}
             <div className="flex justify-center gap-6 mt-4">
