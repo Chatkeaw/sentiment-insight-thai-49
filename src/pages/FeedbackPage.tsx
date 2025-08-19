@@ -1,477 +1,437 @@
-import React, { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ExportButton } from "@/components/shared/ExportButton";
-import { mockFeedbackData } from "@/data/mockData";
-import { FeedbackEntry } from "@/types/dashboard";
+// src/pages/FeedbackPage.tsx
+import React, { useState, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import TimeFilter from '@/components/TimeFilter';
+import { ExportButton } from '@/components/shared/ExportButton';
+import { TimeFilter as TimeFilterType } from '@/types/dashboard';
+import { mockFeedbackData } from '@/data/mockData';
+import { FeedbackEntry } from '@/types/dashboard';
+import { Search, Calendar, RotateCw } from 'lucide-react';
 
-/** date utils */
-const parseDateLoose = (s: string): Date | null => {
-  if (!s) return null;
-  if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-    const d = new Date(s);
-    return isNaN(d.getTime()) ? null : d;
-  }
-  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m) {
-    const dd = Number(m[1]);
-    const MM = Number(m[2]);
-    let yyyy = Number(m[3]);
-    if (yyyy > 2400) yyyy -= 543;
-    const d = new Date(yyyy, MM - 1, dd);
-    return isNaN(d.getTime()) ? null : d;
-  }
-  return null;
-};
+interface FeedbackPageProps {
+  timeFilter: TimeFilterType['value'];
+  onTimeFilterChange: (value: TimeFilterType['value']) => void;
+}
 
-const SERVICE_TYPES = [
-  "ทั้งหมด",
-  "การฝากเงิน/ถอนเงิน",
-  "การซื้อผลิตภัณฑ์",
-  "การชำระค่าบริการ/ค่าธรรมเนียม",
-  "ให้คำปรึกษา/แนะนำ",
-  "อื่นๆ",
-];
+export const FeedbackPage: React.FC<FeedbackPageProps> = ({ 
+  timeFilter, 
+  onTimeFilterChange 
+}) => {
+  const [selectedRegion, setSelectedRegion] = useState<string>('all');
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
+  const [selectedBranch, setSelectedBranch] = useState<string>('all');
 
-const SUB_SERVICE_TYPES = [
-  "หน้าเคาน์เตอร์",
-  "Mobile/Internet",
-  "ตู้ ATM/ADM",
-  "Call Center",
-  "อื่นๆ",
-];
+  const [selectedMainCategory, setSelectedMainCategory] = useState<string>('all');
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>('all');
 
-const MAIN = [
-  { value: "all", label: "ทั้งหมด" },
-  { value: "staff", label: "พนักงานและบุคลากร" },
-  { value: "service", label: "ระบบและกระบวนการให้บริการ" },
-  { value: "technology", label: "เทคโนโลยีและดิจิทัล" },
-  { value: "products", label: "ผลิตภัณฑ์และบริการทางการเงิน" },
-  { value: "environment", label: "สภาพแวดล้อมและสิ่งอำนวยความสะดวก" },
-  {
-    value: "marketConduct",
-    label: "การปฏิบัติตามหลักธรรมาภิบาลทางการตลาด",
-  },
-  { value: "other", label: "อื่นๆ" },
-];
+  const [selectedServiceType, setSelectedServiceType] = useState<string>('all');
+  const [selectedSentiment, setSelectedSentiment] = useState<string>('all');
 
-const SUB_MAP: Record<string, Array<{ value: string; label: string }>> = {
-  staff: [
-    { value: "staffPoliteness", label: "ความสุภาพ" },
-    { value: "staffCare", label: "การดูแลเอาใจใส่" },
-    { value: "staffConsultation", label: "การให้คำปรึกษา" },
-    { value: "staffAccuracy", label: "ความถูกต้อง" },
-    { value: "staffSpeed", label: "ความรวดเร็ว" },
-    { value: "staffProfessionalism", label: "ความเป็นมืออาชีพ" },
-    { value: "staffImpression", label: "ความประทับใจ" },
-    { value: "staffSecurity", label: "ความปลอดภัย" },
-  ],
-  service: [
-    { value: "serviceReadiness", label: "ความพร้อมของบริการ" },
-    { value: "serviceProcess", label: "กระบวนการให้บริการ" },
-    { value: "serviceQueue", label: "ระบบจัดการคิว" },
-    { value: "serviceDocuments", label: "เอกสารและข้อมูล" },
-  ],
-  technology: [
-    { value: "techCore", label: "ระบบ Core ของธนาคาร" },
-    { value: "techQueue", label: "ระบบเรียกคิวและจัดการคิว" },
-    { value: "techATM", label: "ATM ADM CDM" },
-    { value: "techKYC", label: "ระบบ KYC" },
-    { value: "techApp", label: "MyMo Application" },
-    { value: "techBookUpdate", label: "ระบบปรับปรุงสมุดบัญชี" },
-    { value: "techCashCounter", label: "เครื่องนับเงิน" },
-  ],
-  products: [
-    { value: "productDetails", label: "รายละเอียดผลิตภัณฑ์" },
-    { value: "productConditions", label: "เงื่อนไขการใช้บริการ" },
-    { value: "productApprovalTime", label: "ระยะเวลาอนุมัติ" },
-    { value: "productFlexibility", label: "ความยืดหยุ่น" },
-    { value: "productSimplicity", label: "ความง่ายในการใช้" },
-  ],
-  environment: [
-    { value: "envCleanliness", label: "ความสะอาด" },
-    { value: "envSpace", label: "พื้นที่และความคับคั่ง" },
-    { value: "envTemperature", label: "อุณหภูมิ" },
-    { value: "envDesk", label: "โต๊ะทำงานและเก้าอี้" },
-    { value: "envWaitingArea", label: "พื้นที่นั่งรอ" },
-    { value: "envLighting", label: "แสงสว่าง" },
-    { value: "envSound", label: "เสียงรบกวน" },
-    { value: "envRestroom", label: "ห้องน้ำ" },
-    { value: "envParking", label: "ที่จอดรถ" },
-    { value: "envSignage", label: "ป้าย/สัญลักษณ์" },
-    { value: "envOtherFacilities", label: "สิ่งอำนวยความสะดวกอื่นๆ" },
-  ],
-  marketConduct: [
-    { value: "conductNoDeception", label: "ไม่หลอกลวง" },
-    { value: "conductNoAdvantage", label: "ไม่เอาเปรียบ" },
-    { value: "conductNoForcing", label: "ไม่บังคับ" },
-    { value: "conductNoDisturbance", label: "ไม่รบกวน" },
-  ],
-  other: [{ value: "otherImpression", label: "ความประทับใจโดยรวม" }],
-};
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
-export const FeedbackPage: React.FC = () => {
-  // location
-  const [region, setRegion] = useState("all");
-  const [district, setDistrict] = useState("all");
-  const [branchQuery, setBranchQuery] = useState("");
-  // date range
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  // service + channel
-  const [serviceType, setServiceType] = useState("all");
-  const [channel, setChannel] = useState("all");
-  // categories + sentiment
-  const [mainCat, setMainCat] = useState("all");
-  const [subCat, setSubCat] = useState("all");
-  const [sentiment, setSentiment] = useState("all");
-
-  // unique location lists
+  // Location options
   const regions = useMemo(() => {
-    const u = Array.from(new Set(mockFeedbackData.map((f) => f.branch.region))).sort();
-    return ["all", ...u];
+    const unique = Array.from(new Set(mockFeedbackData.map(f => f.branch.region))).sort();
+    return ['all', ...unique];
   }, []);
+
   const districts = useMemo(() => {
-    if (region === "all") return ["all"];
-    const u = Array.from(
-      new Set(
-        mockFeedbackData
-          .filter((f) => f.branch.region === region)
-          .map((f) => f.branch.district)
-      )
-    ).sort();
-    return ["all", ...u];
-  }, [region]);
+    if (selectedRegion === 'all') return ['all'];
+    const unique = Array.from(new Set(
+      mockFeedbackData
+        .filter(f => f.branch.region === selectedRegion)
+        .map(f => f.branch.district)
+    )).sort();
+    return ['all', ...unique];
+  }, [selectedRegion]);
+
+  const branches = useMemo(() => {
+    if (selectedDistrict === 'all') return ['all'];
+    const unique = Array.from(new Set(
+      mockFeedbackData
+        .filter(f => 
+          (selectedRegion === 'all' || f.branch.region === selectedRegion) &&
+          f.branch.district === selectedDistrict
+        )
+        .map(f => f.branch.branch)
+    )).sort();
+    return ['all', ...unique];
+  }, [selectedRegion, selectedDistrict]);
+
+  // Category mappings
+  const mainCategories = [
+    { value: 'all', label: 'ทั้งหมด' },
+    { value: 'staff', label: 'พนักงานและบุคลากร' },
+    { value: 'service', label: 'ระบบและกระบวนการให้บริการ' },
+    { value: 'technology', label: 'เทคโนโลยีและดิจิทัล' },
+    { value: 'products', label: 'ผลิตภัณฑ์และบริการทางการเงิน' },
+    { value: 'environment', label: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก' },
+    { value: 'marketConduct', label: 'การปฏิบัติตามหลักธรรมาภิบาลทางการตลาด' },
+    { value: 'other', label: 'อื่นๆ' }
+  ];
+
+  const subCategoryMap: { [key: string]: Array<{ value: string; label: string }> } = {
+    staff: [
+      { value: 'staffPoliteness', label: 'ความสุภาพ' },
+      { value: 'staffCare', label: 'การดูแลเอาใจใส่' },
+      { value: 'staffConsultation', label: 'การให้คำปรึกษา' },
+      { value: 'staffAccuracy', label: 'ความถูกต้อง' },
+      { value: 'staffSpeed', label: 'ความรวดเร็ว' },
+      { value: 'staffProfessionalism', label: 'ความเป็นมืออาชีพ' },
+      { value: 'staffImpression', label: 'ความประทับใจ' },
+      { value: 'staffSecurity', label: 'ความปลอดภัย' }
+    ],
+    service: [
+      { value: 'serviceReadiness', label: 'ความพร้อมของบริการ' },
+      { value: 'serviceProcess', label: 'กระบวนการให้บริการ' },
+      { value: 'serviceQueue', label: 'ระบบจัดการคิว' },
+      { value: 'serviceDocuments', label: 'เอกสารและข้อมูล' }
+    ],
+    technology: [
+      { value: 'techCore', label: 'ระบบ Core ของธนาคาร' },
+      { value: 'techQueue', label: 'ระบบเรียกคิวและจัดการคิว' },
+      { value: 'techATM', label: 'ATM ADM CDM' },
+      { value: 'techKYC', label: 'ระบบ KYC' },
+      { value: 'techApp', label: 'MyMo Application' },
+      { value: 'techBookUpdate', label: 'ระบบปรับปรุงสมุดบัญชี' },
+      { value: 'techCashCounter', label: 'เครื่องนับเงิน' }
+    ],
+    products: [
+      { value: 'productDetails', label: 'รายละเอียดผลิตภัณฑ์' },
+      { value: 'productConditions', label: 'เงื่อนไขการใช้บริการ' },
+      { value: 'productApprovalTime', label: 'ระยะเวลาอนุมัติ' },
+      { value: 'productFlexibility', label: 'ความยืดหยุ่น' },
+      { value: 'productSimplicity', label: 'ความง่ายในการใช้' }
+    ],
+    environment: [
+      { value: 'envCleanliness', label: 'ความสะอาด' },
+      { value: 'envSpace', label: 'พื้นที่และความคับคั่ง' },
+      { value: 'envTemperature', label: 'อุณหภูมิ' },
+      { value: 'envDesk', label: 'โต๊ะทำงานและเก้าอี้' },
+      { value: 'envWaitingArea', label: 'พื้นที่นั่งรอ' },
+      { value: 'envLighting', label: 'แสงสว่าง' },
+      { value: 'envSound', label: 'เสียงรบกวน' },
+      { value: 'envRestroom', label: 'ห้องน้ำ' },
+      { value: 'envParking', label: 'ที่จอดรถ' },
+      { value: 'envSignage', label: 'ป้ายบอกทางและสัญลักษณ์' },
+      { value: 'envOtherFacilities', label: 'สิ่งอำนวยความสะดวกอื่นๆ' }
+    ],
+    marketConduct: [
+      { value: 'conductNoDeception', label: 'ไม่หลอกลวง' },
+      { value: 'conductNoAdvantage', label: 'ไม่เอาเปรียบ' },
+      { value: 'conductNoForcing', label: 'ไม่บังคับ' },
+      { value: 'conductNoDisturbance', label: 'ไม่รบกวน' }
+    ],
+    other: [
+      { value: 'otherImpression', label: 'ความประทับใจโดยรวม' }
+    ]
+  };
 
   const subCategories = useMemo(() => {
-    if (mainCat === "all") return [{ value: "all", label: "ทั้งหมด" }];
-    return [{ value: "all", label: "ทั้งหมด" }, ...(SUB_MAP[mainCat] || [])];
-  }, [mainCat]);
+    if (selectedMainCategory === 'all') return [{ value: 'all', label: 'ทั้งหมด' }];
+    return [{ value: 'all', label: 'ทั้งหมด' }, ...(subCategoryMap[selectedMainCategory] || [])];
+  }, [selectedMainCategory]);
 
-  // filtering
-  const filtered = useMemo(() => {
-    const sd = parseDateLoose(startDate);
-    const ed = parseDateLoose(endDate);
-    const edEnd =
-      ed != null ? new Date(ed.getFullYear(), ed.getMonth(), ed.getDate(), 23, 59, 59) : null;
+  const serviceTypes = [
+    'ทั้งหมด',
+    'การฝากเงิน/ถอนเงิน',
+    'การซื้อผลิตภัณฑ์',
+    'การชำระค่าบริการ/ค่าธรรมเนียม',
+    'อื่นๆ'
+  ];
 
-    return mockFeedbackData
-      .filter((fb) => {
-        // location
-        if (region !== "all" && fb.branch.region !== region) return false;
-        if (district !== "all" && fb.branch.district !== district) return false;
-        if (
-          branchQuery &&
-          !`${fb.branch.branch}`.toLowerCase().includes(branchQuery.toLowerCase())
-        )
-          return false;
-
-        // date range
-        const d = parseDateLoose(fb.date) || parseDateLoose(fb.timestamp || "");
-        if (sd && (!d || d < sd)) return false;
-        if (edEnd && (!d || d > edEnd)) return false;
-
-        // service type
-        if (serviceType !== "all" && serviceType !== "ทั้งหมด" && fb.serviceType !== serviceType)
-          return false;
-
-        // channel (demo)
-        const ch = (fb as any).serviceChannel as string | undefined;
-        if (channel && channel !== "all" && ch && ch !== channel) return false;
-
-        // sentiment
-        if (sentiment !== "all") {
-          const vals = Object.values(fb.sentiment);
-          const hasPos = vals.some((v) => v === 1);
-          const hasNeg = vals.some((v) => v === -1);
-          if (sentiment === "positive" && !hasPos) return false;
-          if (sentiment === "negative" && !hasNeg) return false;
-        }
-
-        // category (demo: ใช้ค่าหมวดหลักจาก sentiment summary)
-        if (mainCat !== "all") {
-          if (!fb.sentiment || !fb.sentiment[mainCat as keyof typeof fb.sentiment]) return false;
-        }
-        // subCat (demo): ตรวจ detailedSentiment ถ้ามี
-        if (subCat !== "all") {
-          const ds = fb.detailedSentiment || {};
-          if (!(subCat in ds) || ds[subCat as keyof typeof ds] === 0) return false;
-        }
-
-        return true;
-      })
-      .sort(
-        (a, b) =>
-          (parseDateLoose(b.date)?.getTime() || 0) -
-          (parseDateLoose(a.date)?.getTime() || 0)
-      );
-  }, [
-    region,
-    district,
-    branchQuery,
-    startDate,
-    endDate,
-    serviceType,
-    channel,
-    sentiment,
-    mainCat,
-    subCat,
-  ]);
-
-  const getSentimentColor = (v: number) =>
-    v === 1 ? "bg-green-100" : v === -1 ? "bg-red-100" : "bg-gray-100";
-
-  const getFeedbackColor = (fb: FeedbackEntry) => {
-    const vals = Object.values(fb.sentiment);
-    const hasPos = vals.some((s) => s === 1);
-    const hasNeg = vals.some((s) => s === -1);
-    if (hasPos && hasNeg) return "bg-yellow-100";
-    if (hasPos) return "bg-green-100";
-    if (hasNeg) return "bg-red-100";
-    return "bg-gray-100";
+  const isInRange = (d: string) => {
+    if (!startDate && !endDate) return true;
+    const t = new Date(d).getTime();
+    if (startDate && t < new Date(startDate).getTime()) return false;
+    if (endDate && t > new Date(endDate).getTime()) return false;
+    return true;
   };
 
-  const detailedList = (fb: FeedbackEntry) => {
-    const out: Array<{ label: string; sentiment: number }> = [];
-    Object.entries(fb.detailedSentiment || {}).forEach(([k, v]) => {
-      if (v !== 0) {
-        const main = MAIN.find((m) => (SUB_MAP[m.value] || []).some((s) => s.value === k));
-        const sub = (SUB_MAP[main?.value || ""] || []).find((s) => s.value === k);
-        if (main && sub) out.push({ label: `${main.label}: ${sub.label}`, sentiment: v });
+  // Filter feedback data
+  const filteredFeedback = useMemo(() => {
+    return mockFeedbackData.filter(feedback => {
+      if (selectedRegion !== 'all' && feedback.branch.region !== selectedRegion) return false;
+      if (selectedDistrict !== 'all' && feedback.branch.district !== selectedDistrict) return false;
+      if (selectedBranch !== 'all' && feedback.branch.branch !== selectedBranch) return false;
+
+      if (selectedServiceType !== 'all' && selectedServiceType !== 'ทั้งหมด' && feedback.serviceType !== selectedServiceType) return false;
+
+      if (selectedSentiment !== 'all') {
+        const hasPositive = Object.values(feedback.sentiment).some(s => s === 1);
+        const hasNegative = Object.values(feedback.sentiment).some(s => s === -1);
+        if (selectedSentiment === 'positive' && !hasPositive) return false;
+        if (selectedSentiment === 'negative' && !hasNegative) return false;
+      }
+
+      if (!isInRange(feedback.date)) return false;
+
+      if (selectedMainCategory !== 'all') {
+        const categoryValue = feedback.sentiment[selectedMainCategory as keyof typeof feedback.sentiment];
+        if (categoryValue === 0) return false;
+      }
+
+      // ถ้าเลือกย่อย (mock นี้ยังไม่ผูกแบบ 1.x จึงปล่อยผ่านไว้)
+      if (selectedSubCategory !== 'all') {
+        // คุณสามารถต่อยอด mapping คีย์ -> subCategory ได้เองในภายหลัง
+      }
+
+      return true;
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [selectedRegion, selectedDistrict, selectedBranch, selectedMainCategory, selectedSubCategory, selectedServiceType, selectedSentiment, startDate, endDate]);
+
+  const getSentimentColor = (sentiment: number) => {
+    if (sentiment === 1) return 'bg-green-100';
+    if (sentiment === -1) return 'bg-red-100';
+    return 'bg-gray-100';
+  };
+
+  const getFeedbackColor = (feedback: FeedbackEntry) => {
+    const sentiments = Object.values(feedback.sentiment);
+    const hasPositive = sentiments.some(s => s === 1);
+    const hasNegative = sentiments.some(s => s === -1);
+    if (hasPositive && hasNegative) return 'bg-yellow-100';
+    if (hasPositive) return 'bg-green-100';
+    if (hasNegative) return 'bg-red-100';
+    return 'bg-gray-100';
+  };
+
+  const getDetailedSentiments = (feedback: FeedbackEntry) => {
+    const results: Array<{ category: string; subcategory: string; sentiment: number }> = [];
+    Object.entries(feedback.detailedSentiment).forEach(([key, value]) => {
+      if (value !== 0) {
+        const mainCat = mainCategories.find(cat => 
+          subCategoryMap[cat.value]?.some(sub => sub.value === key)
+        );
+        const subCat = subCategoryMap[mainCat?.value || '']?.find(sub => sub.value === key);
+        if (mainCat && subCat) {
+          results.push({ category: mainCat.label, subcategory: subCat.label, sentiment: value });
+        }
       }
     });
-    return out;
+    return results;
   };
 
-  const onClear = () => {
-    setRegion("all");
-    setDistrict("all");
-    setBranchQuery("");
-    setStartDate("");
-    setEndDate("");
-    setServiceType("all");
-    setChannel("all");
-    setMainCat("all");
-    setSubCat("all");
-    setSentiment("all");
-  };
-
-  const onSearch = () => {
-    console.log("Apply Feedback filters", {
-      region,
-      district,
-      branchQuery,
-      startDate,
-      endDate,
-      serviceType,
-      channel,
-      mainCat,
-      subCat,
-      sentiment,
-    });
+  const clearFilters = () => {
+    setSelectedRegion('all');
+    setSelectedDistrict('all');
+    setSelectedBranch('all');
+    setSelectedMainCategory('all');
+    setSelectedSubCategory('all');
+    setSelectedServiceType('all');
+    setSelectedSentiment('all');
+    setStartDate('');
+    setEndDate('');
   };
 
   return (
     <div className="space-y-6 max-w-full">
-      <div className="flex flex-col space-y-1">
-        <h2 className="text-2xl font-semibold text-foreground">ความคิดเห็นของลูกค้า</h2>
-        <p className="text-muted-foreground">สรุปและกรองความคิดเห็นตามเงื่อนไข</p>
+      {/* Header with Time Filter */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-foreground">ความคิดเห็น</h2>
+        <TimeFilter value={timeFilter} onChange={onTimeFilterChange} />
       </div>
 
-      {/* Filters */}
-      <Card className="border-pink-100">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-bold">ตัวกรองการแสดงผล</CardTitle>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onClear}>
-              ล้างตัวกรอง
-            </Button>
-            <Button onClick={onSearch}>ค้นหา</Button>
+      {/* Filter Controls – ใกล้เคียงภาพตัวอย่าง */}
+      <Card className="border-pink-200/60">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">ตัวกรองการแสดงผล</CardTitle>
+            <div className="flex gap-2">
+              <button
+                onClick={clearFilters}
+                className="inline-flex items-center gap-2 rounded-md border border-pink-200 bg-white px-3 py-2 text-sm text-pink-700 hover:bg-pink-50"
+              >
+                <RotateCw className="h-4 w-4" />
+                ล้างตัวกรอง
+              </button>
+              <button
+                onClick={() => {/* state reactive */}}
+                className="rounded-md bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700"
+              >
+                ค้นหา
+              </button>
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* แถว 1: ภาค / เขต / สาขา(ค้นหา) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm mb-1">ภาค</div>
-              <Select
-                value={region}
-                onValueChange={(v) => {
-                  setRegion(v);
-                  setDistrict("all");
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกภาค" />
-                </SelectTrigger>
-                <SelectContent>
-                  {regions.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {r === "all" ? "ทั้งหมด" : r}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
-            <div>
-              <div className="text-sm mb-1">เขต</div>
-              <Select
-                value={district}
-                onValueChange={(v) => setDistrict(v)}
-                disabled={region === "all"}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกเขต" />
-                </SelectTrigger>
-                <SelectContent>
-                  {districts.map((d) => (
-                    <SelectItem key={d} value={d}>
-                      {d === "all" ? "ทั้งหมด" : d}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        <CardContent className="space-y-6">
+          {/* พื้นที่ให้บริการ */}
+          <div className="rounded-xl border border-pink-100 bg-pink-50/30 p-4">
+            <div className="mb-2 text-sm font-medium text-foreground">พื้นที่ให้บริการ</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* ภาค */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Select value={selectedRegion} onValueChange={(value) => {
+                  setSelectedRegion(value);
+                  setSelectedDistrict('all');
+                  setSelectedBranch('all');
+                }}>
+                  <SelectTrigger className="pl-9">
+                    <SelectValue placeholder="เลือกภาค" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">ทั้งหมด</SelectItem>
+                    {regions.filter(r => r !== 'all').map(region => (
+                      <SelectItem key={region} value={region}>{region}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <div className="text-sm mb-1">สาขา</div>
-              <Input
-                placeholder="พิมพ์ชื่อ/รหัสสาขาเพื่อค้นหา"
-                value={branchQuery}
-                onChange={(e) => setBranchQuery(e.target.value)}
-              />
+              {/* เขต */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Select value={selectedDistrict} onValueChange={(value) => {
+                  setSelectedDistrict(value);
+                  setSelectedBranch('all');
+                }}>
+                  <SelectTrigger className="pl-9">
+                    <SelectValue placeholder="เลือกเขต" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {districts.map(district => (
+                      <SelectItem key={district} value={district}>
+                        {district === 'all' ? 'ทั้งหมด' : district}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* สาขา */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+                  <SelectTrigger className="pl-9">
+                    <SelectValue placeholder="เลือกสาขา" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {branches.map(branch => (
+                      <SelectItem key={branch} value={branch}>
+                        {branch === 'all' ? 'ทั้งหมด' : branch}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
-          {/* แถว 2: ช่วงเวลา + ช่องทาง */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm mb-1">ช่วงเวลา (เริ่ม)</div>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            <div>
-              <div className="text-sm mb-1">ช่วงเวลา (สิ้นสุด)</div>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-            <div>
-              <div className="text-sm mb-1">ช่องทาง/รูปแบบการใช้บริการ</div>
-              <Select value={channel} onValueChange={(v) => setChannel(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกช่องทาง" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">ทั้งหมด</SelectItem>
-                  {SUB_SERVICE_TYPES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          {/* ช่วงเวลา + ประเภท + ทัศนคติ */}
+          <div className="rounded-xl border border-pink-100 bg-pink-50/30 p-4 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* ประเภทการให้บริการ */}
+              <div>
+                <div className="mb-1 text-sm font-medium">ประเภทการให้บริการ</div>
+                <Select value={selectedServiceType} onValueChange={setSelectedServiceType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกประเภทบริการ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {serviceTypes.map(type => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* แถว 3: ประเภทบริการ + หมวดหมู่หลัก/ย่อย + ทัศนคติ */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm mb-1">ประเภทการให้บริการ</div>
-              <Select value={serviceType} onValueChange={(v) => setServiceType(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกประเภทบริการ" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SERVICE_TYPES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* ตั้งแต่ */}
+              <div className="relative">
+                <div className="mb-1 text-sm font-medium">ตั้งแต่</div>
+                <Calendar className="absolute left-3 top-[42px] h-4 w-4 text-muted-foreground" />
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full rounded-md border border-input bg-white px-9 py-2 text-sm outline-none focus:ring-2 focus:ring-pink-200"
+                />
+              </div>
+
+              {/* ถึง */}
+              <div className="relative">
+                <div className="mb-1 text-sm font-medium">ถึง</div>
+                <Calendar className="absolute left-3 top-[42px] h-4 w-4 text-muted-foreground" />
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full rounded-md border border-input bg-white px-9 py-2 text-sm outline-none focus:ring-2 focus:ring-pink-200"
+                />
+              </div>
             </div>
 
-            <div>
-              <div className="text-sm mb-1">หมวดหมู่หลัก</div>
-              <Select
-                value={mainCat}
-                onValueChange={(v) => {
-                  setMainCat(v);
-                  setSubCat("all");
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกหมวดหมู่หลัก" />
-                </SelectTrigger>
-                <SelectContent>
-                  {MAIN.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* หมวดหมู่หลัก */}
+              <div>
+                <div className="mb-1 text-sm font-medium">หมวดหมู่ที่ถูกกล่าวถึง</div>
+                <Select value={selectedMainCategory} onValueChange={(value) => {
+                  setSelectedMainCategory(value);
+                  setSelectedSubCategory('all');
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกหมวดหมู่หลัก" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mainCategories.map(category => (
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* หมวดหมู่ย่อย */}
+              <div>
+                <div className="mb-1 text-sm font-medium">หัวข้อที่ใช้ประเมิน</div>
+                <Select value={selectedSubCategory} onValueChange={setSelectedSubCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกหมวดหมู่ย่อย" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subCategories.map(category => (
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div>
-              <div className="text-sm mb-1">หมวดหมู่ย่อย</div>
-              <Select value={subCat} onValueChange={(v) => setSubCat(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกหมวดหมู่ย่อย" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subCategories.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm mb-1">ทัศนคติของความคิดเห็น</div>
-              <Select value={sentiment} onValueChange={(v) => setSentiment(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกทัศนคติ" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">ทั้งหมด</SelectItem>
-                  <SelectItem value="positive">เชิงบวก</SelectItem>
-                  <SelectItem value="negative">เชิงลบ</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* ทัศนคติ */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <div className="mb-1 text-sm font-medium">ทัศนคติของความคิดเห็น</div>
+                <Select value={selectedSentiment} onValueChange={setSelectedSentiment}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกทัศนคติ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">ทั้งหมด</SelectItem>
+                    <SelectItem value="positive">เชิงบวก</SelectItem>
+                    <SelectItem value="negative">เชิงลบ</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Feedback List */}
-      <Card>
+      <Card className="chart-container-large">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="card-title">
-            รายการความคิดเห็น ({filtered.length} รายการ)
+            รายการความคิดเห็น ({filteredFeedback.length} รายการ)
           </CardTitle>
-          <ExportButton
-            data={filtered}
+          <ExportButton 
+            data={filteredFeedback}
             type="feedback"
             filename="ความคิดเห็นลูกค้า"
             title="รายการความคิดเห็นลูกค้า"
@@ -479,36 +439,33 @@ export const FeedbackPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="max-h-96 overflow-y-auto space-y-4">
-            {filtered.map((fb) => {
-              const details = detailedList(fb);
+            {filteredFeedback.map((feedback) => {
+              const detailedSentiments = getDetailedSentiments(feedback);
               return (
                 <div
-                  key={fb.id}
-                  className={`p-4 rounded-lg border ${getFeedbackColor(fb)}`}
+                  key={feedback.id}
+                  className={`p-4 rounded-lg border ${getFeedbackColor(feedback)}`}
                 >
                   <div className="flex flex-wrap gap-4 mb-3 text-sm text-gray-600">
-                    <span>
-                      <strong>วันที่:</strong> {fb.date} {fb.timestamp}
-                    </span>
-                    <span>
-                      <strong>บริการ:</strong> {fb.serviceType}
-                    </span>
-                    <span>
-                      <strong>สาขา:</strong> {fb.branch.branch} / {fb.branch.district} /{" "}
-                      {fb.branch.region}
-                    </span>
+                    <span><strong>วันที่:</strong> {feedback.date} {feedback.timestamp}</span>
+                    <span><strong>บริการ:</strong> {feedback.serviceType}</span>
+                    <span><strong>สาขา:</strong> {feedback.branch.branch} / {feedback.branch.district} / {feedback.branch.region}</span>
                   </div>
 
                   <div className="mb-3">
-                    <p className="text-gray-800 leading-relaxed">{fb.comment}</p>
+                    <p className="text-gray-800 leading-relaxed">{feedback.comment}</p>
                   </div>
 
                   <div className="space-y-2">
                     <div className="text-sm font-medium text-gray-700">หมวดหมู่ที่เกี่ยวข้อง:</div>
                     <div className="flex flex-wrap gap-2">
-                      {details.map((it, i) => (
-                        <Badge key={`${i}-${it.label}`} className={`${getSentimentColor(it.sentiment)} text-gray-800 border-0`}>
-                          {it.label} {it.sentiment === 1 ? "👍" : "👎"}
+                      {detailedSentiments.map((item, index) => (
+                        <Badge
+                          key={index}
+                          className={`${getSentimentColor(item.sentiment)} text-gray-800 border-0`}
+                        >
+                          {item.category}: {item.subcategory}
+                          {item.sentiment === 1 ? ' 👍' : ' 👎'}
                         </Badge>
                       ))}
                     </div>
@@ -516,7 +473,8 @@ export const FeedbackPage: React.FC = () => {
                 </div>
               );
             })}
-            {filtered.length === 0 && (
+
+            {filteredFeedback.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 ไม่พบความคิดเห็นที่ตรงกับเงื่อนไขที่เลือก
               </div>
@@ -527,5 +485,3 @@ export const FeedbackPage: React.FC = () => {
     </div>
   );
 };
-
-export default FeedbackPage;
