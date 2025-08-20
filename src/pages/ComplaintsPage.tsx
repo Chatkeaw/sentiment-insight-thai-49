@@ -1,3 +1,4 @@
+// pages/ComplaintsPage.tsx
 import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -12,7 +13,123 @@ import { Badge } from "@/components/ui/badge";
 import { mockFeedbackData } from "@/data/mockData";
 import { FeedbackEntry } from "@/types/dashboard";
 
-/* ----------------------------- Category maps ----------------------------- */
+/* -------------------------------------------------------------------------- */
+/*                             1) CSV (แก้ตรงนี้ได้)                           */
+/* -------------------------------------------------------------------------- */
+/** วาง CSV ทั้งก้อนของคุณแทนที่ตัวแปรนี้ได้เลย
+ *  รูปแบบคอลัมน์: ภาค\tเขต\tหน่วยให้บริการ
+ *  (คั่นด้วย tab \t หรือจะใช้เครื่องหมายจุลภาคแล้วเปลี่ยนตัว split ด้านล่างก็ได้)
+ */
+const CSV_TEXT = `ภาค\tเขต\tหน่วยให้บริการ
+ภาค 1\tบางเขน\tบางเขน
+ภาค 1\tราชวัตร\tนางเลิ้ง
+ภาค 1\tสะพานใหม่\tดอนเมือง
+ภาค 1\tห้วยขวาง\tพญาไท
+ภาค 10\tนครพนม\tนครพนม
+ภาค 10\tสกลนคร\tสกลนคร
+ภาค 10\tหนองคาย\tหนองคาย
+ภาค 11\tขอนแก่น 1\tขอนแก่น
+ภาค 11\tชัยภูมิ\tชัยภูมิ
+ภาค 12\tอุบลราชธานี 1\tอุบลราชธานี
+ภาค 13\tนครราชสีมา 1\tนครราชสีมา
+ภาค 13\tสระแก้ว\tสระแก้ว
+ภาค 14\tปทุมธานี 1\tปทุมธานี
+ภาค 14\tพระนครศรีอยุธยา 2\tพระนครศรีอยุธยา
+ภาค 15\tชลบุรี 1\tชลบุรี
+ภาค 15\tระยอง\tระยอง
+ภาค 16\tภูเก็ต\tภูเก็ต
+ภาค 16\tสุราษฎร์ธานี 1\tสุราษฎร์ธานี
+ภาค 17\tนครศรีธรรมราช 1\tนครศรีธรรมราช
+ภาค 17\tตรัง\tตรัง
+ภาค 18\tสงขลา 2\tหาดใหญ่
+ภาค 18\tนราธิวาส\tนราธิวาส
+`;
+
+/* parser CSV (tab-separated) -> Array<{region,district,branch}> */
+type CsvRow = { region: string; district: string; branch: string };
+function parseBranchCSV(txt: string): CsvRow[] {
+  if (!txt?.trim()) return [];
+  const lines = txt.trim().split(/\r?\n/);
+  // ตัดหัวตารางออกถ้าดูเหมือน header
+  const startIdx =
+    /ภาค\s*[\t,]\s*เขต\s*[\t,]\s*(หน่วยให้บริการ|สาขา)/.test(lines[0]) ? 1 : 0;
+
+  const rows: CsvRow[] = [];
+  for (let i = startIdx; i < lines.length; i++) {
+    const raw = lines[i].trim();
+    if (!raw) continue;
+    // รองรับทั้ง tab และ comma
+    const parts = raw.split(/\t|,/).map((s) => s.trim());
+    if (parts.length < 3) continue;
+    rows.push({ region: parts[0], district: parts[1], branch: parts[2] });
+  }
+  return rows;
+}
+
+/** index สำหรับดึงรายการตามลำดับ ภาค -> เขต -> สาขา */
+function buildBranchIndex(rows: CsvRow[]) {
+  const regionSet = new Set<string>();
+  const districtByRegion = new Map<string, Set<string>>();
+  const branchByRegionDistrict = new Map<string, Set<string>>();
+  const allBranches: CsvRow[] = [];
+
+  rows.forEach((r) => {
+    regionSet.add(r.region);
+    if (!districtByRegion.has(r.region)) districtByRegion.set(r.region, new Set());
+    districtByRegion.get(r.region)!.add(r.district);
+
+    const key = `${r.region}|||${r.district}`;
+    if (!branchByRegionDistrict.has(key))
+      branchByRegionDistrict.set(key, new Set());
+    branchByRegionDistrict.get(key)!.add(r.branch);
+
+    allBranches.push(r);
+  });
+
+  const regions = ["ทั้งหมด", ...Array.from(regionSet)];
+  const getDistricts = (region: string) => {
+    if (region === "ทั้งหมด") return ["ทั้งหมด"];
+    return ["ทั้งหมด", ...(districtByRegion.get(region) ? Array.from(districtByRegion.get(region)!) : [])];
+  };
+  const getBranches = (region: string, district: string) => {
+    if (region === "ทั้งหมด" || district === "ทั้งหมด") return ["ทั้งหมด"];
+    const key = `${region}|||${district}`;
+    return ["ทั้งหมด", ...(branchByRegionDistrict.get(key) ? Array.from(branchByRegionDistrict.get(key)!) : [])];
+  };
+
+  return { regions, getDistricts, getBranches, allBranches };
+}
+
+/* -------------------------------------------------------------------------- */
+/*                      2) Mapping mock feedback -> CSV                       */
+/* -------------------------------------------------------------------------- */
+/** เลือก CSV ให้ feedback ใช้ เพื่อให้ตัวกรองทำงานกับข้อมูล CSV ได้จริง
+ *   - ถ้าชื่อสาขาใน mock ตรงกับ CSV จะจับคู่ตรง ๆ
+ *   - ถ้าไม่ตรง จะวนแจกสาขาจาก CSV ตามลำดับ (เพื่อให้มีข้อมูลให้กรอง)
+ */
+function attachCsvBranchToFeedback(feedback: FeedbackEntry[], csv: CsvRow[]) {
+  if (!csv.length) return feedback;
+  // map ชื่อสาขา -> แถว CSV (อย่างง่าย)
+  const mapByBranch = new Map<string, CsvRow>();
+  csv.forEach((r) => mapByBranch.set(r.branch, r));
+
+  return feedback.map((f, i) => {
+    const found = mapByBranch.get(f.branch.branch);
+    const pick = found ?? csv[i % csv.length];
+    return {
+      ...f,
+      branch: {
+        branch: pick.branch,
+        district: pick.district,
+        region: pick.region,
+      },
+    };
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/*                       (คงของเดิม) หมวด/แท็ก ข้อร้องเรียน                  */
+/* -------------------------------------------------------------------------- */
 const HEAD_CATEGORIES = [
   { value: "all", label: "ทั้งหมด" },
   { value: "1", label: "1. พนักงานและบุคลากร" },
@@ -80,7 +197,6 @@ const SUBCATS: Record<string, Array<{ code: string; label: string }>> = {
 };
 
 const LEGACY_KEY_TO_CODE: Record<string, string> = {
-  // staff
   staffPoliteness: "1.1",
   staffCare: "1.2",
   staffConsultation: "1.3",
@@ -89,12 +205,10 @@ const LEGACY_KEY_TO_CODE: Record<string, string> = {
   staffProfessionalism: "1.6",
   staffImpression: "1.7",
   staffSecurity: "1.8",
-  // service
   serviceReadiness: "2.1",
   serviceProcess: "2.2",
   serviceQueue: "2.3",
   serviceDocuments: "2.4",
-  // tech
   techCore: "3.1",
   techQueue: "3.2",
   techATM: "3.3",
@@ -102,13 +216,11 @@ const LEGACY_KEY_TO_CODE: Record<string, string> = {
   techApp: "3.5",
   techBookUpdate: "3.6",
   techCashCounter: "3.7",
-  // products
   productDetails: "4.1",
   productConditions: "4.2",
   productApprovalTime: "4.3",
   productFlexibility: "4.4",
   productSimplicity: "4.5",
-  // environment
   envCleanliness: "5.1",
   envSpace: "5.2",
   envTemperature: "5.3",
@@ -120,12 +232,10 @@ const LEGACY_KEY_TO_CODE: Record<string, string> = {
   envParking: "5.9",
   envSignage: "5.10",
   envOtherFacilities: "5.11",
-  // conduct
   conductNoDeception: "6.1",
   conductNoAdvantage: "6.2",
   conductNoForcing: "6.3",
   conductNoDisturbance: "6.4",
-  // other
   otherImpression: "7.1",
 };
 
@@ -133,9 +243,7 @@ const LABEL_BY_CODE = Object.fromEntries(
   Object.values(SUBCATS).flat().map((x) => [x.code, x.label])
 );
 
-/* ------------------------------ Helper utils ----------------------------- */
 function pickTagCodes(f: FeedbackEntry): string[] {
-  // ถ้าในอนาคตมีฟิลด์ commentTags ให้ใช้ก่อน
   const detailed = (f as any).detailedSentiment as
     | Record<string, number>
     | undefined;
@@ -167,37 +275,33 @@ const backRanges = [
 
 /* --------------------------------- Page ---------------------------------- */
 export default function ComplaintsPage() {
+  /* ---------- ใช้ CSV ทำ index + ผูก CSV ให้กับ mockFeedbackData ---------- */
+  const csvRows = useMemo(() => parseBranchCSV(CSV_TEXT), []);
+  const idx = useMemo(() => buildBranchIndex(csvRows), [csvRows]);
+  const data = useMemo(
+    () => attachCsvBranchToFeedback(mockFeedbackData, csvRows),
+    [csvRows]
+  );
+
   /* ---------------------------- header dropdowns ---------------------------- */
-  // พื้นที่
-  const regions = useMemo(() => {
-    const set = new Set(mockFeedbackData.map((f) => f.branch.region));
-    return ["ทั้งหมด", ...Array.from(set).sort()];
-  }, []);
-  const [region, setRegion] = useState("ทั้งหมด");
+  // ภาค
+  const regions = idx.regions;
+  const [region, setRegion] = useState<string>("ทั้งหมด");
 
-  const districts = useMemo(() => {
-    const data = mockFeedbackData.filter(
-      (f) => region === "ทั้งหมด" || f.branch.region === region
-    );
-    const set = new Set(data.map((f) => f.branch.district));
-    return ["ทั้งหมด", ...Array.from(set).sort()];
-  }, [region]);
-  const [district, setDistrict] = useState("ทั้งหมด");
+  // เขต (ขึ้นกับภาค)
+  const districts = useMemo(() => idx.getDistricts(region), [idx, region]);
+  const [district, setDistrict] = useState<string>("ทั้งหมด");
 
-  const branches = useMemo(() => {
-    const data = mockFeedbackData.filter(
-      (f) =>
-        (region === "ทั้งหมด" || f.branch.region === region) &&
-        (district === "ทั้งหมด" || f.branch.district === district)
-    );
-    const set = new Set(data.map((f) => f.branch.branch));
-    return ["ทั้งหมด", ...Array.from(set).sort()];
-  }, [region, district]);
-  const [branch, setBranch] = useState("ทั้งหมด");
+  // สาขา (ขึ้นกับภาค + เขต)
+  const branches = useMemo(
+    () => idx.getBranches(region, district),
+    [idx, region, district]
+  );
+  const [branch, setBranch] = useState<string>("ทั้งหมด");
 
   // เวลา
   const [timeType, setTimeType] = useState<TimeType>("all");
-  const [monthKey, setMonthKey] = useState<string>(""); // YYYY-MM
+  const [monthKey, setMonthKey] = useState<string>("");
   const [backKey, setBackKey] = useState<string>("1m");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
@@ -209,7 +313,8 @@ export default function ComplaintsPage() {
   );
 
   // หมวด
-  const [headCat, setHeadCat] = useState<(typeof HEAD_CATEGORIES)[number]["value"]>("all");
+  const [headCat, setHeadCat] =
+    useState<(typeof HEAD_CATEGORIES)[number]["value"]>("all");
   const subcatList = useMemo(
     () => (headCat === "all" ? [] : SUBCATS[headCat] ?? []),
     [headCat]
@@ -223,15 +328,21 @@ export default function ComplaintsPage() {
     for (let i = 0; i < 18; i++) {
       const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      // แสดงแบบไทยสั้น ๆ เช่น ม.ค. 68
-      const th = d.toLocaleDateString("th-TH", {
-        year: "2-digit",
-        month: "long",
-      });
+      const th = d.toLocaleDateString("th-TH", { year: "2-digit", month: "long" });
       list.push({ key, label: th });
     }
     return list;
   }, []);
+
+  function parseDate(s: string): Date | null {
+    if (!s) return null;
+    if (s.includes("-")) return new Date(s);
+    if (s.includes("/")) {
+      const [dd, mm, yyyy] = s.split("/");
+      return new Date(parseInt(yyyy, 10), parseInt(mm, 10) - 1, parseInt(dd, 10));
+    }
+    return new Date(s);
+  }
 
   function inTimeRange(dateStr: string): boolean {
     if (timeType === "all") return true;
@@ -244,38 +355,22 @@ export default function ComplaintsPage() {
       const end = new Date(y, m, 0, 23, 59, 59, 999).getTime();
       return d.getTime() >= start && d.getTime() <= end;
     }
-
     if (timeType === "back") {
       const item = backRanges.find((x) => x.value === backKey) ?? backRanges[2];
       const start = Date.now() - item.ms;
       return d.getTime() >= start;
     }
-
     if (timeType === "custom" && startDate && endDate) {
       const s = parseDate(startDate)?.getTime() ?? 0;
       const e = parseDate(endDate)?.getTime() ?? Date.now();
       return d.getTime() >= s && d.getTime() <= e;
     }
-
     return true;
-  }
-
-  function parseDate(s: string): Date | null {
-    // รองรับทั้ง dd/mm/yyyy (th-TH) และ yyyy-mm-dd จาก input date
-    if (!s) return null;
-    if (s.includes("-")) {
-      return new Date(s);
-    }
-    if (s.includes("/")) {
-      const [dd, mm, yyyy] = s.split("/");
-      return new Date(parseInt(yyyy, 10), parseInt(mm, 10) - 1, parseInt(dd, 10));
-    }
-    return new Date(s);
   }
 
   /* ------------------------------- filtering ------------------------------- */
   const filtered = useMemo(() => {
-    return mockFeedbackData
+    return data
       .filter((f) => {
         if (region !== "ทั้งหมด" && f.branch.region !== region) return false;
         if (district !== "ทั้งหมด" && f.branch.district !== district) return false;
@@ -298,11 +393,15 @@ export default function ComplaintsPage() {
           if (!codes.some((c) => c.startsWith(headCat + "."))) return false;
           if (subCat !== "all" && !codes.includes(subCat)) return false;
         }
-
         return true;
       })
-      .sort((a, b) => (parseDate(b.date)?.getTime() ?? 0) - (parseDate(a.date)?.getTime() ?? 0));
+      .sort(
+        (a, b) =>
+          (parseDate(b.date)?.getTime() ?? 0) -
+          (parseDate(a.date)?.getTime() ?? 0)
+      );
   }, [
+    data,
     region,
     district,
     branch,
@@ -335,35 +434,45 @@ export default function ComplaintsPage() {
   /* --------------------------------- UI ---------------------------------- */
   return (
     <div className="space-y-6">
-      {/* Page heading */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">ข้อร้องเรียนลูกค้า</h1>
-        <p className="text-muted-foreground">
-          ระบบสรุปข้อร้องเรียนสำคัญจากลูกค้า
-        </p>
+        <p className="text-muted-foreground">ระบบสรุปข้อร้องเรียนสำคัญจากลูกค้า</p>
       </div>
 
-      {/* Filters box */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-xl">ตัวกรองการแสดงผล</CardTitle>
-          <div className="space-x-2">
-            <Button variant="outline" onClick={resetAll}>ล้างตัวกรอง</Button>
-          </div>
+          <Button variant="outline" onClick={resetAll}>
+            ล้างตัวกรอง
+          </Button>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {/* พื้นที่ให้บริการ */}
           <section>
-            <div className="mb-3 text-lg font-semibold">พื้นที่ให้บริการ</div>
+            <div className="mb-3 text-lg font-semibold">พื้นที่</div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {/* Region */}
               <div className="space-y-2">
                 <label className="text-sm text-muted-foreground">ภาค</label>
-                <Select value={region} onValueChange={(v) => { setRegion(v); setDistrict("ทั้งหมด"); setBranch("ทั้งหมด"); }}>
-                  <SelectTrigger><SelectValue placeholder="เลือกภาค" /></SelectTrigger>
+                <Select
+                  key={`region-${region}`}
+                  value={region}
+                  onValueChange={(v) => {
+                    setRegion(v);
+                    setDistrict("ทั้งหมด");
+                    setBranch("ทั้งหมด");
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกภาค" />
+                  </SelectTrigger>
                   <SelectContent>
-                    {regions.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                    {regions.map((r) => (
+                      <SelectItem key={r} value={r}>
+                        {r}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -371,10 +480,24 @@ export default function ComplaintsPage() {
               {/* District */}
               <div className="space-y-2">
                 <label className="text-sm text-muted-foreground">เขต</label>
-                <Select value={district} onValueChange={(v) => { setDistrict(v); setBranch("ทั้งหมด"); }}>
-                  <SelectTrigger><SelectValue placeholder="เลือกเขต" /></SelectTrigger>
+                <Select
+                  key={`district-${region}-${district}`}
+                  value={district}
+                  onValueChange={(v) => {
+                    setDistrict(v);
+                    setBranch("ทั้งหมด");
+                  }}
+                  disabled={region === "ทั้งหมด"}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกเขต" />
+                  </SelectTrigger>
                   <SelectContent>
-                    {districts.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                    {districts.map((d) => (
+                      <SelectItem key={d} value={d}>
+                        {d}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -382,24 +505,37 @@ export default function ComplaintsPage() {
               {/* Branch */}
               <div className="space-y-2">
                 <label className="text-sm text-muted-foreground">สาขา</label>
-                <Select value={branch} onValueChange={setBranch}>
-                  <SelectTrigger><SelectValue placeholder="เลือกสาขา" /></SelectTrigger>
+                <Select
+                  key={`branch-${region}-${district}-${branch}`}
+                  value={branch}
+                  onValueChange={setBranch}
+                  disabled={region === "ทั้งหมด" || district === "ทั้งหมด"}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกสาขา" />
+                  </SelectTrigger>
                   <SelectContent>
-                    {branches.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                    {branches.map((b) => (
+                      <SelectItem key={b} value={b}>
+                        {b}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
           </section>
 
-          {/* ช่วงเวลาเก็บแบบประเมิน */}
+          {/* ช่วงเวลาการประเมิน */}
           <section>
             <div className="mb-3 text-lg font-semibold">ช่วงเวลาการประเมิน</div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <label className="text-sm text-muted-foreground">ประเภท</label>
                 <Select value={timeType} onValueChange={(v: TimeType) => setTimeType(v)}>
-                  <SelectTrigger><SelectValue placeholder="เลือกประเภทเวลา" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกประเภทเวลา" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">ทั้งหมด</SelectItem>
                     <SelectItem value="monthly">รายเดือน</SelectItem>
@@ -409,15 +545,18 @@ export default function ComplaintsPage() {
                 </Select>
               </div>
 
-              {/* monthly / back / custom controls */}
               {timeType === "monthly" && (
                 <div className="space-y-2">
                   <label className="text-sm text-muted-foreground">เดือน</label>
                   <Select value={monthKey} onValueChange={setMonthKey}>
-                    <SelectTrigger><SelectValue placeholder="เลือกเดือน" /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกเดือน" />
+                    </SelectTrigger>
                     <SelectContent>
                       {monthOptions.map((m) => (
-                        <SelectItem key={m.key} value={m.key}>{m.label}</SelectItem>
+                        <SelectItem key={m.key} value={m.key}>
+                          {m.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -428,10 +567,14 @@ export default function ComplaintsPage() {
                 <div className="space-y-2">
                   <label className="text-sm text-muted-foreground">ย้อนหลัง</label>
                   <Select value={backKey} onValueChange={setBackKey}>
-                    <SelectTrigger><SelectValue placeholder="เลือกช่วงเวลา" /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกช่วงเวลา" />
+                    </SelectTrigger>
                     <SelectContent>
                       {backRanges.map((r) => (
-                        <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                        <SelectItem key={r.value} value={r.value}>
+                          {r.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -465,15 +608,21 @@ export default function ComplaintsPage() {
 
           {/* ประเภทการให้บริการและทัศนคติ */}
           <section>
-            <div className="mb-3 text-lg font-semibold">ประเภทการให้บริการ และทัศนคติ</div>
+            <div className="mb-3 text-lg font-semibold">
+              ประเภทการให้บริการ และทัศนคติ
+            </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm text-muted-foreground">บริการ</label>
                 <Select value={serviceType} onValueChange={setServiceType}>
-                  <SelectTrigger><SelectValue placeholder="เลือกประเภทบริการ" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกประเภทบริการ" />
+                  </SelectTrigger>
                   <SelectContent>
                     {serviceTypeOptions.map((x) => (
-                      <SelectItem key={x} value={x}>{x}</SelectItem>
+                      <SelectItem key={x} value={x}>
+                        {x}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -481,8 +630,13 @@ export default function ComplaintsPage() {
 
               <div className="space-y-2">
                 <label className="text-sm text-muted-foreground">ทัศนคติ</label>
-                <Select value={sentiment} onValueChange={(v: any) => setSentiment(v)}>
-                  <SelectTrigger><SelectValue placeholder="เลือกทัศนคติ" /></SelectTrigger>
+                <Select
+                  value={sentiment}
+                  onValueChange={(v: any) => setSentiment(v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกทัศนคติ" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">ทั้งหมด</SelectItem>
                     <SelectItem value="positive">เชิงบวก</SelectItem>
@@ -495,7 +649,9 @@ export default function ComplaintsPage() {
 
           {/* ประเภท / หมวดหมู่ ความคิดเห็น */}
           <section>
-            <div className="mb-3 text-lg font-semibold">ประเภท / หมวดหมู่ ความคิดเห็น</div>
+            <div className="mb-3 text-lg font-semibold">
+              ประเภท / หมวดหมู่ ความคิดเห็น
+            </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm text-muted-foreground">หัวข้อ</label>
@@ -506,7 +662,9 @@ export default function ComplaintsPage() {
                     setSubCat("all");
                   }}
                 >
-                  <SelectTrigger><SelectValue placeholder="เลือกหัวข้อการประเมิน" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกหัวข้อการประเมิน" />
+                  </SelectTrigger>
                   <SelectContent>
                     {HEAD_CATEGORIES.map((c) => (
                       <SelectItem key={c.value} value={c.value as string}>
@@ -545,7 +703,8 @@ export default function ComplaintsPage() {
       {/* Results */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">
-          ผลการค้นหา <span className="text-muted-foreground">({filtered.length} รายการ)</span>
+          ผลการค้นหา{" "}
+          <span className="text-muted-foreground">({filtered.length} รายการ)</span>
         </h2>
       </div>
 
@@ -560,30 +719,36 @@ export default function ComplaintsPage() {
             <Card
               key={f.id}
               className={
-                severe
-                  ? "border-red-200 bg-rose-50"
-                  : "border-border bg-background"
+                severe ? "border-red-200 bg-rose-50" : "border-border bg-background"
               }
             >
               <CardContent className="p-4">
-                {/* Header line */}
                 <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                  <span><strong>รหัส:</strong> {f.id}</span>
-                  <span><strong>วันที่:</strong> {f.date} {f.timestamp}</span>
                   <span>
-                    <strong>พื้นที่:</strong> {f.branch.region} / {f.branch.district} / {f.branch.branch}
+                    <strong>รหัส:</strong> {f.id}
                   </span>
-                  <span><strong>บริการ:</strong> {f.serviceType}</span>
+                  <span>
+                    <strong>วันที่:</strong> {f.date} {f.timestamp}
+                  </span>
+                  <span>
+                    <strong>พื้นที่:</strong> {f.branch.region} / {f.branch.district} /{" "}
+                    {f.branch.branch}
+                  </span>
+                  <span>
+                    <strong>บริการ:</strong> {f.serviceType}
+                  </span>
                 </div>
 
-                {/* Comment */}
-                <p className="mb-3 text-foreground leading-relaxed">{f.comment}</p>
+                <p className="mb-3 leading-relaxed text-foreground">{f.comment}</p>
 
-                {/* Subtopics */}
                 {codes.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {codes.map((c) => (
-                      <Badge key={c} variant={severe ? "destructive" : "secondary"} className="text-xs">
+                      <Badge
+                        key={c}
+                        variant={severe ? "destructive" : "secondary"}
+                        className="text-xs"
+                      >
                         {c} {LABEL_BY_CODE[c] ?? ""}
                       </Badge>
                     ))}
