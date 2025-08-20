@@ -4,12 +4,11 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 import type { SentimentItem } from "@/data/mockData";
 
 interface Props {
-  data: SentimentItem[];     // ← ต้องเป็นอาเรย์ของ {label,value,color}
+  data: SentimentItem[];  // [{label, value, color}]
   title?: string;
 }
 
 const SentimentPieChart: React.FC<Props> = ({ data, title = "ทัศนคติของลูกค้า" }) => {
-  // ให้ครบ 3 ค่าเสมอ
   const base: SentimentItem[] = [
     { label: "เชิงบวก", value: 0, color: "#10B981" },
     { label: "เชิงลบ", value: 0, color: "#EF4444" },
@@ -24,8 +23,8 @@ const SentimentPieChart: React.FC<Props> = ({ data, title = "ทัศนคต�
     const y = cy + r * Math.sin(-midAngle * RAD);
     return (
       <text x={x} y={y} fill="hsl(var(--foreground))"
-        textAnchor={x > cx ? "start" : "end"} dominantBaseline="central"
-        className="text-sm font-medium">
+            textAnchor={x > cx ? "start" : "end"} dominantBaseline="central"
+            className="text-sm font-medium">
         {`${name} ${value}%`}
       </text>
     );
