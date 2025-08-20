@@ -282,6 +282,33 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
     setIsSentimentModalOpen(false);
   };
 
+  // Branch Label with bullet points
+  const BranchLabel = ({ cx, cy, midAngle, outerRadius, value, name, payload }: any) => {
+    const RAD = Math.PI / 180;
+    const r = outerRadius + 30;
+    const x = cx + r * Math.cos(-midAngle * RAD);
+    const y = cy + r * Math.sin(-midAngle * RAD);
+
+    const isRight = x > cx;
+    const bulletX = isRight ? x - 10 : x + 10; // วางจุดก่อนข้อความ
+
+    return (
+      <g>
+        <circle cx={bulletX} cy={y} r={4} fill={payload?.color || '#6B7280'} />
+        <text
+          x={x}
+          y={y}
+          fill="hsl(var(--foreground))"
+          textAnchor={isRight ? 'start' : 'end'}
+          dominantBaseline="central"
+          className="text-sm font-medium"
+        >
+          {`${name} ${value}%`}
+        </text>
+      </g>
+    );
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -370,7 +397,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={CustomLabel}
+                    label={BranchLabel}
                     outerRadius={80}
                     innerRadius={50}
                     fill="#8884d8"
