@@ -246,7 +246,7 @@ export const ComplaintsPage: React.FC<{
                   <SelectValue placeholder="เลือกเดือน" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">เลือกทั้งหมด</SelectItem>
+                  <SelectItem value="all">เลือกทั้งหมด</SelectItem>
                   {MONTHS_TH_BE.map((m) => (
                     <SelectItem key={m} value={m}>
                       {m}
@@ -270,7 +270,7 @@ export const ComplaintsPage: React.FC<{
                   <SelectValue placeholder="เลือกช่วงเวลา" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">เลือกทั้งหมด</SelectItem>
+                  <SelectItem value="all">เลือกทั้งหมด</SelectItem>
                   {TRAILING_WINDOWS.map((w) => (
                     <SelectItem key={w.value} value={w.value}>
                       {w.label}
