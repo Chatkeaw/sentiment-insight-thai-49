@@ -1,13 +1,16 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
+import type { SentimentItem } from "@/data/mockData";
 
-type SentimentDatum = { label: string; value: number; color: string; };
-interface Props { data: SentimentDatum[]; title?: string; }
+interface Props {
+  data: SentimentItem[];     // ← ต้องเป็นอาเรย์ของ {label,value,color}
+  title?: string;
+}
 
 const SentimentPieChart: React.FC<Props> = ({ data, title = "ทัศนคติของลูกค้า" }) => {
-  // fallback ให้ครบ 3 ค่าเสมอ เพื่อกัน data ขาด
-  const base: SentimentDatum[] = [
+  // ให้ครบ 3 ค่าเสมอ
+  const base: SentimentItem[] = [
     { label: "เชิงบวก", value: 0, color: "#10B981" },
     { label: "เชิงลบ", value: 0, color: "#EF4444" },
     { label: "ไม่มีนัยสำคัญ", value: 0, color: "#6B7280" },
@@ -53,7 +56,7 @@ const SentimentPieChart: React.FC<Props> = ({ data, title = "ทัศนคต�
           </PieChart>
         </ResponsiveContainer>
 
-        {/* legend */}
+        {/* Legend */}
         <div className="mt-4 space-y-2">
           {merged.map(d => (
             <div key={d.label} className="flex items-center gap-2 text-sm">
