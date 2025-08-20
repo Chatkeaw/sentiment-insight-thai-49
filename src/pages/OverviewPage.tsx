@@ -193,7 +193,12 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
   const serviceTypeData = getServiceTypeData();
   const satisfactionData = getSatisfactionData();
   const regionSatisfactionData = getRegionSatisfactionData();
-  const sentimentData = getSentimentData();
+  const rawSentimentData = getSentimentData();
+  const sentimentData = [
+    { label: "เชิงบวก", value: rawSentimentData.positive.percentage, color: "#10B981" },
+    { label: "เชิงลบ", value: rawSentimentData.negative.percentage, color: "#EF4444" },
+    { label: "ไม่มีนัยสำคัญ", value: rawSentimentData.neutral.percentage, color: "#6B7280" },
+  ];
   
   // Mock data สำหรับกราฟเส้นแนวโน้ม
   const trendData = Array.from({ length: 30 }, (_, i) => ({
