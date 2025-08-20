@@ -1,4 +1,4 @@
-
+// src/data/mockData.ts
 import { FeedbackEntry, KPIData, RegionData, ChartData } from "@/types/dashboard";
 
 // Generate mock data for dashboard
@@ -199,27 +199,12 @@ export const getRegionSatisfactionData = (): ChartData[] => {
   });
 };
 
-export const getSentimentData = () => {
-  // Fixed percentages to match reference: 68%, 27%, 5%
-  const totalFeedback = mockFeedbackData.length;
-  
-  // Calculate counts based on fixed percentages
-  const positiveCount = Math.round(totalFeedback * 0.68);
-  const negativeCount = Math.round(totalFeedback * 0.27); 
-  const neutralCount = totalFeedback - positiveCount - negativeCount; // Remaining for neutral
-  
-  return {
-    positive: { 
-      count: positiveCount, 
-      percentage: Math.round((positiveCount / totalFeedback) * 100) 
-    },
-    negative: { 
-      count: negativeCount, 
-      percentage: Math.round((negativeCount / totalFeedback) * 100) 
-    },
-    neutral: { 
-      count: neutralCount, 
-      percentage: Math.round((neutralCount / totalFeedback) * 100) 
-    }
-  };
-};
+// -------------------- CHANGED: return array for pie chart --------------------
+type SentimentItem = { label: string; value: number; color: string };
+
+export const getSentimentData = (): SentimentItem[] => ([
+  { label: 'เชิงบวก', value: 68, color: '#10B981' },
+  { label: 'เชิงลบ', value: 27, color: '#EF4444' },
+  { label: 'ไม่มีนัยสำคัญ', value: 5,  color: '#6B7280' },
+]);
+// -----------------------------------------------------------------------------
