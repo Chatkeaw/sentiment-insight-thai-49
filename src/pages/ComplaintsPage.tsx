@@ -15,10 +15,12 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { mockFeedbackData } from "@/data/mockData";
-import { TimeFilter as TimeFilterType, FeedbackEntry } from "@/types/dashboard";
+import { FeedbackEntry, TimeFilter as TimeFilterType } from "@/types/dashboard";
 
-// -------------------- ตัวเลือกคงที่ --------------------
+/* -------------------------- ค่าคงที่สำหรับตัวเลือก -------------------------- */
+
 const SERVICE_TYPES = [
   "การฝากเงิน/ถอนเงิน",
   "การซื้อผลิตภัณฑ์",
@@ -28,7 +30,22 @@ const SERVICE_TYPES = [
 
 type TimeKind = "monthly" | "trailing" | "custom";
 
-const MONTHS_TH_BE = [
+const MONTHS_TH = [
+  "มกราคม",
+  "กุมภาพันธ์",
+  "มีนาคม",
+  "เมษายน",
+  "พฤษภาคม",
+  "มิถุนายน",
+  "กรกฎาคม",
+  "สิงหาคม",
+  "กันยายน",
+  "ตุลาคม",
+  "พฤศจิกายน",
+  "ธันวาคม",
+];
+
+const MONTHS_TH_BE: string[] = [
   "มกราคม 67",
   "กุมภาพันธ์ 67",
   "มีนาคม 67",
@@ -41,18 +58,25 @@ const MONTHS_TH_BE = [
   "ตุลาคม 67",
   "พฤศจิกายน 67",
   "ธันวาคม 67",
+  "มกราคม 68",
+  "กุมภาพันธ์ 68",
+  "มีนาคม 68",
+  "เมษายน 68",
+  "พฤษภาคม 68",
+  "มิถุนายน 68",
+  "กรกฎาคม 68",
+  "สิงหาคม 68",
 ];
 
 const TRAILING_WINDOWS = [
-  { value: "7d", label: "7 วัน" },
-  { value: "14d", label: "14 วัน" },
-  { value: "1m", label: "1 เดือน" },
-  { value: "3m", label: "3 เดือน" },
-  { value: "6m", label: "6 เดือน" },
-  { value: "1y", label: "1 ปี" },
+  { value: "7d", label: "7 วัน", days: 7 },
+  { value: "14d", label: "14 วัน", days: 14 },
+  { value: "1m", label: "1 เดือน", days: 30 },
+  { value: "3m", label: "3 เดือน", days: 90 },
+  { value: "6m", label: "6 เดือน", days: 180 },
+  { value: "1y", label: "1 ปี", days: 365 },
 ];
 
-// หัวข้อหลัก (1–7)
 const MAIN_TOPICS = [
   { value: "1", label: "1. พนักงานและบุคลากร" },
   { value: "2", label: "2. ระบบและกระบวนการให้บริการ" },
@@ -63,7 +87,6 @@ const MAIN_TOPICS = [
   { value: "7", label: "7. อื่นๆ" },
 ];
 
-// หมวดหมู่ย่อยตามหัวข้อ
 const SUB_TOPIC_MAP: Record<string, Array<{ value: string; label: string }>> = {
   "1": [
     { value: "1.1", label: "1.1 ความสุภาพและมารยาทของพนักงาน" },
@@ -119,12 +142,39 @@ const SUB_TOPIC_MAP: Record<string, Array<{ value: string; label: string }>> = {
   "7": [{ value: "7.1", label: "7.1 ความประทับใจอื่นๆ" }],
 };
 
-// -------------------- คอมโพเนนต์หลัก --------------------
+/* -------------------------- Utilities -------------------------- */
+
+// mockData.date เป็นสตริง th-TH เช่น "10/1/2568" -> แปลงเป็น Date
+function parseThaiDateToDate(s: string): Date | null {
+  const parts = s.split("/");
+  if (parts.length < 3) return null;
+  const d = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10) - 1;
+  let y = parseInt(parts[2], 10);
+  if (y > 2400) y -= 543; // พ.ศ. -> ค.ศ.
+  return new Date(y, m, d);
+}
+
+// แปลง Date เป็นคู่ monthIndex/yearBE2digits สำหรับเทียบ monthly
+function toMonthKeyBE(date: Date) {
+  const monthName = MONTHS_TH[date.getMonth()];
+  const yearBE2 = (date.getFullYear() + 543).toString().slice(-2);
+  return `${monthName} ${yearBE2}`;
+}
+
+function isSevere(f: FeedbackEntry): boolean {
+  const sentiments = Object.values(f.sentiment);
+  const hasNegative = sentiments.some((s) => s === -1);
+  return hasNegative || f.satisfaction.overall <= 2;
+}
+
+/* -------------------------- Page -------------------------- */
+
 export const ComplaintsPage: React.FC<{
   timeFilter?: TimeFilterType["value"];
   onTimeFilterChange?: (v: TimeFilterType["value"]) => void;
 }> = () => {
-  // -------- พื้นที่ให้บริการ --------
+  /* ---------- พื้นที่ให้บริการ ---------- */
   const regions = useMemo(() => {
     const s = new Set(mockFeedbackData.map((f) => f.branch.region));
     return Array.from(s).sort();
@@ -137,7 +187,6 @@ export const ComplaintsPage: React.FC<{
       .map((f) => f.branch.district);
     return ["ทั้งหมด", ...Array.from(new Set(list)).sort()];
   }, [region]);
-
   const [district, setDistrict] = useState<string>("ทั้งหมด");
 
   const branches = useMemo(() => {
@@ -150,31 +199,31 @@ export const ComplaintsPage: React.FC<{
       .map((f) => f.branch.branch);
     return ["ทั้งหมด", ...Array.from(new Set(list)).sort()];
   }, [region, district]);
-
   const [branch, setBranch] = useState<string>("ทั้งหมด");
 
-  // -------- ช่วงเวลาเก็บแบบประเมิน --------
+  /* ---------- เวลา ---------- */
   const [timeKind, setTimeKind] = useState<TimeKind>("custom");
   const [monthSelected, setMonthSelected] = useState<string>("");
   const [trailingSelected, setTrailingSelected] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  // -------- ประเภทบริการ & ทัศนคติ --------
+  /* ---------- บริการ + ทัศนคติ ---------- */
   const [serviceType, setServiceType] = useState<string>("ทั้งหมด");
   const [sentiment, setSentiment] = useState<"all" | "positive" | "negative">(
     "all"
   );
 
-  // -------- ประเภท/หมวดหมู่ ความคิดเห็น --------
-  const [mainTopic, setMainTopic] = useState<string>(""); // 1..7
+  /* ---------- ประเภท/หมวดความเห็น ---------- */
+  const [mainTopic, setMainTopic] = useState<string>("");
   const [subTopic, setSubTopic] = useState<string>("");
 
   const subTopicOptions = useMemo(() => {
     if (!mainTopic) return [];
-    return SUB_TOPIC_MAP[mainTopic] || [];
+    return SUB_TOPIC_MAP[mainTopic] ?? [];
   }, [mainTopic]);
 
+  /* ---------- ล้างฟิลเตอร์ ---------- */
   const handleReset = () => {
     setRegion("ทั้งหมด");
     setDistrict("ทั้งหมด");
@@ -193,7 +242,86 @@ export const ComplaintsPage: React.FC<{
     setSubTopic("");
   };
 
-  // -------------------- UI --------------------
+  /* ---------- ตัวกรองเวลา ---------- */
+  const applyTimeFilter = (f: FeedbackEntry) => {
+    const d = parseThaiDateToDate(f.date);
+    if (!d) return true;
+
+    if (timeKind === "monthly") {
+      if (!monthSelected) return true;
+      return toMonthKeyBE(d) === monthSelected;
+    }
+
+    if (timeKind === "trailing") {
+      if (!trailingSelected) return true;
+      const days =
+        TRAILING_WINDOWS.find((w) => w.value === trailingSelected)?.days ?? 0;
+      if (!days) return true;
+      const since = new Date();
+      since.setDate(since.getDate() - days);
+      return d >= since;
+    }
+
+    // custom
+    const s = startDate ? new Date(startDate) : null;
+    const e = endDate ? new Date(endDate) : null;
+    if (s && d < s) return false;
+    if (e) {
+      const e2 = new Date(e);
+      e2.setHours(23, 59, 59, 999);
+      if (d > e2) return false;
+    }
+    return true;
+  };
+
+  /* ---------- ตัวกรองอื่น ๆ + รวบรวมรายการรุนแรง ---------- */
+  const severeList = useMemo(() => {
+    return mockFeedbackData
+      .filter((f) => {
+        // พื้นที่
+        if (region !== "ทั้งหมด" && f.branch.region !== region) return false;
+        if (district !== "ทั้งหมด" && f.branch.district !== district)
+          return false;
+        if (branch !== "ทั้งหมด" && f.branch.branch !== branch) return false;
+
+        // ประเภทบริการ
+        if (serviceType !== "ทั้งหมด" && f.serviceType !== serviceType)
+          return false;
+
+        // ทัศนคติ (optional)
+        if (sentiment !== "all") {
+          const hasPositive = Object.values(f.sentiment).some((s) => s === 1);
+          const hasNegative = Object.values(f.sentiment).some((s) => s === -1);
+          if (sentiment === "positive" && !hasPositive) return false;
+          if (sentiment === "negative" && !hasNegative) return false;
+        }
+
+        // เวลา
+        if (!applyTimeFilter(f)) return false;
+
+        // รุนแรง
+        return isSevere(f);
+      })
+      .sort((a, b) => {
+        const da = parseThaiDateToDate(a.date)?.getTime() ?? 0;
+        const db = parseThaiDateToDate(b.date)?.getTime() ?? 0;
+        return db - da; // ใหม่ -> เก่า
+      });
+  }, [
+    region,
+    district,
+    branch,
+    serviceType,
+    sentiment,
+    timeKind,
+    monthSelected,
+    trailingSelected,
+    startDate,
+    endDate,
+  ]);
+
+  /* -------------------------- UI -------------------------- */
+
   return (
     <div className="space-y-6">
       {/* ปุ่มล้างตัวกรอง */}
@@ -216,7 +344,6 @@ export const ComplaintsPage: React.FC<{
               value={timeKind}
               onValueChange={(v: TimeKind) => {
                 setTimeKind(v);
-                // เคลียร์ค่าอื่นๆ เมื่อเปลี่ยนประเภท
                 setMonthSelected("");
                 setTrailingSelected("");
                 setStartDate("");
@@ -234,19 +361,16 @@ export const ComplaintsPage: React.FC<{
             </Select>
           </div>
 
-          {/* ช่องตามประเภท */}
+          {/* ช่องตามประเภทเวลา */}
           {timeKind === "monthly" && (
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm text-muted-foreground">เดือน:</label>
-              <Select
-                value={monthSelected}
-                onValueChange={setMonthSelected}
-              >
+              <label className="text-sm text-muted-foreground">เดือน</label>
+              <Select value={monthSelected} onValueChange={setMonthSelected}>
                 <SelectTrigger>
                   <SelectValue placeholder="เลือกเดือน" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                  <SelectItem value="">เลือกทั้งหมด</SelectItem>
                   {MONTHS_TH_BE.map((m) => (
                     <SelectItem key={m} value={m}>
                       {m}
@@ -260,7 +384,7 @@ export const ComplaintsPage: React.FC<{
           {timeKind === "trailing" && (
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm text-muted-foreground">
-                ช่วงเวลาย้อนหลัง:
+                ช่วงเวลาย้อนหลัง
               </label>
               <Select
                 value={trailingSelected}
@@ -270,7 +394,7 @@ export const ComplaintsPage: React.FC<{
                   <SelectValue placeholder="เลือกช่วงเวลา" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                  <SelectItem value="">เลือกทั้งหมด</SelectItem>
                   {TRAILING_WINDOWS.map((w) => (
                     <SelectItem key={w.value} value={w.value}>
                       {w.label}
@@ -304,7 +428,7 @@ export const ComplaintsPage: React.FC<{
         </CardContent>
       </Card>
 
-      {/* พื้นที่ให้บริการ */}
+      {/* ตัวกรองข้อมูล */}
       <Card>
         <CardHeader>
           <CardTitle>ตัวกรองข้อมูล</CardTitle>
@@ -380,10 +504,7 @@ export const ComplaintsPage: React.FC<{
             <label className="text-sm text-muted-foreground">
               ประเภทการให้บริการ
             </label>
-            <Select
-              value={serviceType}
-              onValueChange={setServiceType}
-            >
+            <Select value={serviceType} onValueChange={setServiceType}>
               <SelectTrigger>
                 <SelectValue placeholder="เลือกประเภทการให้บริการ" />
               </SelectTrigger>
@@ -426,7 +547,7 @@ export const ComplaintsPage: React.FC<{
           <CardTitle>ประเภท / หมวดหมู่ ความคิดเห็น</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {/* หัวข้อ (Main) */}
+          {/* หัวข้อ */}
           <div className="space-y-2">
             <label className="text-sm text-muted-foreground">หัวข้อ</label>
             <Select
@@ -449,7 +570,7 @@ export const ComplaintsPage: React.FC<{
             </Select>
           </div>
 
-          {/* หมวดหมู่ (Sub) */}
+          {/* หมวดหมู่ */}
           <div className="space-y-2">
             <label className="text-sm text-muted-foreground">หมวดหมู่</label>
             <Select
@@ -459,9 +580,7 @@ export const ComplaintsPage: React.FC<{
             >
               <SelectTrigger>
                 <SelectValue
-                  placeholder={
-                    mainTopic ? "เลือกหมวดหมู่" : "เลือกหัวข้อก่อน"
-                  }
+                  placeholder={mainTopic ? "เลือกหมวดหมู่" : "เลือกหัวข้อก่อน"}
                 />
               </SelectTrigger>
               <SelectContent>
@@ -473,6 +592,42 @@ export const ComplaintsPage: React.FC<{
               </SelectContent>
             </Select>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* รายการ “ข้อร้องเรียนที่รุนแรง” */}
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            รายการข้อร้องเรียนที่รุนแรง ({severeList.length} รายการ)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {severeList.length === 0 ? (
+            <div className="py-10 text-center text-muted-foreground">
+              ไม่พบรายการที่ตรงกับตัวกรอง
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-[560px] overflow-y-auto pr-2">
+              {severeList.map((f) => (
+                <div
+                  key={f.id}
+                  className="rounded-md border p-4 hover:bg-muted/40 transition"
+                >
+                  <div className="mb-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                    <span>📅 {f.date} {f.timestamp}</span>
+                    <span>🏢 {f.branch.branch} / {f.branch.district} / {f.branch.region}</span>
+                    <span>🔧 {f.serviceType}</span>
+                    <Badge variant="destructive">รุนแรง</Badge>
+                  </div>
+
+                  <div className="text-foreground leading-relaxed">
+                    {f.comment}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
