@@ -115,4 +115,5 @@ export interface RegionData {
   score: number;
   positive: number;
   negative: number;
+  neutral: number;
 }

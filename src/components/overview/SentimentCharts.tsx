@@ -26,11 +26,12 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
     { name: 'ไม่มีนัยสำคัญ', value: sentimentData.neutral.count, percentage: sentimentData.neutral.percentage, color: '#6B7280' },
   ];
 
-  // Regional sentiment data (18 regions x 2 bars each)
+  // Regional sentiment data (18 regions x 3 bars each)
   const regionalSentimentData = Array.from({ length: 18 }, (_, i) => ({
     region: `ภาค ${i + 1}`,
     positive: Math.floor(Math.random() * 50) + 20,
     negative: Math.floor(Math.random() * 30) + 10,
+    neutral: Math.floor(Math.random() * 15) + 5,
   }));
 
   // Trend data
@@ -38,6 +39,7 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
     month: `${i + 1}`,
     positive: Math.floor(Math.random() * 30) + 40,
     negative: Math.floor(Math.random() * 20) + 15,
+    neutral: Math.floor(Math.random() * 10) + 5,
   }));
 
   const handleRegionalSentimentClick = () => {
@@ -156,7 +158,10 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
                     fontSize={12}
                   />
                   <Tooltip 
-                    formatter={(value, name) => [`${value} ครั้ง`, name === 'positive' ? 'เชิงบวก' : 'เชิงลบ']}
+                    formatter={(value, name) => [
+                      `${value} ครั้ง`, 
+                      name === 'positive' ? 'เชิงบวก' : name === 'negative' ? 'เชิงลบ' : 'ไม่มีนัยสำคัญ'
+                    ]}
                     labelFormatter={(label) => `เดือน: ${label}`}
                   />
                   <Line 
@@ -173,8 +178,18 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
                     strokeWidth={3}
                     dot={{ fill: '#EF4444', strokeWidth: 2, r: 4 }}
                   />
+                  <Line 
+                    type="monotone" 
+                    dataKey="neutral" 
+                    stroke="#6B7280" 
+                    strokeWidth={3}
+                    dot={{ fill: '#6B7280', strokeWidth: 2, r: 4 }}
+                  />
                   <Legend 
-                    formatter={(value) => value === 'positive' ? 'เชิงบวก' : 'เชิงลบ'}
+                    formatter={(value) => 
+                      value === 'positive' ? 'เชิงบวก' : 
+                      value === 'negative' ? 'เชิงลบ' : 'ไม่มีนัยสำคัญ'
+                    }
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -215,13 +230,20 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
                   fontSize={12}
                 />
                 <Tooltip 
-                  formatter={(value, name) => [`${value} ครั้ง`, name === 'positive' ? 'เชิงบวก' : 'เชิงลบ']}
+                  formatter={(value, name) => [
+                    `${value} ครั้ง`, 
+                    name === 'positive' ? 'เชิงบวก' : name === 'negative' ? 'เชิงลบ' : 'ไม่มีนัยสำคัญ'
+                  ]}
                   labelFormatter={(label) => `${label}`}
                 />
                 <Bar dataKey="positive" fill="#10B981" radius={[2, 2, 0, 0]} />
                 <Bar dataKey="negative" fill="#EF4444" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="neutral" fill="#6B7280" radius={[2, 2, 0, 0]} />
                 <Legend 
-                  formatter={(value) => value === 'positive' ? 'เชิงบวก' : 'เชิงลบ'}
+                  formatter={(value) => 
+                    value === 'positive' ? 'เชิงบวก' : 
+                    value === 'negative' ? 'เชิงลบ' : 'ไม่มีนัยสำคัญ'
+                  }
                 />
               </BarChart>
             </ResponsiveContainer>
