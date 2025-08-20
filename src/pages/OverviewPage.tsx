@@ -9,7 +9,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ExportButton } from '@/components/shared/ExportButton';
 import { Eye, MessageCircle } from 'lucide-react';
-import { getKPIData, getServiceTypeData, getSatisfactionData, getRegionSatisfactionData, getSentimentData } from '@/data/mockData';
+import {
+  getKPIData,
+  getServiceTypeData,
+  getSatisfactionData,
+  getRegionSatisfactionData,
+  // ⬇️ ใช้ตัวใหม่ที่เป็นอาเรย์สำหรับ Pie เท่านั้น
+  getSentimentDataForPie,
+} from '@/data/mockData';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
 
 // สีสำหรับการจัดอันดับ - Market Conduct เป็นสีแดงเข้มสุด แล้วจางลงตามลำดับ
@@ -55,18 +62,18 @@ interface RankingItemProps {
   onViewComments: () => void;
 }
 
-const RankingItem: React.FC<RankingItemProps> = ({ 
-  rank, 
-  title, 
-  count, 
-  percentage, 
-  color, 
-  onViewDetails, 
-  onViewComments 
+const RankingItem: React.FC<RankingItemProps> = ({
+  rank,
+  title,
+  count,
+  percentage,
+  color,
+  onViewDetails,
+  onViewComments
 }) => (
   <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
     <div className="flex items-center space-x-3 flex-1">
-      <div 
+      <div
         className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold"
         style={{ backgroundColor: color }}
       >
@@ -122,7 +129,7 @@ const CategoryRankings: React.FC = () => {
       <Card className="animate-fade-in">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="card-title">หัวข้อที่ลูกค้าร้องเรียน</CardTitle>
-          <ExportButton 
+          <ExportButton
             data={complaintTopicsData}
             type="table"
             elementId="complaint-topics-ranking"
@@ -152,7 +159,7 @@ const CategoryRankings: React.FC = () => {
       <Card className="animate-fade-in">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="card-title">หมวดหมู่ที่ลูกค้าร้องเรียน</CardTitle>
-          <ExportButton 
+          <ExportButton
             data={complaintCategoriesData}
             type="table"
             elementId="complaint-categories-ranking"
@@ -191,14 +198,16 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
   const serviceTypeData = getServiceTypeData();
   const satisfactionData = getSatisfactionData();
   const regionSatisfactionData = getRegionSatisfactionData();
-  const sentimentData = getSentimentData(); // <- ได้อาเรย์ 3 ค่า พร้อมส่งเข้า chart
-  
+
+  // ⬇️ ใช้ข้อมูลแบบอาเรย์ 3 ค่า (เขียว/แดง/เทา) สำหรับกราฟทัศนคติ
+  const sentimentData = getSentimentDataForPie();
+
   // Mock data สำหรับกราฟเส้นแนวโน้ม
   const trendData = Array.from({ length: 30 }, (_, i) => ({
     day: `${i + 1}`,
     forms: Math.floor(Math.random() * 50) + 20
   }));
-  
+
   // Mock data สำหรับแนวโน้มหมวดหมู่ความคิดเห็น
   const categoryTrendData = Array.from({ length: 30 }, (_, i) => ({
     day: `${i + 1}`,
@@ -215,12 +224,12 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ง2. กราฟ Ring Pie : ประเภทการใช้บริการ */}
         <ServiceTypeChart data={serviceTypeData} />
-        
+
         {/* ง3. กราฟเส้นแนวโน้ม */}
         <Card className="chart-container-medium animate-fade-in">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="card-title">แนวโน้มการส่งแบบประเมิน</CardTitle>
-            <ExportButton 
+            <ExportButton
               data={trendData}
               type="chart"
               elementId="form-submission-trend-chart"
@@ -233,16 +242,16 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
             <div id="form-submission-trend-chart">
               <ResponsiveContainer width="100%" height={280}>
                 <LineChart data={trendData}>
-                  <XAxis 
-                    dataKey="day" 
+                  <XAxis
+                    dataKey="day"
                     fontSize={12}
                     tick={{ fill: 'hsl(var(--foreground))' }}
                   />
-                  <YAxis 
+                  <YAxis
                     fontSize={12}
                     tick={{ fill: 'hsl(var(--foreground))' }}
                   />
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value) => [`${value} ครั้ง`, 'จำนวนฟอร์ม']}
                     labelFormatter={(label) => `วันที่ ${label}`}
                     contentStyle={{
@@ -251,10 +260,10 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
                       borderRadius: '8px',
                     }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="forms" 
-                    stroke="hsl(var(--primary))" 
+                  <Line
+                    type="monotone"
+                    dataKey="forms"
+                    stroke="hsl(var(--primary))"
                     strokeWidth={2}
                     dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
                   />
@@ -266,7 +275,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
       </div>
 
       {/* แถวที่ 3: ความพึงพอใจ */}
-      <SatisfactionCharts 
+      <SatisfactionCharts
         satisfactionData={satisfactionData}
         regionSatisfactionData={regionSatisfactionData}
       />
@@ -275,12 +284,12 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ง5. กราฟ Ring Pie : ทัศนคติ */}
         <SentimentPieChart data={sentimentData} />
-        
+
         {/* ง6. กราฟเส้นแนวโน้มหมวดหมู่ความคิดเห็น */}
         <Card className="chart-container-medium animate-fade-in">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="card-title">แนวโน้มหมวดหมู่ความคิดเห็น</CardTitle>
-            <ExportButton 
+            <ExportButton
               data={categoryTrendData}
               type="chart"
               elementId="comment-category-trend-chart"
@@ -293,18 +302,18 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
             <div id="comment-category-trend-chart">
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={categoryTrendData}>
-                  <XAxis 
-                    dataKey="day" 
+                  <XAxis
+                    dataKey="day"
                     fontSize={12}
                     tick={{ fill: 'hsl(var(--foreground))' }}
                   />
-                  <YAxis 
+                  <YAxis
                     fontSize={12}
                     tick={{ fill: 'hsl(var(--foreground))' }}
                   />
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value, name) => [
-                      `${value} ครั้ง`, 
+                      `${value} ครั้ง`,
                       name === 'positive' ? 'เชิงบวก' : 'เชิงลบ'
                     ]}
                     labelFormatter={(label) => `วันที่ ${label}`}
@@ -314,17 +323,17 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
                       borderRadius: '8px',
                     }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="positive" 
-                    stroke="hsl(var(--success))" 
+                  <Line
+                    type="monotone"
+                    dataKey="positive"
+                    stroke="hsl(var(--success))"
                     strokeWidth={2}
                     dot={{ fill: 'hsl(var(--success))', strokeWidth: 2, r: 4 }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="negative" 
-                    stroke="hsl(var(--destructive))" 
+                  <Line
+                    type="monotone"
+                    dataKey="negative"
+                    stroke="hsl(var(--destructive))"
                     strokeWidth={2}
                     dot={{ fill: 'hsl(var(--destructive))', strokeWidth: 2, r: 4 }}
                   />
