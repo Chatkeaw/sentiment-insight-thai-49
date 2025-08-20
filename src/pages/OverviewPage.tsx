@@ -18,7 +18,10 @@ import {
 } from '@/data/mockData';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
 
-// (ส่วน mock ranking และ component อื่นๆ คงเดิมของคุณทั้งหมด...)
+interface OverviewPageProps {
+  timeFilter: TimeFilterType;
+  onTimeFilterChange: (filter: TimeFilterType) => void;
+}
 
 export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFilterChange }) => {
   const kpiData = getKPIData();
