@@ -391,6 +391,23 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   <Tooltip content={<CustomTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
+
+              {/* Legend ใต้กราฟ - สไตล์ตามรูปแบบที่ต้องการ */}
+              <div className="mt-6 space-y-3 bg-gray-50 p-4 rounded-lg">
+                <h4 className="text-sm font-medium text-foreground mb-3">ประเภทของสาขา</h4>
+                {branchTypeData.map((d) => (
+                  <div key={d.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-4 h-4 rounded-full flex-shrink-0" 
+                        style={{ backgroundColor: d.color }}
+                      />
+                      <span className="text-sm text-foreground">{d.name}</span>
+                    </div>
+                    <span className="text-sm font-semibold text-foreground">{d.value}%</span>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
