@@ -200,13 +200,13 @@ export const getRegionSatisfactionData = (): ChartData[] => {
 };
 
 // -------------------- CHANGED: return array for pie chart --------------------
-type SentimentItem = { label: string; value: number; color: string };
+export type SentimentItem = { label: string; value: number; color: string };
 
-// ✅ คืนค่าเป็น "อาเรย์" 3 ชิ้น ตรงกับ SentimentPieChart
-export const getSentimentDataForPie = () => ([
+// ✅ ฟังก์ชันใหม่สำหรับกราฟ Pie (3 ค่า: เขียว/แดง/เทา)
+export const getSentimentDataForPie = (): SentimentItem[] => ([
   { label: 'เชิงบวก', value: 68, color: '#10B981' },
   { label: 'เชิงลบ', value: 27, color: '#EF4444' },
   { label: 'ไม่มีนัยสำคัญ', value: 5,  color: '#6B7280' },
-]);
+]);,
 
 // -----------------------------------------------------------------------------
