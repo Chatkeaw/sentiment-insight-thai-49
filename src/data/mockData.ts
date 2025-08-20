@@ -203,9 +203,10 @@ export const getRegionSatisfactionData = (): ChartData[] => {
 type SentimentItem = { label: string; value: number; color: string };
 
 // ✅ คืนค่าเป็น "อาเรย์" 3 ชิ้น ตรงกับ SentimentPieChart
-export const getSentimentData = (): SentimentItem[] => ([
+export const getSentimentDataForPie = () => ([
   { label: 'เชิงบวก', value: 68, color: '#10B981' },
   { label: 'เชิงลบ', value: 27, color: '#EF4444' },
   { label: 'ไม่มีนัยสำคัญ', value: 5,  color: '#6B7280' },
 ]);
+
 // -----------------------------------------------------------------------------
