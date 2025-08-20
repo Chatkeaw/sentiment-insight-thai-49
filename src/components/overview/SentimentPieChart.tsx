@@ -27,10 +27,10 @@ const SentimentPieChart: React.FC<SentimentPieChartProps> = ({ data }) => {
       color: "hsl(var(--destructive))"
     },
     {
-      name: "ไม่มีความหมาย",
+      name: "ไม่มีนัยสำคัญ",
       value: data.neutral.percentage,
       count: data.neutral.count,
-      color: "hsl(var(--neutral))"
+      color: "hsl(var(--muted-foreground))"
     }
   ];
 
@@ -121,10 +121,10 @@ const SentimentPieChart: React.FC<SentimentPieChartProps> = ({ data }) => {
           
           <div className="space-y-1">
             <div className="flex items-center justify-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "hsl(var(--neutral))" }}></div>
-              <span className="text-sm font-medium">เป็นกลาง</span>
+              <div className="w-3 h-3 rounded-full bg-muted-foreground"></div>
+              <span className="text-sm font-medium">ไม่มีนัยสำคัญ</span>
             </div>
-            <p className="text-lg font-bold" style={{ color: "hsl(var(--neutral))" }}>
+            <p className="text-lg font-bold text-muted-foreground">
               {data.neutral.count.toLocaleString()}
             </p>
             <p className="text-xs text-muted-foreground">{data.neutral.percentage}%</p>
