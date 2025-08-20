@@ -232,25 +232,33 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
     return null;
   };
 
-  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, value, name }: any) => {
-    const RADIAN = Math.PI / 180;
-    const radius = outerRadius + 30;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  // ---------- Label พร้อม bullet ใช้ร่วมกันได้ทั้งสองกราฟ ----------
+  const BulletLabel = ({ cx, cy, midAngle, outerRadius, value, name, payload }: any) => {
+    const RAD = Math.PI / 180;
+    const r = outerRadius + 30;
+    const x = cx + r * Math.cos(-midAngle * RAD);
+    const y = cy + r * Math.sin(-midAngle * RAD);
+
+    const isRight = x > cx;
+    const bulletX = isRight ? x - 10 : x + 10;
 
     return (
-      <text
-        x={x}
-        y={y}
-        fill="hsl(var(--foreground))"
-        textAnchor={x > cx ? 'start' : 'end'}
-        dominantBaseline="central"
-        className="text-sm font-medium"
-      >
-        {`${name} ${value}%`}
-      </text>
+      <g>
+        <circle cx={bulletX} cy={y} r={4} fill={payload?.color || '#6B7280'} />
+        <text
+          x={x}
+          y={y}
+          fill="hsl(var(--foreground))"
+          textAnchor={isRight ? 'start' : 'end'}
+          dominantBaseline="central"
+          className="text-sm font-medium"
+        >
+          {`${name} ${value}%`}
+        </text>
+      </g>
     );
   };
+  // -------------------------------------------------------------------
 
   const handleCardClick = (stat: any) => {
     if (stat.clickable && stat.targetPage && onPageChange) {
@@ -280,33 +288,6 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   const handleViewFeedback = (region?: string) => {
     console.log(`Navigate to feedback page with region filter: ${region}`);
     setIsSentimentModalOpen(false);
-  };
-
-  // Branch Label with bullet points
-  const BranchLabel = ({ cx, cy, midAngle, outerRadius, value, name, payload }: any) => {
-    const RAD = Math.PI / 180;
-    const r = outerRadius + 30;
-    const x = cx + r * Math.cos(-midAngle * RAD);
-    const y = cy + r * Math.sin(-midAngle * RAD);
-
-    const isRight = x > cx;
-    const bulletX = isRight ? x - 10 : x + 10; // วางจุดก่อนข้อความ
-
-    return (
-      <g>
-        <circle cx={bulletX} cy={y} r={4} fill={payload?.color || '#6B7280'} />
-        <text
-          x={x}
-          y={y}
-          fill="hsl(var(--foreground))"
-          textAnchor={isRight ? 'start' : 'end'}
-          dominantBaseline="central"
-          className="text-sm font-medium"
-        >
-          {`${name} ${value}%`}
-        </text>
-      </g>
-    );
   };
 
   return (
@@ -397,7 +378,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={BranchLabel}
+                    label={BulletLabel}   // ใช้ label แบบมี bullet
                     outerRadius={80}
                     innerRadius={50}
                     fill="#8884d8"
@@ -563,7 +544,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={CustomLabel}
+                    label={BulletLabel}   // ใช้ label แบบมี bullet
                     outerRadius={80}
                     innerRadius={50}
                     fill="#8884d8"
