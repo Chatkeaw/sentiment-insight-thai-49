@@ -399,7 +399,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   <div key={d.name} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div 
-                        className="inline-block w-3 h-3 rounded-full shrink-0" 
+                        className="w-4 h-3 rounded flex-shrink-0" 
                         style={{ backgroundColor: d.color }}
                       />
                       <span className="text-sm text-foreground">{d.name}</span>
@@ -587,7 +587,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
               <div className="mt-4 space-y-2">
                 {customerSentimentData.map((d) => (
                   <div key={d.name} className="flex items-center gap-2 text-sm">
-                    <span className="inline-block w-3 h-3 rounded-full shrink-0" style={{ background: d.color }} />
+                    <span className="inline-block w-3 h-3 rounded" style={{ background: d.color }} />
                     <span className="text-muted-foreground">{d.name}</span>
                     <span className="ml-auto font-medium">{d.value}%</span>
                   </div>
