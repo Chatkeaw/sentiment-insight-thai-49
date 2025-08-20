@@ -207,6 +207,6 @@ export const getSentimentDataForPie = (): SentimentItem[] => ([
   { label: 'เชิงบวก', value: 68, color: '#10B981' },
   { label: 'เชิงลบ', value: 27, color: '#EF4444' },
   { label: 'ไม่มีนัยสำคัญ', value: 5,  color: '#6B7280' },
-]);,
+]);
 
 // -----------------------------------------------------------------------------
