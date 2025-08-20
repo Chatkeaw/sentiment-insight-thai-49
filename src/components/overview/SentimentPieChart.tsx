@@ -1,3 +1,4 @@
+// src/components/overview/SentimentPieChart.tsx
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
@@ -6,7 +7,7 @@ type SentimentDatum = { label: string; value: number; color: string; };
 interface Props { data: SentimentDatum[]; title?: string; }
 
 const SentimentPieChart: React.FC<Props> = ({ data, title = "ทัศนคติของลูกค้า" }) => {
-  // ป้องกันกรณีส่งมาไม่ครบ 3 ค่า (ไม่พังเลย์เอาท์)
+  // fallback ให้ครบ 3 ค่าเสมอ
   const base = [
     { label: "เชิงบวก", value: 0, color: "#10B981" },
     { label: "เชิงลบ", value: 0, color: "#EF4444" },
@@ -14,7 +15,7 @@ const SentimentPieChart: React.FC<Props> = ({ data, title = "ทัศนคต�
   ];
   const merged = base.map(b => data.find(d => d.label === b.label) ?? b);
 
-  const CustomLabel = ({ cx, cy, midAngle, outerRadius, value, name }: any) => {
+  const Label = ({ cx, cy, midAngle, outerRadius, value, name }: any) => {
     const RAD = Math.PI / 180;
     const r = outerRadius + 30;
     const x = cx + r * Math.cos(-midAngle * RAD);
@@ -44,8 +45,8 @@ const SentimentPieChart: React.FC<Props> = ({ data, title = "ทัศนคต�
           <PieChart>
             <Pie
               data={merged.map(d => ({ name: d.label, value: d.value, color: d.color }))}
-              cx="50%" cy="50%" dataKey="value" innerRadius={50} outerRadius={80}
-              labelLine={false} label={CustomLabel}
+              cx="50%" cy="50%" innerRadius={50} outerRadius={80}
+              dataKey="value" labelLine={false} label={Label}
             >
               {merged.map((e, i) => <Cell key={i} fill={e.color} />)}
             </Pie>
@@ -53,7 +54,7 @@ const SentimentPieChart: React.FC<Props> = ({ data, title = "ทัศนคต�
           </PieChart>
         </ResponsiveContainer>
 
-        {/* Legend เล็ก ๆ ใต้กราฟ (ไม่เปลี่ยนเลย์เอาท์หน้าที่เรียกใช้) */}
+        {/* legend */}
         <div className="mt-4 space-y-2">
           {merged.map(d => (
             <div key={d.label} className="flex items-center gap-2 text-sm">
