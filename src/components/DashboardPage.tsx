@@ -132,7 +132,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   // Data for customer sentiment donut chart
   const customerSentimentData = [
     { name: "เชิงบวก", value: 68, color: "#10B981" },
-    { name: "เชิงลบ", value: 32, color: "#EF4444" }
+    { name: "เชิงลบ", value: 27, color: "#EF4444" },
+    { name: "ไม่มีนัยสำคัญ", value: 5, color: "#6B7280" }
   ];
 
   // Data for top 7 main categories
@@ -556,6 +557,17 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   />
                 </PieChart>
               </ResponsiveContainer>
+              
+              {/* Legend */}
+              <div className="mt-4 space-y-2">
+                {customerSentimentData.map((d) => (
+                  <div key={d.name} className="flex items-center gap-2 text-sm">
+                    <span className="inline-block w-3 h-3 rounded" style={{ background: d.color }} />
+                    <span className="text-muted-foreground">{d.name}</span>
+                    <span className="ml-auto font-medium">{d.value}%</span>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
