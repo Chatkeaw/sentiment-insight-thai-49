@@ -1,4 +1,3 @@
-// src/components/overview/SentimentPieChart.tsx
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
@@ -7,8 +6,8 @@ type SentimentDatum = { label: string; value: number; color: string; };
 interface Props { data: SentimentDatum[]; title?: string; }
 
 const SentimentPieChart: React.FC<Props> = ({ data, title = "ทัศนคติของลูกค้า" }) => {
-  // fallback ให้ครบ 3 ค่าเสมอ
-  const base = [
+  // fallback ให้ครบ 3 ค่าเสมอ เพื่อกัน data ขาด
+  const base: SentimentDatum[] = [
     { label: "เชิงบวก", value: 0, color: "#10B981" },
     { label: "เชิงลบ", value: 0, color: "#EF4444" },
     { label: "ไม่มีนัยสำคัญ", value: 0, color: "#6B7280" },
