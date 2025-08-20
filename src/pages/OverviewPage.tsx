@@ -110,12 +110,10 @@ const CategoryRankings: React.FC = () => {
 
   const handleViewDetails = (type: 'topic' | 'category', item: any) => {
     console.log(`View details for ${type}:`, item);
-    // TODO: Navigate to details page with filtered data
   };
 
   const handleViewComments = (type: 'topic' | 'category', item: any) => {
     console.log(`View comments for ${type}:`, item);
-    // TODO: Navigate to Customer Feedback Insights page with pre-filtered data
   };
 
   return (
@@ -193,7 +191,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ timeFilter, onTimeFi
   const serviceTypeData = getServiceTypeData();
   const satisfactionData = getSatisfactionData();
   const regionSatisfactionData = getRegionSatisfactionData();
-  const sentimentData = getSentimentData();
+  const sentimentData = getSentimentData(); // <- ได้อาเรย์ 3 ค่า พร้อมส่งเข้า chart
   
   // Mock data สำหรับกราฟเส้นแนวโน้ม
   const trendData = Array.from({ length: 30 }, (_, i) => ({
