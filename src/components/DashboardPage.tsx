@@ -6,6 +6,7 @@ import { Users, MessageSquare, AlertTriangle, Phone } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import { SatisfactionDetailModal } from './SatisfactionDetailModal';
 import { SentimentAnalysisModal } from './analytics/SentimentAnalysisModal';
+import { RegionalFeedbackModal } from './analytics/RegionalFeedbackModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DashboardPageProps {
@@ -56,6 +57,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
 
   // State for sentiment analysis modal
   const [isSentimentModalOpen, setIsSentimentModalOpen] = useState(false);
+
+  // State for regional feedback modal
+  const [isRegionalModalOpen, setIsRegionalModalOpen] = useState(false);
 
   // State for customer feedback section
   const [selectedSentimentType, setSelectedSentimentType] = useState<'positive' | 'negative'>('positive');
@@ -277,7 +281,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   };
 
   const handleRegionalDetails = () => {
-    console.log("อัพเดตเพิ่มเติมภายหลัง - รายพื้นที่");
+    setIsRegionalModalOpen(true);
   };
 
   const handleCloseSentimentModal = () => {
@@ -780,6 +784,12 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
         isOpen={isSentimentModalOpen}
         onClose={handleCloseSentimentModal}
         onViewFeedback={handleViewFeedback}
+      />
+
+      {/* Regional Feedback Modal */}
+      <RegionalFeedbackModal
+        isOpen={isRegionalModalOpen}
+        onClose={() => setIsRegionalModalOpen(false)}
       />
     </div>
   );
