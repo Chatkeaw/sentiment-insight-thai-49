@@ -59,7 +59,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   const [isSentimentModalOpen, setIsSentimentModalOpen] = useState(false);
 
   // State for regional feedback modal
-  const [isRegionalModalOpen, setIsRegionalModalOpen] = useState(false);
+  const [isRegionalFeedbackModalOpen, setIsRegionalFeedbackModalOpen] = useState(false);
 
   // State for customer feedback section
   const [selectedSentimentType, setSelectedSentimentType] = useState<'positive' | 'negative'>('positive');
@@ -281,7 +281,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   };
 
   const handleRegionalDetails = () => {
-    setIsRegionalModalOpen(true);
+    setIsRegionalFeedbackModalOpen(true);
   };
 
   const handleCloseSentimentModal = () => {
@@ -771,6 +771,59 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
         </Card>
       </div>
 
+      {/* ข้อคิดเห็นลูกค้า รายพื้นที่ */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-foreground">ข้อคิดเห็นลูกค้า รายพื้นที่</h2>
+        
+        <Card className="border-0 shadow-lg">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-medium text-foreground">กราฟข้อคิดเห็นลูกค้า รายพื้นที่</CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setIsRegionalFeedbackModalOpen(true)}
+              >
+                ดูรายละเอียด
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={regionalSatisfactionData} margin={{ bottom: 40 }}>
+                <XAxis 
+                  dataKey="name" 
+                  fontSize={12}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis 
+                  label={{ value: 'คะแนนความพึงพอใจ', angle: -90, position: 'insideLeft' }}
+                  fontSize={12}
+                  domain={[0, 5]}
+                />
+                <Tooltip 
+                  formatter={(value, name) => {
+                    if (name === 'value') {
+                      return [`${Number(value).toFixed(2)} คะแนน`, 'คะแนนความพึงพอใจ'];
+                    }
+                    return [value, name];
+                  }}
+                  labelFormatter={(label) => `${label}`}
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Bar dataKey="value" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Satisfaction Detail Modal */}
       <SatisfactionDetailModal
         isOpen={isModalOpen}
@@ -788,8 +841,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
 
       {/* Regional Feedback Modal */}
       <RegionalFeedbackModal
-        isOpen={isRegionalModalOpen}
-        onClose={() => setIsRegionalModalOpen(false)}
+        isOpen={isRegionalFeedbackModalOpen}
+        onClose={() => setIsRegionalFeedbackModalOpen(false)}
       />
     </div>
   );
