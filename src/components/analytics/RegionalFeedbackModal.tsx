@@ -10,8 +10,8 @@ interface RegionalFeedbackModalProps {
   onClose: () => void;
 }
 
-// Generate regions from 1-184
-const regions = Array.from({ length: 184 }, (_, i) => ({
+// Generate regions from 1-18
+const regions = Array.from({ length: 18 }, (_, i) => ({
   value: `${i + 1}`,
   label: `ภาคที่ ${i + 1}`
 }));
