@@ -14,6 +14,7 @@ import ComplaintsPage from "./ComplaintsPage";
 import { AIAgentPage } from "./AIAgentPage";
 import { UserManagementPage } from "./UserManagementPage";
 import { SystemManagementPage } from "./SystemManagementPage";
+import CategoryReferencePage from "./CategoryReferencePage";
 import DashboardPage from "@/components/DashboardPage";
 
 const Index = () => {
@@ -99,6 +100,8 @@ const Index = () => {
         return <CustomerFeedbackSystem />;
       case "complaints":
         return <ComplaintsPage />;
+      case "category-reference":
+        return <CategoryReferencePage />;
       case "ai-agent":
         return <AIAgentPage />;
       case "user-management":
