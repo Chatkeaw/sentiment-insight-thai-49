@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,7 +38,28 @@ export const CategoryRankings: React.FC = () => {
     { name: 'ที่จอดรถ', category: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก', positive: 56, negative: 32 },
     { name: 'กระบวนการให้บริการ', category: 'ระบบและกระบวนการให้บริการ', positive: 78, negative: 29 },
     { name: 'ระยะเวลาอนุมัติ', category: 'เงื่อนไขและผลิตภัณฑ์', positive: 34, negative: 28 },
+    { name: 'ไม่เอาเปรียบ', category: 'Market Conduct', positive: 5, negative: 95 },
+    { name: 'ไม่บังคับ', category: 'Market Conduct', positive: 8, negative: 87 },
   ].sort((a, b) => b.negative - a.negative).slice(0, 10);
+
+  // ฟังก์ชันคำนวณสีพื้นหลังตามจำนวน negative
+  const getBackgroundColor = (negative: number, name: string) => {
+    // สำหรับ Market Conduct, ไม่เอาเปรียบ, ไม่บังคับ ให้ใช้สีแดงเข้มที่สุด
+    if (name === 'Market Conduct' || name === 'ไม่เอาเปรียบ' || name === 'ไม่บังคับ') {
+      return 'bg-red-900/30'; // สีแดงเข้มที่สุด
+    }
+    
+    // คำนวณความเข้มของสีตามจำนวน negative
+    const maxNegative = Math.max(...detailedCategories.map(item => item.negative));
+    const intensity = negative / maxNegative;
+    
+    // สีจะเข้มขึ้นตามจำนวน negative
+    if (intensity > 0.8) return 'bg-red-800/20';
+    if (intensity > 0.6) return 'bg-red-700/20';
+    if (intensity > 0.4) return 'bg-red-600/20';
+    if (intensity > 0.2) return 'bg-red-500/20';
+    return 'bg-red-400/20';
+  };
 
   const handleViewDetails = (category: CategoryData, type: 'main' | 'sub') => {
     setSelectedCategory(category);
@@ -72,7 +92,7 @@ export const CategoryRankings: React.FC = () => {
               {categoryTypes.map((item, index) => (
                 <div 
                   key={index}
-                  className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card/50 hover:bg-card/80 transition-colors"
+                  className={`flex items-center justify-between p-3 rounded-lg border border-border/50 transition-colors ${getBackgroundColor(item.negative, item.name)}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
@@ -116,7 +136,7 @@ export const CategoryRankings: React.FC = () => {
               {detailedCategories.map((item, index) => (
                 <div 
                   key={index}
-                  className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card/50 hover:bg-card/80 transition-colors"
+                  className={`flex items-center justify-between p-3 rounded-lg border border-border/50 transition-colors ${getBackgroundColor(item.negative, item.name)}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
