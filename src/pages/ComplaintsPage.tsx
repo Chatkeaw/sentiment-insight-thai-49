@@ -441,7 +441,7 @@ export default function ComplaintsPage() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-xl">ตัวกรองการแสดงผล</CardTitle>
+          <CardTitle className="text-xl">ตัวกรอง</CardTitle>
           <Button variant="outline" onClick={resetAll}>
             ล้างตัวกรอง
           </Button>
@@ -504,7 +504,7 @@ export default function ComplaintsPage() {
 
               {/* Branch */}
               <div className="space-y-2">
-                <label className="text-sm text-muted-foreground">สาขา</label>
+                <label className="text-sm text-muted-foreground">หน่วยให้บริการ</label>
                 <Select
                   key={`branch-${region}-${district}-${branch}`}
                   value={branch}
@@ -512,7 +512,7 @@ export default function ComplaintsPage() {
                   disabled={region === "ทั้งหมด" || district === "ทั้งหมด"}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="เลือกสาขา" />
+                    <SelectValue placeholder="เลือกหน่วยให้บริการ" />
                   </SelectTrigger>
                   <SelectContent>
                     {branches.map((b) => (
