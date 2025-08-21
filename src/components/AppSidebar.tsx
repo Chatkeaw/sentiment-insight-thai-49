@@ -51,7 +51,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     },
     {
       id: 'category-reference',
-      title: 'Category Reference',
+      title: 'เอกสารอ้างอิง',
       icon: BookOpen
     }
   ];
