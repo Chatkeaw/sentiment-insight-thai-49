@@ -2,41 +2,55 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { RegionalFeedbackModal } from '@/components/analytics/RegionalFeedbackModal';
+import { CascadingFilter } from '@/components/filters/CascadingFilter';
+import { LocationFilters } from '@/types/locations';
 
-// Generate regions from 1-18
-const regions = Array.from({ length: 18 }, (_, i) => ({
-  value: `${i + 1}`,
-  label: `ภาคที่ ${i + 1}`
-}));
-
-// Generate mock data for bar chart
-const generateRegionalData = (selectedRegion: string) => {
-  if (selectedRegion === "all") {
-    return regions.map(region => ({
-      region: region.label,
+// Generate mock data for bar chart based on selected filters
+const generateRegionalData = (locationFilters: LocationFilters) => {
+  if (locationFilters.regionId === "all") {
+    // Show all regions
+    return Array.from({ length: 18 }, (_, i) => ({
+      region: `ภาคที่ ${i + 1}`,
       positive: Math.floor(Math.random() * 100) + 50,
       negative: Math.floor(Math.random() * 50) + 10,
       neutral: Math.floor(Math.random() * 30) + 5
     }));
   } else {
-    const regionData = regions.find(r => r.value === selectedRegion);
-    return regionData ? [{
-      region: regionData.label,
+    // Show selected region only
+    const regionNumber = locationFilters.regionId.split('_')[1];
+    return [{
+      region: `ภาคที่ ${regionNumber}`,
       positive: Math.floor(Math.random() * 100) + 50,
       negative: Math.floor(Math.random() * 50) + 10,
       neutral: Math.floor(Math.random() * 30) + 5
-    }] : [];
+    }];
   }
 };
 
 export const RegionalPage: React.FC = () => {
-  const [selectedRegion, setSelectedRegion] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [locationFilters, setLocationFilters] = useState<LocationFilters>({
+    regionId: "all",
+    provinceId: "all",
+    districtId: "all",
+    branchId: "all"
+  });
   
-  const chartData = generateRegionalData(selectedRegion);
+  const chartData = generateRegionalData(locationFilters);
+
+  const handleLocationFiltersChange = (filters: LocationFilters) => {
+    setLocationFilters(filters);
+  };
+
+  const getChartTitle = () => {
+    if (locationFilters.regionId !== "all") {
+      const regionNumber = locationFilters.regionId.split('_')[1];
+      return `ข้อคิดเห็นลูกค้า - ภาคที่ ${regionNumber}`;
+    }
+    return "ข้อคิดเห็นลูกค้า - ทุกภาค";
+  };
 
   return (
     <div className="min-h-screen p-6 space-y-6">
@@ -45,31 +59,23 @@ export const RegionalPage: React.FC = () => {
           กราฟข้อคิดเห็นลูกค้า รายพื้นที่
         </h1>
 
-        {/* Region Filter */}
-        <div className="max-w-md">
-          <label className="text-sm font-medium text-foreground mb-2 block">ภาค</label>
-          <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-            <SelectTrigger>
-              <SelectValue placeholder="เลือกภาค" />
-            </SelectTrigger>
-            <SelectContent className="max-h-60">
-              <SelectItem value="all">ทั้งหมด</SelectItem>
-              {regions.map((region) => (
-                <SelectItem key={region.value} value={region.value}>
-                  {region.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Location Filter */}
+        <CascadingFilter
+          options={{
+            showRegion: true,
+            showProvince: false,
+            showDistrict: false,
+            showBranch: false,
+            regionLabel: "ภาค"
+          }}
+          onFiltersChange={handleLocationFiltersChange}
+          title="เลือกภาค"
+        />
 
         {/* Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>
-              ข้อคิดเห็นลูกค้า
-              {selectedRegion !== "all" && ` - ${regions.find(r => r.value === selectedRegion)?.label}`}
-            </CardTitle>
+            <CardTitle>{getChartTitle()}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>

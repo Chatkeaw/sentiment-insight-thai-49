@@ -11,15 +11,14 @@ import { Badge } from "@/components/ui/badge";
 import { ExportButton } from "@/components/shared/ExportButton";
 import { mockFeedbackData } from "@/data/mockData";
 import { FeedbackEntry } from "@/types/dashboard";
+import { CascadingFilter } from "@/components/filters/CascadingFilter";
+import { LocationFilters } from "@/types/locations";
 
-/* ---------------------------------------------
-   Time filter (inline component + helpers)
----------------------------------------------- */
 type TimeFilterValue =
   | { mode: "all" }
-  | { mode: "monthly"; month: number; yearBE: number } // month: 0-11, yearBE: 2568
+  | { mode: "monthly"; month: number; yearBE: number }
   | { mode: "relative"; days: number }
-  | { mode: "custom"; start: string; end: string }; // yyyy-mm-dd
+  | { mode: "custom"; start: string; end: string };
 
 const THAI_MONTHS = [
   "มกราคม",
@@ -39,16 +38,13 @@ const THAI_MONTHS = [
 const toBE = (y: number) => y + 543;
 const fromBE = (y: number) => y - 543;
 
-/** แปลง "dd/mm/yyyy (พ.ศ.)" เป็น Date */
 function parseThaiDate(dateStr: string): Date {
-  // mockData สร้างด้วย toLocaleDateString('th-TH') => ส่วนใหญ่เป็น dd/mm/2568
   const parts = dateStr.split("/");
   if (parts.length === 3) {
     const [dd, mm, yyyy] = parts.map((p) => parseInt(p, 10));
     const year = yyyy > 2400 ? fromBE(yyyy) : yyyy;
     return new Date(year, (mm || 1) - 1, dd || 1);
   }
-  // fallback
   return new Date(dateStr);
 }
 
@@ -71,7 +67,6 @@ function isInTimeFilter(dateStr: string, tf: TimeFilterValue): boolean {
     end.setHours(23, 59, 59, 999);
     return d >= from && d <= end;
   }
-  // custom
   if (tf.mode === "custom") {
     if (!tf.start || !tf.end) return true;
     const start = new Date(tf.start);
@@ -107,7 +102,6 @@ const TimeRangeFilter: React.FC<{
   const [start, setStart] = useState<string>("");
   const [end, setEnd] = useState<string>("");
 
-  // sync outside-in (optional)
   useEffect(() => {
     if (!value) return;
     setMode(value.mode);
@@ -122,7 +116,6 @@ const TimeRangeFilter: React.FC<{
     }
   }, [value]);
 
-  // notify parent
   useEffect(() => {
     if (mode === "all") onChange({ mode: "all" });
     if (mode === "monthly") onChange({ mode: "monthly", month, yearBE: year });
@@ -131,7 +124,6 @@ const TimeRangeFilter: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, month, year, relDays, start, end]);
 
-  // make 12 month options of current BE year
   const months = Array.from({ length: 12 }, (_, i) => ({
     label: `${THAI_MONTHS[i]} ${String(year).slice(2)}`,
     value: i,
@@ -143,7 +135,6 @@ const TimeRangeFilter: React.FC<{
         <CardTitle>ช่วงเวลาเก็บแบบประเมิน</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* ประเภทเวลา */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">ประเภท</label>
@@ -163,7 +154,6 @@ const TimeRangeFilter: React.FC<{
             </Select>
           </div>
 
-          {/* รายเดือน → เดือน */}
           {mode === "monthly" && (
             <>
               <div className="space-y-2">
@@ -195,7 +185,6 @@ const TimeRangeFilter: React.FC<{
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {/* แสดงปี พ.ศ. ปัจจุบันและย้อนหลัง 1 ปี */}
                     {[yearBE, yearBE - 1].map((yy) => (
                       <SelectItem key={yy} value={String(yy)}>
                         {yy}
@@ -207,7 +196,6 @@ const TimeRangeFilter: React.FC<{
             </>
           )}
 
-          {/* ย้อนหลัง */}
           {mode === "relative" && (
             <div className="space-y-2">
               <label className="text-sm font-medium">ย้อนหลัง</label>
@@ -229,7 +217,6 @@ const TimeRangeFilter: React.FC<{
             </div>
           )}
 
-          {/* กำหนดเอง */}
           {mode === "custom" && (
             <>
               <div className="space-y-2">
@@ -257,64 +244,21 @@ const TimeRangeFilter: React.FC<{
     </Card>
   );
 };
-/* ---------------------------------------------
-   END Time filter
----------------------------------------------- */
 
 export const FeedbackPage: React.FC = () => {
-  // ===== ตัวกรองหลักอื่น ๆ =====
-  const [selectedRegion, setSelectedRegion] = useState<string>("all");
-  const [selectedDistrict, setSelectedDistrict] = useState<string>("all");
-  const [selectedBranch, setSelectedBranch] = useState<string>("all");
-  const [selectedMainCategory, setSelectedMainCategory] =
-    useState<string>("all");
-  const [selectedSubCategory, setSelectedSubCategory] =
-    useState<string>("all");
-  const [selectedServiceType, setSelectedServiceType] =
-    useState<string>("all");
-  const [selectedSentiment, setSelectedSentiment] = useState<string>("all");
+  const [locationFilters, setLocationFilters] = useState<LocationFilters>({
+    regionId: "all",
+    provinceId: "all",
+    districtId: "all", 
+    branchId: "all"
+  });
 
-  // ====== เวลา (ใหม่) ======
+  const [selectedMainCategory, setSelectedMainCategory] = useState<string>("all");
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("all");
+  const [selectedServiceType, setSelectedServiceType] = useState<string>("all");
+  const [selectedSentiment, setSelectedSentiment] = useState<string>("all");
   const [timeFilter, setTimeFilter] = useState<TimeFilterValue>({ mode: "all" });
 
-  // location sets
-  const regions = useMemo(() => {
-    const unique = Array.from(
-      new Set(mockFeedbackData.map((f) => f.branch.region))
-    ).sort();
-    return ["all", ...unique];
-  }, []);
-
-  const districts = useMemo(() => {
-    if (selectedRegion === "all") return ["all"];
-    const unique = Array.from(
-      new Set(
-        mockFeedbackData
-          .filter((f) => f.branch.region === selectedRegion)
-          .map((f) => f.branch.district)
-      )
-    ).sort();
-    return ["all", ...unique];
-  }, [selectedRegion]);
-
-  const branches = useMemo(() => {
-    if (selectedDistrict === "all") return ["all"];
-    const unique = Array.from(
-      new Set(
-        mockFeedbackData
-          .filter(
-            (f) =>
-              (selectedRegion === "all" ||
-                f.branch.region === selectedRegion) &&
-              f.branch.district === selectedDistrict
-          )
-          .map((f) => f.branch.branch)
-      )
-    ).sort();
-    return ["all", ...unique];
-  }, [selectedRegion, selectedDistrict]);
-
-  // main/sub categories (ใช้ชุดเดิมจากไฟล์ของคุณ)
   const mainCategories = [
     { value: "all", label: "ทั้งหมด" },
     { value: "staff", label: "พนักงานและบุคลากร" },
@@ -402,31 +346,16 @@ export const FeedbackPage: React.FC = () => {
     "อื่นๆ",
   ];
 
-  // ===== กรองข้อมูล =====
   const filteredFeedback = useMemo(() => {
     return mockFeedbackData
       .filter((feedback) => {
-        // เวลา
         if (!isInTimeFilter(feedback.date, timeFilter)) return false;
 
-        // สถานที่
-        if (
-          selectedRegion !== "all" &&
-          feedback.branch.region !== selectedRegion
-        )
-          return false;
-        if (
-          selectedDistrict !== "all" &&
-          feedback.branch.district !== selectedDistrict
-        )
-          return false;
-        if (
-          selectedBranch !== "all" &&
-          feedback.branch.branch !== selectedBranch
-        )
-          return false;
+        if (locationFilters.regionId !== "all") {
+          const regionNumber = locationFilters.regionId.split('_')[1];
+          if (!feedback.branch.region.includes(regionNumber)) return false;
+        }
 
-        // ประเภทบริการ
         if (
           selectedServiceType !== "all" &&
           selectedServiceType !== "ทั้งหมด" &&
@@ -434,7 +363,6 @@ export const FeedbackPage: React.FC = () => {
         )
           return false;
 
-        // ทัศนคติ (+/-)
         if (selectedSentiment !== "all") {
           const hasPositive = Object.values(feedback.sentiment).some(
             (s) => s === 1
@@ -446,7 +374,6 @@ export const FeedbackPage: React.FC = () => {
           if (selectedSentiment === "negative" && !hasNegative) return false;
         }
 
-        // หมวดหมู่หลัก
         if (selectedMainCategory !== "all") {
           const categoryValue =
             feedback.sentiment[
@@ -455,7 +382,6 @@ export const FeedbackPage: React.FC = () => {
           if (categoryValue === 0) return false;
         }
 
-        // หมวดย่อย
         if (selectedSubCategory !== "all") {
           const detailed = feedback.detailedSentiment;
           if (!detailed || detailed[selectedSubCategory as any] === 0)
@@ -470,21 +396,19 @@ export const FeedbackPage: React.FC = () => {
       );
   }, [
     timeFilter,
-    selectedRegion,
-    selectedDistrict,
-    selectedBranch,
+    locationFilters,
     selectedMainCategory,
     selectedSubCategory,
     selectedServiceType,
     selectedSentiment,
   ]);
 
-  // helper ui
   const getSentimentColor = (sentiment: number) => {
     if (sentiment === 1) return "bg-green-100";
     if (sentiment === -1) return "bg-red-100";
     return "bg-gray-100";
   };
+  
   const getFeedbackColor = (feedback: FeedbackEntry) => {
     const sentiments = Object.values(feedback.sentiment);
     const hasPositive = sentiments.some((s) => s === 1);
@@ -494,6 +418,7 @@ export const FeedbackPage: React.FC = () => {
     if (hasNegative) return "bg-red-100";
     return "bg-gray-100";
   };
+  
   const getDetailedSentiments = (feedback: FeedbackEntry) => {
     const results: Array<{
       category: string;
@@ -522,79 +447,57 @@ export const FeedbackPage: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-full">
-      {/* หัวข้อ */}
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-foreground">ความคิดเห็น</h2>
       </div>
 
-      {/* ✅ ช่วงเวลาเก็บแบบประเมิน (ใหม่) */}
       <TimeRangeFilter value={timeFilter} onChange={setTimeFilter} />
 
-      {/* ฟิลเตอร์สถานที่/หมวดหมู่อื่น ๆ */}
+      <CascadingFilter
+        onFiltersChange={setLocationFilters}
+        title="พื้นที่ให้บริการ"
+      />
+
       <Card className="chart-container-medium">
         <CardHeader>
-          <CardTitle className="card-title">ตัวกรองข้อมูล</CardTitle>
+          <CardTitle className="card-title">ตัวกรองข้อมูลเพิ่มเติม</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* สถานที่ */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
-              พื้นที่ให้บริการ
+              หมวดหมู่ที่ถูกกล่าวถึง
             </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select
-                value={selectedRegion}
+                value={selectedMainCategory}
                 onValueChange={(value) => {
-                  setSelectedRegion(value);
-                  setSelectedDistrict("all");
-                  setSelectedBranch("all");
+                  setSelectedMainCategory(value);
+                  setSelectedSubCategory("all");
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="เลือกภาค" />
+                  <SelectValue placeholder="เลือกหมวดหมู่หลัก" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">ทั้งหมด</SelectItem>
-                  {regions
-                    .filter((r) => r !== "all")
-                    .map((region) => (
-                      <SelectItem key={region} value={region}>
-                        {region}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={selectedDistrict}
-                onValueChange={(value) => {
-                  setSelectedDistrict(value);
-                  setSelectedBranch("all");
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกเขต" />
-                </SelectTrigger>
-                <SelectContent>
-                  {districts.map((district) => (
-                    <SelectItem key={district} value={district}>
-                      {district === "all" ? "ทั้งหมด" : district}
+                  {mainCategories.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
               <Select
-                value={selectedBranch}
-                onValueChange={setSelectedBranch}
+                value={selectedSubCategory}
+                onValueChange={setSelectedSubCategory}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="เลือกสาขา" />
+                  <SelectValue placeholder="เลือกหมวดหมู่ย่อย" />
                 </SelectTrigger>
                 <SelectContent>
-                  {branches.map((branch) => (
-                    <SelectItem key={branch} value={branch}>
-                      {branch === "all" ? "ทั้งหมด" : branch}
+                  {subCategories.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -602,96 +505,50 @@ export const FeedbackPage: React.FC = () => {
             </div>
           </div>
 
-          {/* หมวดหมู่/บริการ/ทัศนคติ */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                หมวดหมู่ที่ถูกกล่าวถึง
+                ประเภทการให้บริการ
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Select
-                  value={selectedMainCategory}
-                  onValueChange={(value) => {
-                    setSelectedMainCategory(value);
-                    setSelectedSubCategory("all");
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกหมวดหมู่หลัก" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mainCategories.map((category) => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select
-                  value={selectedSubCategory}
-                  onValueChange={setSelectedSubCategory}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกหมวดหมู่ย่อย" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subCategories.map((category) => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select
+                value={selectedServiceType}
+                onValueChange={setSelectedServiceType}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกประเภทบริการ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {serviceTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  ประเภทการให้บริการ
-                </label>
-                <Select
-                  value={selectedServiceType}
-                  onValueChange={setSelectedServiceType}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกประเภทบริการ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {serviceTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  ทัศนคติของความคิดเห็น
-                </label>
-                <Select
-                  value={selectedSentiment}
-                  onValueChange={setSelectedSentiment}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกทัศนคติ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">ทั้งหมด</SelectItem>
-                    <SelectItem value="positive">เชิงบวก</SelectItem>
-                    <SelectItem value="negative">เชิงลบ</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                ทัศนคติของความคิดเห็น
+              </label>
+              <Select
+                value={selectedSentiment}
+                onValueChange={setSelectedSentiment}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกทัศนคติ" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทั้งหมด</SelectItem>
+                  <SelectItem value="positive">เชิงบวก</SelectItem>
+                  <SelectItem value="negative">เชิงลบ</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* รายการ */}
       <Card className="chart-container-large">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="card-title">

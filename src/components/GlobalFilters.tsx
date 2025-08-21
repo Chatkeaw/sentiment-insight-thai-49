@@ -12,6 +12,8 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CascadingFilter } from "./filters/CascadingFilter";
+import { LocationFilters } from "@/types/locations";
 
 interface GlobalFiltersProps {
   onFiltersChange?: (filters: FilterState & { value: string }) => void;
@@ -19,13 +21,10 @@ interface GlobalFiltersProps {
 
 interface FilterState {
   serviceTypes: string[];
-  region: string;
-  district: string;
-  branch: string;
+  locationFilters: LocationFilters;
   timeRange: string;
-  // เพิ่มเดือน/ปี เพื่อใช้เป็นตัวกรองกลางของทั้งแอป
-  month: string;  // '1'..'12'
-  year: string;   // '2025'
+  month: string;
+  year: string;
 }
 
 type MonthState = { month: string; year: string };
@@ -46,7 +45,6 @@ const MONTHS = [
 ];
 
 function getInitialMonth(): MonthState {
-  // 1) ถ้ามีค่าที่เคยเลือกใน localStorage ให้ใช้ก่อน
   try {
     const saved = localStorage.getItem("dashboard.month");
     if (saved) {
@@ -56,44 +54,17 @@ function getInitialMonth(): MonthState {
       }
     }
   } catch (_) {}
-  // 2) ไม่งั้นใช้เดือน/ปีปัจจุบัน
   const now = new Date();
   return { month: String(now.getMonth() + 1), year: String(now.getFullYear()) };
 }
 
 const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
-  // --- ตัวเลือกแบบ mock ---
   const serviceTypes = [
     "การฝากเงิน/ถอนเงิน",
     "การซื้อผลิตภัณฑ์",
     "การชำระค่าบริการ/ค่าธรรมเนียม",
     "อื่นๆ"
   ];
-
-  const regions = useMemo(
-    () =>
-      Array.from({ length: 18 }, (_, i) => ({
-        value: `ภาค ${i + 1}`,
-        label: `ภาค ${i + 1}`
-      })),
-    []
-  );
-
-  const getDistrictsForRegion = (region: string) => {
-    if (!region || region === "all") return [];
-    return Array.from({ length: 3 }, (_, i) => ({
-      value: `${region} เขต ${i + 1}`,
-      label: `เขต ${i + 1}`
-    }));
-  };
-
-  const getBranchesForDistrict = (district: string) => {
-    if (!district || district === "all") return [];
-    return Array.from({ length: 5 }, (_, i) => ({
-      value: `${district} สาขา ${i + 1}`,
-      label: `สาขา ${i + 1}`
-    }));
-  };
 
   const timeRanges = [
     { value: "1day", label: "วันนี้" },
@@ -104,27 +75,19 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
     { value: "1year", label: "1 ปีล่าสุด" }
   ];
 
-  // --- สร้างค่าเริ่มต้นของเดือน/ปี (เดือนล่าสุด) ---
   const initialMonth = useMemo(getInitialMonth, []);
   const [filters, setFilters] = useState<FilterState>({
     serviceTypes: [],
-    region: "all",
-    district: "all",
-    branch: "all",
+    locationFilters: {
+      regionId: "all",
+      provinceId: "all", 
+      districtId: "all",
+      branchId: "all"
+    },
     timeRange: "1month",
     month: initialMonth.month,
     year: initialMonth.year
   });
-
-  const districts = useMemo(
-    () => getDistrictsForRegion(filters.region),
-    [filters.region]
-  );
-
-  const branches = useMemo(
-    () => getBranchesForDistrict(filters.district),
-    [filters.district]
-  );
 
   // Update localStorage and dispatch event when month/year changes
   useEffect(() => {
@@ -140,18 +103,11 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
   }, [filters, onFiltersChange]);
 
   const updateFilters = (updates: Partial<FilterState>) => {
-    setFilters(prev => {
-      const newFilters = { ...prev, ...updates };
-      // Reset dependent filters when parent changes
-      if (updates.region !== undefined && updates.region !== prev.region) {
-        newFilters.district = "all";
-        newFilters.branch = "all";
-      }
-      if (updates.district !== undefined && updates.district !== prev.district) {
-        newFilters.branch = "all";
-      }
-      return newFilters;
-    });
+    setFilters(prev => ({ ...prev, ...updates }));
+  };
+
+  const handleLocationFiltersChange = (locationFilters: LocationFilters) => {
+    updateFilters({ locationFilters });
   };
 
   const removeServiceType = (serviceType: string) => {
@@ -163,9 +119,12 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
   const clearAllFilters = () => {
     setFilters({
       serviceTypes: [],
-      region: "all",
-      district: "all", 
-      branch: "all",
+      locationFilters: {
+        regionId: "all",
+        provinceId: "all",
+        districtId: "all", 
+        branchId: "all"
+      },
       timeRange: "1month",
       month: initialMonth.month,
       year: initialMonth.year
@@ -173,185 +132,132 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
   };
 
   return (
-    <Card className="p-4 mb-6">
-      <div className="flex flex-wrap gap-4 items-center">
-        {/* Service Types Filter */}
-        <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-foreground">ประเภทบริการ</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-48 justify-start">
-                {filters.serviceTypes.length === 0 
-                  ? "เลือกประเภทบริการ" 
-                  : `เลือกแล้ว ${filters.serviceTypes.length} รายการ`
-                }
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-3">
-              <div className="space-y-2">
-                {serviceTypes.map((type) => (
-                  <div key={type} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={type}
-                      checked={filters.serviceTypes.includes(type)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          updateFilters({
-                            serviceTypes: [...filters.serviceTypes, type]
-                          });
-                        } else {
-                          removeServiceType(type);
-                        }
-                      }}
-                    />
-                    <label htmlFor={type} className="text-sm font-medium cursor-pointer">
-                      {type}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+    <div className="space-y-4">
+      {/* Location Filters */}
+      <CascadingFilter
+        onFiltersChange={handleLocationFiltersChange}
+        title="พื้นที่ให้บริการ"
+      />
 
-        {/* Region Filter */}
-        <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-foreground">ภาค</label>
-          <Select value={filters.region} onValueChange={(value) => updateFilters({ region: value })}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="เลือกภาค" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">ทั้งหมด</SelectItem>
-              {regions.map((region) => (
-                <SelectItem key={region.value} value={region.value}>
-                  {region.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Other Filters */}
+      <Card className="p-4">
+        <div className="flex flex-wrap gap-4 items-center">
+          {/* Service Types Filter */}
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-foreground">ประเภทบริการ</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-48 justify-start">
+                  {filters.serviceTypes.length === 0 
+                    ? "เลือกประเภทบริการ" 
+                    : `เลือกแล้ว ${filters.serviceTypes.length} รายการ`
+                  }
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-3">
+                <div className="space-y-2">
+                  {serviceTypes.map((type) => (
+                    <div key={type} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={type}
+                        checked={filters.serviceTypes.includes(type)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            updateFilters({
+                              serviceTypes: [...filters.serviceTypes, type]
+                            });
+                          } else {
+                            removeServiceType(type);
+                          }
+                        }}
+                      />
+                      <label htmlFor={type} className="text-sm font-medium cursor-pointer">
+                        {type}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
 
-        {/* District Filter */}
-        <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-foreground">เขต</label>
-          <Select 
-            value={filters.district} 
-            onValueChange={(value) => updateFilters({ district: value })}
-            disabled={filters.region === "all"}
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="เลือกเขต" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">ทั้งหมด</SelectItem>
-              {districts.map((district) => (
-                <SelectItem key={district.value} value={district.value}>
-                  {district.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+          {/* Month/Year Filter */}
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-foreground">เดือน/ปี</label>
+            <div className="flex gap-2">
+              <Select value={filters.month} onValueChange={(value) => updateFilters({ month: value })}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="เลือกเดือน" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MONTHS.map((month) => (
+                    <SelectItem key={month.value} value={month.value}>
+                      {month.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={filters.year} onValueChange={(value) => updateFilters({ year: value })}>
+                <SelectTrigger className="w-20">
+                  <SelectValue placeholder="ปี" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const year = new Date().getFullYear() - i;
+                    const yearBE = year + 543;
+                    return (
+                      <SelectItem key={year} value={String(year)}>
+                        {yearBE}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-        {/* Branch Filter */}
-        <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-foreground">สาขา</label>
-          <Select 
-            value={filters.branch} 
-            onValueChange={(value) => updateFilters({ branch: value })}
-            disabled={filters.district === "all"}
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="เลือกสาขา" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">ทั้งหมด</SelectItem>
-              {branches.map((branch) => (
-                <SelectItem key={branch.value} value={branch.value}>
-                  {branch.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Month/Year Filter */}
-        <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-foreground">เดือน/ปี</label>
-          <div className="flex gap-2">
-            <Select value={filters.month} onValueChange={(value) => updateFilters({ month: value })}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="เลือกเดือน" />
+          {/* Time Range Filter */}
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-foreground">ช่วงเวลา</label>
+            <Select value={filters.timeRange} onValueChange={(value) => updateFilters({ timeRange: value })}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="เลือกช่วงเวลา" />
               </SelectTrigger>
               <SelectContent>
-                {MONTHS.map((month) => (
-                  <SelectItem key={month.value} value={month.value}>
-                    {month.label}
+                {timeRanges.map((range) => (
+                  <SelectItem key={range.value} value={range.value}>
+                    {range.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={filters.year} onValueChange={(value) => updateFilters({ year: value })}>
-              <SelectTrigger className="w-20">
-                <SelectValue placeholder="ปี" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 5 }, (_, i) => {
-                  const year = new Date().getFullYear() - i;
-                  const yearBE = year + 543;
-                  return (
-                    <SelectItem key={year} value={String(year)}>
-                      {yearBE}
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
+          </div>
+
+          {/* Clear All Button */}
+          <div className="flex flex-col justify-end">
+            <Button variant="outline" size="sm" onClick={clearAllFilters}>
+              ล้างตัวกรองทั้งหมด
+            </Button>
           </div>
         </div>
 
-        {/* Time Range Filter */}
-        <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-foreground">ช่วงเวลา</label>
-          <Select value={filters.timeRange} onValueChange={(value) => updateFilters({ timeRange: value })}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="เลือกช่วงเวลา" />
-            </SelectTrigger>
-            <SelectContent>
-              {timeRanges.map((range) => (
-                <SelectItem key={range.value} value={range.value}>
-                  {range.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Clear All Button */}
-        <div className="flex flex-col justify-end">
-          <Button variant="outline" size="sm" onClick={clearAllFilters}>
-            ล้างตัวกรองทั้งหมด
-          </Button>
-        </div>
-      </div>
-
-      {/* Active Filters Display */}
-      {filters.serviceTypes.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          <span className="text-sm font-medium text-muted-foreground">ประเภทบริการที่เลือก:</span>
-          {filters.serviceTypes.map((type) => (
-            <Badge key={type} variant="secondary" className="flex items-center gap-1">
-              {type}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => removeServiceType(type)}
-              />
-            </Badge>
-          ))}
-        </div>
-      )}
-    </Card>
+        {/* Active Filters Display */}
+        {filters.serviceTypes.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="text-sm font-medium text-muted-foreground">ประเภทบริการที่เลือก:</span>
+            {filters.serviceTypes.map((type) => (
+              <Badge key={type} variant="secondary" className="flex items-center gap-1">
+                {type}
+                <X 
+                  className="h-3 w-3 cursor-pointer" 
+                  onClick={() => removeServiceType(type)}
+                />
+              </Badge>
+            ))}
+          </div>
+        )}
+      </Card>
+    </div>
   );
 };
 
