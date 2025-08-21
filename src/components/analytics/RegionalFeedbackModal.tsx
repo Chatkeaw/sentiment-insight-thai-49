@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface RegionalFeedbackModalProps {
@@ -41,6 +41,148 @@ const generateTrendData = (region: string, category: string) => {
   }));
 };
 
+// Generate summary card data
+const generateSummaryData = (region: string, category: string) => {
+  const baseImportant = Math.floor(Math.random() * 200) + 300;
+  const basePositive = Math.floor(Math.random() * 200) + 350;
+  const baseNegative = Math.floor(Math.random() * 100) + 50;
+
+  return {
+    important: {
+      current: baseImportant,
+      previousMonth: Math.floor(baseImportant * (0.7 + Math.random() * 0.6)),
+      threeMonthsAgo: Math.floor(baseImportant * (0.6 + Math.random() * 0.8))
+    },
+    positive: {
+      current: basePositive,
+      previousMonth: Math.floor(basePositive * (0.8 + Math.random() * 0.4)),
+      threeMonthsAgo: Math.floor(basePositive * (0.7 + Math.random() * 0.6))
+    },
+    negative: {
+      current: baseNegative,
+      previousMonth: Math.floor(baseNegative * (1.2 + Math.random() * 0.8)),
+      threeMonthsAgo: Math.floor(baseNegative * (1.0 + Math.random() * 1.0))
+    }
+  };
+};
+
+// Calculate percentage change and direction
+const calculateChange = (current: number, previous: number) => {
+  if (previous === 0) {
+    if (current === 0) {
+      return { percentage: 0, direction: 'neutral', displayText: '0%' };
+    } else {
+      return { percentage: 0, direction: 'increase', displayText: 'N/A' };
+    }
+  }
+  
+  const percentage = ((current - previous) / previous) * 100;
+  const direction = percentage > 0 ? 'increase' : percentage < 0 ? 'decrease' : 'neutral';
+  
+  return {
+    percentage: Math.abs(percentage),
+    direction,
+    displayText: `${Math.abs(percentage).toFixed(1)}%`
+  };
+};
+
+// Summary Card Component
+interface SummaryCardProps {
+  title: string;
+  current: number;
+  previousMonth: number;
+  threeMonthsAgo?: number;
+  headerColor: string;
+  headerBgColor: string;
+  cardBgColor: string;
+  ariaLabel: string;
+}
+
+const SummaryCard: React.FC<SummaryCardProps> = ({
+  title,
+  current,
+  previousMonth,
+  threeMonthsAgo,
+  headerColor,
+  headerBgColor,
+  cardBgColor,
+  ariaLabel
+}) => {
+  const monthChange = calculateChange(current, previousMonth);
+  const threeMonthChange = threeMonthsAgo ? calculateChange(current, threeMonthsAgo) : null;
+
+  const getIcon = (direction: string) => {
+    switch (direction) {
+      case 'increase':
+        return <TrendingUp className="w-4 h-4" />;
+      case 'decrease':
+        return <TrendingDown className="w-4 h-4" />;
+      default:
+        return <Minus className="w-4 h-4" />;
+    }
+  };
+
+  const getTextColor = (direction: string) => {
+    switch (direction) {
+      case 'increase':
+        return 'text-[#20A161]';
+      case 'decrease':
+        return 'text-[#D14343]';
+      default:
+        return 'text-[#6B7280]';
+    }
+  };
+
+  const getChangeText = (direction: string, percentage: string, previousValue: number) => {
+    switch (direction) {
+      case 'increase':
+        return previousValue === 0 ? `เพิ่มขึ้นจาก 0 (${percentage})` : `เพิ่มขึ้น ${percentage} จาก ${previousValue.toLocaleString()}`;
+      case 'decrease':
+        return `ลดลง ${percentage} จาก ${previousValue.toLocaleString()}`;
+      default:
+        return `คงที่จาก ${previousValue.toLocaleString()}`;
+    }
+  };
+
+  return (
+    <div 
+      className={`${cardBgColor} rounded-2xl shadow-sm border border-[#E5E7EB] p-6`}
+      aria-label={ariaLabel}
+    >
+      {/* Header Pill */}
+      <div 
+        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-4`}
+        style={{ backgroundColor: headerColor, color: 'white' }}
+      >
+        {title}
+      </div>
+
+      {/* Current Value */}
+      <div className="text-4xl font-bold text-gray-900 mb-3">
+        {current.toLocaleString()}
+      </div>
+
+      {/* Month-over-Month Comparison */}
+      <div className={`flex items-center gap-2 text-sm mb-2 ${getTextColor(monthChange.direction)}`}>
+        {getIcon(monthChange.direction)}
+        <span>
+          {getChangeText(monthChange.direction, monthChange.displayText, previousMonth)} (1 เดือนก่อนหน้า)
+        </span>
+      </div>
+
+      {/* 3-Month Comparison (if available) */}
+      {threeMonthChange && threeMonthsAgo && (
+        <div className={`flex items-center gap-2 text-sm opacity-70 ${getTextColor(threeMonthChange.direction)}`}>
+          {getIcon(threeMonthChange.direction)}
+          <span>
+            {getChangeText(threeMonthChange.direction, threeMonthChange.displayText, threeMonthsAgo)} (3 เดือนก่อนหน้า)
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const RegionalFeedbackModal: React.FC<RegionalFeedbackModalProps> = ({
   isOpen,
   onClose
@@ -49,6 +191,7 @@ export const RegionalFeedbackModal: React.FC<RegionalFeedbackModalProps> = ({
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const trendData = generateTrendData(selectedRegion, selectedCategory);
+  const summaryData = generateSummaryData(selectedRegion, selectedCategory);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -160,6 +303,42 @@ export const RegionalFeedbackModal: React.FC<RegionalFeedbackModalProps> = ({
                 <span className="text-sm text-muted-foreground">เชิงลบ</span>
               </div>
             </div>
+          </div>
+
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <SummaryCard
+              title="จำนวนความคิดเห็นที่สำคัญ"
+              current={summaryData.important.current}
+              previousMonth={summaryData.important.previousMonth}
+              threeMonthsAgo={summaryData.important.threeMonthsAgo}
+              headerColor="#3B4046"
+              headerBgColor="#3B4046"
+              cardBgColor="bg-white"
+              ariaLabel={`จำนวนความคิดเห็นที่สำคัญ เดือนล่าสุด ${summaryData.important.current} ${calculateChange(summaryData.important.current, summaryData.important.previousMonth).direction === 'increase' ? 'เพิ่มขึ้น' : calculateChange(summaryData.important.current, summaryData.important.previousMonth).direction === 'decrease' ? 'ลดลง' : 'คงที่'} ${calculateChange(summaryData.important.current, summaryData.important.previousMonth).displayText} เทียบเดือนก่อน`}
+            />
+            
+            <SummaryCard
+              title="จำนวนความคิดเห็นเชิงบวก"
+              current={summaryData.positive.current}
+              previousMonth={summaryData.positive.previousMonth}
+              threeMonthsAgo={summaryData.positive.threeMonthsAgo}
+              headerColor="#1E9E62"
+              headerBgColor="#1E9E62"
+              cardBgColor="bg-[#EAFBF0]"
+              ariaLabel={`จำนวนความคิดเห็นเชิงบวก เดือนล่าสุด ${summaryData.positive.current} ${calculateChange(summaryData.positive.current, summaryData.positive.previousMonth).direction === 'increase' ? 'เพิ่มขึ้น' : calculateChange(summaryData.positive.current, summaryData.positive.previousMonth).direction === 'decrease' ? 'ลดลง' : 'คงที่'} ${calculateChange(summaryData.positive.current, summaryData.positive.previousMonth).displayText} เทียบเดือนก่อน`}
+            />
+            
+            <SummaryCard
+              title="จำนวนความคิดเห็นเชิงลบ"
+              current={summaryData.negative.current}
+              previousMonth={summaryData.negative.previousMonth}
+              threeMonthsAgo={summaryData.negative.threeMonthsAgo}
+              headerColor="#D14343"
+              headerBgColor="#D14343"
+              cardBgColor="bg-[#FDEAEA]"
+              ariaLabel={`จำนวนความคิดเห็นเชิงลบ เดือนล่าสุด ${summaryData.negative.current} ${calculateChange(summaryData.negative.current, summaryData.negative.previousMonth).direction === 'increase' ? 'เพิ่มขึ้น' : calculateChange(summaryData.negative.current, summaryData.negative.previousMonth).direction === 'decrease' ? 'ลดลง' : 'คงที่'} ${calculateChange(summaryData.negative.current, summaryData.negative.previousMonth).displayText} เทียบเดือนก่อน`}
+            />
           </div>
 
           {/* Close Button */}
