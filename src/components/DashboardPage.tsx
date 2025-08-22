@@ -214,6 +214,33 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
     clickable: false
   }];
 
+  // Color functions for categories
+  const getMainCategoryColor = (name: string, index: number) => {
+    const colors = [
+      'bg-red-50 hover:bg-red-100',
+      'bg-orange-50 hover:bg-orange-100',
+      'bg-yellow-50 hover:bg-yellow-100',
+      'bg-green-50 hover:bg-green-100',
+      'bg-blue-50 hover:bg-blue-100',
+      'bg-purple-50 hover:bg-purple-100',
+      'bg-pink-50 hover:bg-pink-100'
+    ];
+    return colors[index % colors.length];
+  };
+
+  const getSubCategoryColor = (name: string, index: number) => {
+    const colors = [
+      'bg-slate-50 hover:bg-slate-100',
+      'bg-red-50 hover:bg-red-100',
+      'bg-orange-50 hover:bg-orange-100',
+      'bg-amber-50 hover:bg-amber-100',
+      'bg-lime-50 hover:bg-lime-100',
+      'bg-emerald-50 hover:bg-emerald-100',
+      'bg-teal-50 hover:bg-teal-100'
+    ];
+    return colors[index % colors.length];
+  };
+
   const handleTopicClick = () => {
     setSelectedTopic("การดูแล เอาใจใส่ ความสบายใจเมื่อมาใช้บริการ");
     setSelectedScore(overallAverage);
