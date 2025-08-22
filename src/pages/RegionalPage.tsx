@@ -1,9 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { RegionalFeedbackModal } from '@/components/analytics/RegionalFeedbackModal';
 import { CascadingFilter } from '@/components/filters/CascadingFilter';
 import { LocationFilters } from '@/types/locations';
 
@@ -30,7 +28,6 @@ const generateRegionalData = (locationFilters: LocationFilters) => {
 };
 
 export const RegionalPage: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [locationFilters, setLocationFilters] = useState<LocationFilters>({
     regionId: "all",
     provinceId: "all",
@@ -119,26 +116,9 @@ export const RegionalPage: React.FC = () => {
                 <span className="text-sm text-muted-foreground">เชิงลบ</span>
               </div>
             </div>
-
-            {/* Detail Button */}
-            <div className="flex justify-center mt-6">
-              <Button 
-                onClick={() => setIsModalOpen(true)}
-                variant="outline"
-                className="px-6"
-              >
-                ดูรายละเอียด
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Regional Feedback Modal */}
-      <RegionalFeedbackModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
     </div>
   );
 };
