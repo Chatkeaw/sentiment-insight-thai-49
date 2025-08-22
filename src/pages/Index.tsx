@@ -14,6 +14,7 @@ import ComplaintsPage from "./ComplaintsPage";
 import { AIAgentPage } from "./AIAgentPage";
 import { UserManagementPage } from "./UserManagementPage";
 import { SystemManagementPage } from "./SystemManagementPage";
+import FlowAgentDetailPage from "./FlowAgentDetailPage";
 import CategoryReferencePage from "./CategoryReferencePage";
 import DashboardPage from "@/components/DashboardPage";
 

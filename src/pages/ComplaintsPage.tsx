@@ -1,5 +1,6 @@
 // pages/ComplaintsPage.tsx
 import React, { useMemo, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -10,6 +11,8 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { FileText } from 'lucide-react';
 import { mockFeedbackData } from "@/data/mockData";
 import { FeedbackEntry } from "@/types/dashboard";
 
@@ -275,6 +278,8 @@ const backRanges = [
 
 /* --------------------------------- Page ---------------------------------- */
 export default function ComplaintsPage() {
+  const navigate = useNavigate();
+  
   /* ---------- ใช้ CSV ทำ index + ผูก CSV ให้กับ mockFeedbackData ---------- */
   const csvRows = useMemo(() => parseBranchCSV(CSV_TEXT), []);
   const idx = useMemo(() => buildBranchIndex(csvRows), [csvRows]);
@@ -416,6 +421,33 @@ export default function ComplaintsPage() {
     subCat,
   ]);
 
+  // Handle flow agent navigation
+  const handleFlowAgentClick = (f: FeedbackEntry) => {
+    const record = {
+      id: f.id,
+      created_at: f.date,
+      area: f.branch.district,
+      province: f.branch.region,
+      district: f.branch.district,
+      service_type: f.serviceType,
+      tags: pickTagCodes(f),
+      scores: {
+        overall: f.satisfaction.overall,
+        trust: Math.floor(Math.random() * 5) + 1,
+        consultation: Math.floor(Math.random() * 5) + 1,
+        speed: Math.floor(Math.random() * 5) + 1,
+        accuracy: Math.floor(Math.random() * 5) + 1,
+        equipment: Math.floor(Math.random() * 5) + 1,
+        environment: Math.floor(Math.random() * 5) + 1
+      },
+      comment: f.comment,
+      branch: f.branch.branch,
+      sub_branch: f.branch.branch,
+      region: f.branch.region
+    };
+    navigate(`/flow-agent/${f.id}`, { state: record });
+  };
+
   function resetAll() {
     setRegion("ทั้งหมด");
     setDistrict("ทั้งหมด");
@@ -433,7 +465,8 @@ export default function ComplaintsPage() {
 
   /* --------------------------------- UI ---------------------------------- */
   return (
-    <div className="space-y-6">
+    <TooltipProvider>
+      <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">ข้อร้องเรียนลูกค้า</h1>
         <p className="text-muted-foreground">ระบบสรุปข้อร้องเรียนสำคัญจากลูกค้า</p>
@@ -723,37 +756,58 @@ export default function ComplaintsPage() {
               }
             >
               <CardContent className="p-4">
-                <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                  <span>
-                    <strong>รหัส:</strong> {f.id}
-                  </span>
-                  <span>
-                    <strong>วันที่:</strong> {f.date} {f.timestamp}
-                  </span>
-                  <span>
-                    <strong>พื้นที่:</strong> {f.branch.region} / {f.branch.district} /{" "}
-                    {f.branch.branch}
-                  </span>
-                  <span>
-                    <strong>บริการ:</strong> {f.serviceType}
-                  </span>
-                </div>
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex-1">
+                    <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                      <span>
+                        <strong>รหัส:</strong> {f.id}
+                      </span>
+                      <span>
+                        <strong>วันที่:</strong> {f.date} {f.timestamp}
+                      </span>
+                      <span>
+                        <strong>พื้นที่:</strong> {f.branch.region} / {f.branch.district} /{" "}
+                        {f.branch.branch}
+                      </span>
+                      <span>
+                        <strong>บริการ:</strong> {f.serviceType}
+                      </span>
+                    </div>
 
-                <p className="mb-3 leading-relaxed text-foreground">{f.comment}</p>
+                    <p className="mb-3 leading-relaxed text-foreground">{f.comment}</p>
 
-                {codes.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {codes.map((c) => (
-                      <Badge
-                        key={c}
-                        variant={severe ? "destructive" : "secondary"}
-                        className="text-xs"
-                      >
-                        {c} {LABEL_BY_CODE[c] ?? ""}
-                      </Badge>
-                    ))}
+                    {codes.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {codes.map((c) => (
+                          <Badge
+                            key={c}
+                            variant={severe ? "destructive" : "secondary"}
+                            className="text-xs"
+                          >
+                            {c} {LABEL_BY_CODE[c] ?? ""}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                  
+                  {/* Action Button */}
+                  <div className="flex-shrink-0">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleFlowAgentClick(f)}
+                          className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-[#FCE7F3] border border-[#F9CADF] text-[#C0245E] hover:bg-[#F9CADF] transition-colors"
+                        >
+                          <FileText className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>ดู Flow Agent</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           );
@@ -767,6 +821,7 @@ export default function ComplaintsPage() {
           </Card>
         )}
       </div>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

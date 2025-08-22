@@ -36,6 +36,33 @@ interface FlowAgentData {
 // Mock data function
 const getFlowAgentById = (id: string): FlowAgentData => {
   const mockData: Record<string, FlowAgentData> = {
+    feedback_183: {
+      id: "feedback_183",
+      request_id: "2e8149a9-9612-4d21-b57c-3a2cadc911fd",
+      basic: {
+        submitted_at: "2025-01-03T15:36:00Z"
+      },
+      branch: "สาขา 10/ท่าบ่อ",
+      sub_branch: "—",
+      district: "ท่าบ่อ",
+      region: "ภาค 10",
+      province: "หนองคาย",
+      service_type: "ฝากเงิน/ถอนเงิน ATM",
+      scores: {
+        trust: 1,
+        consultation: 3,
+        speed: 4,
+        accuracy: 2,
+        equipment: 5,
+        environment: 3,
+        overall: 3
+      },
+      customer_comment: "พนักงานพูดจาดี แต่ควรเพิ่มเครื่องและความเร็ว",
+      tags: [
+        "กระบวนการให้บริการ: ความพร้อมในการให้บริการ (เชิงลบ)",
+        "พนักงานและบุคลากร: ความรวดเร็วในการให้บริการ (เชิงลบ)"
+      ]
+    },
     feedback_798: {
       id: "feedback_798",
       request_id: "REQ-2025-001",
@@ -84,28 +111,7 @@ const getFlowAgentById = (id: string): FlowAgentData => {
     }
   };
 
-  return mockData[id] || {
-    id,
-    request_id: `REQ-${id}`,
-    created_at: new Date().toISOString(),
-    branch: "ไม่ระบุ",
-    sub_branch: "ไม่ระบุ",
-    district: "ไม่ระบุ",
-    region: "ไม่ระบุ",
-    province: "ไม่ระบุ",
-    service_type: "ไม่ระบุ",
-    scores: {
-      trust: 3,
-      consultation: 3,
-      speed: 3,
-      accuracy: 3,
-      equipment: 3,
-      environment: 3,
-      overall: 3
-    },
-    customer_comment: "ไม่มีความคิดเห็น",
-    tags: []
-  };
+  return mockData[id] || mockData.feedback_183;
 };
 
 // Utility functions
@@ -137,7 +143,7 @@ export const FlowAgentDetailPage: React.FC = () => {
   const submittedText = formatThaiNumeric(resolveSubmittedAt(pageData));
 
   const handleBack = () => {
-    navigate('/');
+    navigate(-1);
   };
 
   const handleRefresh = () => {
@@ -205,7 +211,7 @@ export const FlowAgentDetailPage: React.FC = () => {
         </div>
 
         {/* ข้อมูลพื้นฐาน Card */}
-        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-white p-5 md:p-6">
+        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-[#FFEAF2] p-5 md:p-6">
           <CardHeader className="pb-4">
             <CardTitle className="font-semibold text-[#7A3443]">ข้อมูลพื้นฐาน</CardTitle>
           </CardHeader>
@@ -224,42 +230,48 @@ export const FlowAgentDetailPage: React.FC = () => {
         </Card>
 
         {/* พื้นที่ให้บริการ Card */}
-        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-white p-5 md:p-6">
+        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-[#FFEAF2] p-5 md:p-6">
           <CardHeader className="pb-4">
             <CardTitle className="font-semibold text-[#7A3443]">พื้นที่ให้บริการ</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">สาขา</label>
-                <p className="text-foreground">{pageData.branch || 'ไม่ระบุ'}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">สาขาย่อย</label>
-                <p className="text-foreground">{pageData.sub_branch || 'ไม่ระบุ'}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">เขต</label>
-                <p className="text-foreground">{pageData.district || 'ไม่ระบุ'}</p>
+                <label className="text-sm font-medium text-muted-foreground">สาขาธนาคาร</label>
+                <p className="text-[#7A3443]">{pageData.branch || 'ไม่ระบุ'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">ภาค</label>
-                <p className="text-foreground">{pageData.region || 'ไม่ระบุ'}</p>
+                <p className="text-[#7A3443]">{pageData.region || 'ไม่ระบุ'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">จังหวัด</label>
-                <p className="text-foreground">{pageData.province || 'ไม่ระบุ'}</p>
+                <p className="text-[#7A3443]">{pageData.province || 'ไม่ระบุ'}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">ประเภทบริการ</label>
-                <p className="text-foreground">{pageData.service_type || 'ไม่ระบุ'}</p>
+                <label className="text-sm font-medium text-muted-foreground">เขต</label>
+                <p className="text-[#7A3443]">{pageData.district || 'ไม่ระบุ'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">สาขาย่อย</label>
+                <p className="text-[#7A3443]">{pageData.sub_branch || 'ไม่ระบุ'}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* ประเภทที่ใช้บริการ Card */}
+        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-[#FFEAF2] p-5 md:p-6">
+          <CardHeader className="pb-4">
+            <CardTitle className="font-semibold text-[#7A3443]">ประเภทที่ใช้บริการ</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-[#7A3443]">{pageData.service_type || 'ไม่ระบุ'}</p>
+          </CardContent>
+        </Card>
+
         {/* ความพึงพอใจ Card */}
-        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-white p-5 md:p-6">
+        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-[#FFEAF2] p-5 md:p-6">
           <CardHeader className="pb-4">
             <CardTitle className="font-semibold text-[#7A3443]">ความพึงพอใจ</CardTitle>
           </CardHeader>
@@ -274,7 +286,7 @@ export const FlowAgentDetailPage: React.FC = () => {
                     </label>
                     <div className="text-lg font-bold">
                       <span className="text-[#C0245E]">{score}</span>
-                      <span className="text-muted-foreground">/5</span>
+                      <span className="text-[#7A3443]">/5</span>
                     </div>
                   </div>
                 );
@@ -284,14 +296,14 @@ export const FlowAgentDetailPage: React.FC = () => {
         </Card>
 
         {/* ความคิดเห็นลูกค้า Card */}
-        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-white p-5 md:p-6">
+        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-[#FFEAF2] p-5 md:p-6">
           <CardHeader className="pb-4">
             <CardTitle className="font-semibold text-[#7A3443]">ความคิดเห็นลูกค้า</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Comment Box */}
-            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-foreground leading-relaxed">
+            <div className="p-4 bg-[#FFF0F4] rounded-lg border border-[#F9CADF]">
+              <p className="text-[#444] leading-relaxed">
                 {pageData.customer_comment || pageData.comment || 'ไม่มีความคิดเห็น'}
               </p>
             </div>
@@ -306,9 +318,12 @@ export const FlowAgentDetailPage: React.FC = () => {
                   {pageData.tags.map((tag, index) => (
                     <Badge
                       key={index}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm mr-2 mb-2 bg-[#FFE0EA] border border-[#F9CADF] text-[#8C1F45] hover:bg-[#FFE0EA]"
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm mr-2 mb-2 bg-[#FDE2E4] border border-[#F9CADF] text-[#B91C1C] hover:bg-[#FDE2E4] relative"
                     >
                       {tag}
+                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">
+                        เชิงลบ
+                      </span>
                     </Badge>
                   ))}
                 </div>

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BarChart3, MapPin, TrendingUp, MessageSquare, AlertTriangle, Bot, Home, Users, Settings, BookOpen } from 'lucide-react';
+import { BarChart3, MapPin, TrendingUp, MessageSquare, AlertTriangle, Bot, Home, Users, Settings, BookOpen, FileText } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { useAnalytics } from '@/contexts/AnalyticsContext';
@@ -48,6 +48,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       id: 'complaints',
       title: 'ข้อร้องเรียน',
       icon: AlertTriangle
+    },
+    {
+      id: 'flow-agent',
+      title: 'Flow Agent',
+      icon: FileText,
+      url: '/flow-agent/preview'
     },
     {
       id: 'category-reference',
@@ -119,7 +125,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             const isActive = activePage === item.id;
             const menuButton = (
               <button 
-                onClick={() => onPageChange(item.id)} 
+                onClick={() => {
+                  if (item.url) {
+                    window.location.href = item.url;
+                  } else {
+                    onPageChange(item.id);
+                  }
+                }} 
                 className={`
                   w-11 h-11 rounded-2xl transition-all duration-300 grid place-items-center
                   ${isActive 
