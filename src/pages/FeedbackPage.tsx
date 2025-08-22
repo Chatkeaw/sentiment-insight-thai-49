@@ -8,6 +8,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { X } from "lucide-react";
 import { ExportButton } from "@/components/shared/ExportButton";
 import { mockFeedbackData } from "@/data/mockData";
 import { FeedbackEntry } from "@/types/dashboard";
@@ -255,7 +259,7 @@ export const FeedbackPage: React.FC = () => {
 
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>("all");
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("all");
-  const [selectedServiceType, setSelectedServiceType] = useState<string>("all");
+  const [selectedServiceTypes, setSelectedServiceTypes] = useState<string[]>([]);
   const [selectedSentiment, setSelectedSentiment] = useState<string>("all");
   const [timeFilter, setTimeFilter] = useState<TimeFilterValue>({ mode: "all" });
 
@@ -339,11 +343,25 @@ export const FeedbackPage: React.FC = () => {
   }, [selectedMainCategory]);
 
   const serviceTypes = [
-    "ทั้งหมด",
-    "การฝากเงิน/ถอนเงิน",
-    "การซื้อผลิตภัณฑ์",
-    "การชำระค่าบริการ/ค่าธรรมเนียม",
-    "อื่นๆ",
+    "1.1 เปิดบัญชีเงินฝาก - ออมทรัพย์",
+    "1.2 เปิดบัญชีเงินฝาก - กระแสรายวัน", 
+    "2.1 ฝากเงินสด - ผ่านเคาน์เตอร์",
+    "2.2 ฝากเงินสด - ผ่าน ATM",
+    "3.1 ถอนเงินสด - ผ่านเคาน์เตอร์",
+    "3.2 ถอนเงินสด - ผ่าน ATM",
+    "4.1 โอนเงิน - ในประเทศ",
+    "4.2 โอนเงิน - ต่างประเทศ",
+    "5.1 ชำระบิล - ค่าสาธารณูปโภค",
+    "5.2 ชำระบิล - ผ่าน MyMo Application",
+    "6.1 สินเชื่อบุคคล - ดอกเบี้ยคงที่",
+    "6.2 สินเชื่อบ้าน - ดอกเบี้ยผันแปร",
+    "7.1 บัตรเครดิต - ธนาคารกรุงไทย",
+    "7.2 บัตรเดบิต - KTB Visa Debit",
+    "8.1 ประกันภัย - ประกันชีวิต",
+    "8.2 กองทุนรวม - ตราสารหนี้",
+    "9.1 เงินฝากประจำ - 6 เดือน",
+    "9.2 เงินฝากประจำ - 12 เดือน",
+    "10.1 แลกเปลี่ยนเงินตรา - ดอลลาร์สหรัฐ"
   ];
 
   const filteredFeedback = useMemo(() => {
@@ -356,12 +374,11 @@ export const FeedbackPage: React.FC = () => {
           if (!feedback.branch.region.includes(regionNumber)) return false;
         }
 
-        if (
-          selectedServiceType !== "all" &&
-          selectedServiceType !== "ทั้งหมด" &&
-          feedback.serviceType !== selectedServiceType
-        )
-          return false;
+        if (selectedServiceTypes.length > 0) {
+          if (!selectedServiceTypes.includes(feedback.serviceType)) {
+            return false;
+          }
+        }
 
         if (selectedSentiment !== "all") {
           const hasPositive = Object.values(feedback.sentiment).some(
@@ -399,7 +416,7 @@ export const FeedbackPage: React.FC = () => {
     locationFilters,
     selectedMainCategory,
     selectedSubCategory,
-    selectedServiceType,
+    selectedServiceTypes,
     selectedSentiment,
   ]);
 
@@ -510,21 +527,83 @@ export const FeedbackPage: React.FC = () => {
               <label className="text-sm font-medium text-foreground">
                 ประเภทการให้บริการ
               </label>
-              <Select
-                value={selectedServiceType}
-                onValueChange={setSelectedServiceType}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกประเภทบริการ" />
-                </SelectTrigger>
-                <SelectContent>
-                  {serviceTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start">
+                    {selectedServiceTypes.length === 0 
+                      ? "เลือกประเภทบริการ" 
+                      : `เลือกแล้ว ${selectedServiceTypes.length} รายการ`
+                    }
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-3">
+                  <div className="space-y-3">
+                    {/* Select All / Clear Selection Controls */}
+                    <div className="flex justify-between items-center pb-2 border-b border-border">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedServiceTypes(serviceTypes)}
+                        disabled={selectedServiceTypes.length === serviceTypes.length}
+                      >
+                        เลือกทั้งหมด
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedServiceTypes([])}
+                        disabled={selectedServiceTypes.length === 0}
+                      >
+                        ล้างการเลือก
+                      </Button>
+                    </div>
+
+                    {/* Service Type Checkboxes */}
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {serviceTypes.map((type) => (
+                        <div key={type} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={type}
+                            checked={selectedServiceTypes.includes(type)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedServiceTypes([...selectedServiceTypes, type]);
+                              } else {
+                                setSelectedServiceTypes(selectedServiceTypes.filter(t => t !== type));
+                              }
+                            }}
+                          />
+                          <label htmlFor={type} className="text-sm cursor-pointer flex-1">
+                            {type}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
+              {/* Selected Service Types Display */}
+              {selectedServiceTypes.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  <span className="text-xs text-muted-foreground">
+                    ประเภทบริการที่เลือก ({selectedServiceTypes.length} รายการ):
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedServiceTypes.map((type) => (
+                      <Badge key={type} variant="secondary" className="flex items-center gap-1 text-xs">
+                        <span className="truncate max-w-[200px]" title={type}>
+                          {type.length > 25 ? `${type.substring(0, 25)}...` : type}
+                        </span>
+                        <X 
+                          className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                          onClick={() => setSelectedServiceTypes(selectedServiceTypes.filter(t => t !== type))}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
