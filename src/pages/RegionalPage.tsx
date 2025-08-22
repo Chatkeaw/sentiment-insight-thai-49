@@ -94,7 +94,7 @@ export const RegionalPage: React.FC = () => {
                 <Tooltip 
                   formatter={(value, name) => [
                     `${value} ครั้ง`,
-                    name === 'positive' ? 'เชิงบวก' : name === 'negative' ? 'เชิงลบ' : 'เป็นกลาง'
+                    name === 'positive' ? 'เชิงบวก' : name === 'negative' ? 'เชิงลบ'
                   ]}
                   contentStyle={{
                     backgroundColor: 'hsl(var(--background))',
@@ -105,7 +105,6 @@ export const RegionalPage: React.FC = () => {
                 />
                 <Bar dataKey="positive" fill="#10B981" name="positive" />
                 <Bar dataKey="negative" fill="#EF4444" name="negative" />
-                <Bar dataKey="neutral" fill="#6B7280" name="neutral" />
               </BarChart>
             </ResponsiveContainer>
 
@@ -118,10 +117,6 @@ export const RegionalPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-red-500 rounded"></div>
                 <span className="text-sm text-muted-foreground">เชิงลบ</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-gray-500 rounded"></div>
-                <span className="text-sm text-muted-foreground">เป็นกลาง</span>
               </div>
             </div>
 
