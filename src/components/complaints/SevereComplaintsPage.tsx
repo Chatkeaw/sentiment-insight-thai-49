@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
-import { CalendarIcon, AlertTriangle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { CalendarIcon, AlertTriangle, FileText } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import TimeFilter from '@/components/TimeFilter';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
@@ -145,6 +147,8 @@ interface SevereComplaintsPageProps {
 }
 
 export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ className }) => {
+  const navigate = useNavigate();
+  
   // Filter states
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [selectedArea, setSelectedArea] = useState<string>('all');
@@ -266,9 +270,37 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
     setSelectedCategory(category);
   };
 
+  // Handle flow agent navigation
+  const handleFlowAgentClick = (complaint: SevereComplaint) => {
+    const record = {
+      id: complaint.id,
+      created_at: complaint.date,
+      area: complaint.area,
+      province: complaint.province,
+      district: complaint.district,
+      service_type: complaint.service_type,
+      tags: [complaint.category, complaint.sub_category],
+      scores: {
+        overall: Math.floor(Math.random() * 5) + 1, // Mock score
+        trust: Math.floor(Math.random() * 5) + 1,
+        consultation: Math.floor(Math.random() * 5) + 1,
+        speed: Math.floor(Math.random() * 5) + 1,
+        accuracy: Math.floor(Math.random() * 5) + 1,
+        equipment: Math.floor(Math.random() * 5) + 1,
+        environment: Math.floor(Math.random() * 5) + 1
+      },
+      comment: complaint.comment,
+      branch: complaint.branch,
+      sub_branch: complaint.branch,
+      region: complaint.region
+    };
+    navigate(`/flow-agent/${complaint.id}`, { state: record });
+  };
+
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* Header */}
+    <TooltipProvider>
+      <div className={`space-y-6 ${className}`}>
+        {/* Header */}
       <div className="flex justify-between items-center bg-pink-100 p-4 rounded-lg border border-pink-200">
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-6 w-6 text-pink-600" />
@@ -448,42 +480,61 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
               filteredComplaints.map((complaint) => (
                 <div
                   key={complaint.id}
-                  className="p-4 rounded-lg border border-pink-200 bg-pink-50 transition-colors"
+                  className="p-4 rounded-lg border border-pink-200 bg-pink-50 transition-colors flex justify-between items-start gap-4"
                 >
-                  {/* Header Info - Format: [วันที่] – [สาขา/พื้นที่] – [ประเภทบริการ] – [หมวดหมู่] */}
-                  <div className="text-sm font-medium text-foreground mb-3">
-                    <span className="font-bold text-pink-800">
-                      {complaint.date} – {complaint.branch}/{complaint.area} – {complaint.service_type} – {complaint.category}
-                    </span>
-                  </div>
+                  <div className="flex-1">
+                    {/* Header Info - Format: [วันที่] – [สาขา/พื้นที่] – [ประเภทบริการ] – [หมวดหมู่] */}
+                    <div className="text-sm font-medium text-foreground mb-3">
+                      <span className="font-bold text-pink-800">
+                        {complaint.date} – {complaint.branch}/{complaint.area} – {complaint.service_type} – {complaint.category}
+                      </span>
+                    </div>
 
-                  {/* Comment */}
-                  <div className="mb-3">
-                    <p className="text-foreground leading-relaxed text-base">{complaint.comment}</p>
-                  </div>
+                    {/* Comment */}
+                    <div className="mb-3">
+                      <p className="text-foreground leading-relaxed text-base">{complaint.comment}</p>
+                    </div>
 
-                  {/* Category Tags */}
-                  <div className="flex flex-wrap gap-2">
-                    <Badge 
-                      variant="secondary"
-                      className="cursor-pointer hover:bg-pink-200 bg-pink-100 text-pink-800 border-pink-300"
-                      onClick={() => handleCategoryClick(complaint.category)}
-                    >
-                      {complaint.category}
-                    </Badge>
-                    <Badge 
-                      variant="outline"
-                      className="cursor-pointer hover:bg-slate-100 border-slate-300"
-                      onClick={() => handleCategoryClick(complaint.sub_category)}
-                    >
-                      {complaint.sub_category}
-                    </Badge>
-                    <Badge 
-                      variant="destructive"
-                      className="text-xs"
-                    >
-                      คะแนนความรุนแรง: {(complaint.severity_score * 100).toFixed(0)}%
-                    </Badge>
+                    {/* Category Tags */}
+                    <div className="flex flex-wrap gap-2">
+                      <Badge 
+                        variant="secondary"
+                        className="cursor-pointer hover:bg-pink-200 bg-pink-100 text-pink-800 border-pink-300"
+                        onClick={() => handleCategoryClick(complaint.category)}
+                      >
+                        {complaint.category}
+                      </Badge>
+                      <Badge 
+                        variant="outline"
+                        className="cursor-pointer hover:bg-slate-100 border-slate-300"
+                        onClick={() => handleCategoryClick(complaint.sub_category)}
+                      >
+                        {complaint.sub_category}
+                      </Badge>
+                      <Badge 
+                        variant="destructive"
+                        className="text-xs"
+                      >
+                        คะแนนความรุนแรง: {(complaint.severity_score * 100).toFixed(0)}%
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  {/* Action Column */}
+                  <div className="flex-shrink-0">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleFlowAgentClick(complaint)}
+                          className="w-8 h-8 p-0 rounded-full bg-[#FCE7F3] border border-[#F9CADF] hover:bg-[#F9CADF] transition-colors"
+                        >
+                          <FileText className="w-4 h-4 text-[#C0245E]" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>ดู Flow Agent</TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               ))
@@ -491,6 +542,7 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 };
