@@ -80,7 +80,6 @@ const CategoryRankings: React.FC = () => {
                 onClick={() => handleViewDetails({name: 'ทั้งหมด', positive: 0, negative: 0, total: 0}, 'main')}
               >
 
-                <ChevronRight size={16} />
               </Button>
             </div>
           </CardHeader>
@@ -90,7 +89,7 @@ const CategoryRankings: React.FC = () => {
                 <div 
                   key={index}
                   className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
-                >
+                
                   <div className="flex items-center gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${getRankColor(index)}`}>
                       {index + 1}
@@ -118,8 +117,7 @@ const CategoryRankings: React.FC = () => {
                 variant="ghost" 
                 className="text-white hover:bg-orange-600 p-2 h-8"
                 onClick={() => handleViewDetails({name: 'ทั้งหมด', positive: 0, negative: 0, total: 0}, 'sub')}
-              >
-                <ChevronRight size={16} />
+              
               </Button>
             </div>
           </CardHeader>
