@@ -228,12 +228,12 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   };
   
   const getSubCategoryColor = (negativeCount: string, name: string) => {
-    const pinkRedGradients = [
-      'bg-pink-50 hover:bg-pink-100',
+    const redGradients = [
+      'bg-red-50 hover:bg-red-100',
       'bg-red-100 hover:bg-red-200',
-      'bg-rose-100 hover:bg-rose-200',
       'bg-red-200 hover:bg-red-300',
-      'bg-pink-200 hover:bg-pink-300'
+      'bg-red-300 hover:bg-red-400',
+      'bg-red-400 hover:bg-red-500'
     ];
     const index = parseInt(negativeCount) % pinkRedGradients.length;
     return pinkRedGradients[index];
