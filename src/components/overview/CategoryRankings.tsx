@@ -61,12 +61,6 @@ export const CategoryRankings: React.FC = () => {
     return 'bg-red-400/20';
   };
 
-  const handleViewDetails = (category: CategoryData, type: 'main' | 'sub') => {
-    setSelectedCategory(category);
-    setModalType(type);
-    setIsModalOpen(true);
-  };
-
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedCategory(null);
@@ -157,15 +151,6 @@ export const CategoryRankings: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* Sentiment Analysis Modal */}
-      {isModalOpen && selectedCategory && (
-        <SentimentAnalysisModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          onViewFeedback={handleViewFeedback}
-        />
-      )}
     </div>
   );
 };
