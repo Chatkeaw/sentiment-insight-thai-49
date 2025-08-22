@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AppSidebar } from "@/components/AppSidebar";
+import HorizontalNavigation from "@/components/HorizontalNavigation";
 import { RegionalPage } from "./RegionalPage";
 import { AnalyticsPage } from "./AnalyticsPage";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
@@ -21,23 +21,12 @@ const Index = () => {
   const [activePage, setActivePage] = useState(() => {
     return localStorage.getItem('selectedMenuItem') || "overview";
   });
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
-    const saved = localStorage.getItem('sidebar_open');
-    return saved ? JSON.parse(saved) : true;
-  });
   const [timeFilter, setTimeFilter] = useState<TimeFilterType['value']>("1month");
   const [lastUpdate, setLastUpdate] = useState<string>("");
 
   const handlePageChange = (page: string) => {
     setActivePage(page);
     localStorage.setItem('selectedMenuItem', page);
-    if (window.innerWidth < 1024) {
-      setIsSidebarOpen(false);
-    }
-  };
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
   };
 
   const scrollToTop = () => {
@@ -58,9 +47,6 @@ const Index = () => {
     setLastUpdate(`${day}-${month}-${year} ${hours}:${minutes}`);
   };
 
-  useEffect(() => {
-    localStorage.setItem('sidebar_open', JSON.stringify(isSidebarOpen));
-  }, [isSidebarOpen]);
 
   useEffect(() => {
     localStorage.setItem('selectedMenuItem', activePage);
@@ -125,37 +111,26 @@ const Index = () => {
     <AuthProvider>
       <ProtectedRoute>
         <AnalyticsProvider>
-          <div className="min-h-screen w-full bg-white flex relative">
-            {/* Mobile Overlay */}
-            {isSidebarOpen && (
-              <div
-                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden"
-                onClick={() => setIsSidebarOpen(false)}
-              />
-            )}
+          <div className="min-h-screen w-full bg-white">
+            {/* Dashboard Header */}
+            <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-40">
+              <div className="container mx-auto px-6 py-3">
+                <DashboardHeader
+                  lastUpdate={lastUpdate}
+                  onRefresh={handleRefreshData}
+                />
+              </div>
+            </header>
 
-            {/* Sidebar */}
-            <AppSidebar
+            {/* Horizontal Navigation */}
+            <HorizontalNavigation
               activePage={activePage}
               onPageChange={handlePageChange}
-              isOpen={isSidebarOpen}
-              onToggle={toggleSidebar}
             />
 
             {/* Main Content */}
-            <main className={`flex-1 transition-all duration-300 ease-out ${isSidebarOpen ? 'lg:ml-[256px]' : 'lg:ml-[72px]'}`}>
-              {/* Dashboard Header */}
-              <header className="flex items-center gap-2 px-4 py-4 pl-16 border-b bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-                <div className="flex-1">
-                  <DashboardHeader
-                    lastUpdate={lastUpdate}
-                    onRefresh={handleRefreshData}
-                  />
-                </div>
-              </header>
-
-              {/* Dashboard Content */}
-              <div className="container mx-auto px-6 pb-6 bg-white">
+            <main className="w-full">
+              <div className="container mx-auto px-6 py-6 max-w-7xl">
                 {renderContent()}
               </div>
             </main>

@@ -299,7 +299,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-foreground">สรุปภาพรวมประจำเดือน - {headerLabel}</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">สรุปภาพรวมประจำเดือน - {headerLabel}</h1>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">เลือกเดือน:</span>
             <Select value={month} onValueChange={setMonth}>
@@ -346,10 +346,10 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   </h3>
                   <div className="space-y-1">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-foreground">{stat.value}</span>
-                      <span className="text-lg text-muted-foreground">{stat.unit}</span>
+                      <span className="text-3xl lg:text-4xl font-bold text-foreground">{stat.value}</span>
+                      <span className="text-sm lg:text-base text-muted-foreground">{stat.unit}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-xs lg:text-sm">
                       <span className="text-green-600 font-medium">{stat.change}</span>
                       <span className="text-muted-foreground">จากเดือนที่แล้ว {stat.previousValue}</span>
                     </div>
@@ -366,7 +366,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
 
       {/* ภาพรวมการให้บริการสาขา */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-foreground">ภาพรวมการให้บริการสาขา</h2>
+        <h2 className="text-lg lg:text-xl font-semibold text-foreground">ภาพรวมการให้บริการสาขา</h2>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* ประเภทของสาขา - Donut Chart */}
@@ -425,11 +425,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                 <BarChart data={serviceTypeData} margin={{ bottom: 5, right: 30 }}>
                   <XAxis 
                     dataKey="name" 
-                    fontSize={12}
+                    fontSize={10}
                     tick={{ fill: 'hsl(var(--foreground))' }}
                   />
                   <YAxis 
-                    fontSize={12}
+                    fontSize={10}
                     tick={{ fill: 'hsl(var(--foreground))' }}
                   />
                   <Tooltip 
@@ -467,17 +467,17 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
 
       {/* ระดับความพึงพอใจ */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-foreground">ระดับความพึงพอใจ</h2>
+        <h2 className="text-lg lg:text-xl font-semibold text-foreground">ระดับความพึงพอใจ</h2>
       
         <div className="grid grid-cols-[200px_1fr] gap-6">
           {/* Overall Score Card */}
           <Card className="bg-gradient-to-b from-pink-50 to-white rounded-2xl shadow-none flex items-center justify-center">
             <CardContent className="p-8 flex flex-col justify-center items-center text-center">
-              <span className="text-5xl font-bold text-foreground">{overallAverage.toFixed(2)}</span>
-              <div className="flex items-center gap-2 text-sm mt-2">
+              <span className="text-4xl lg:text-5xl font-bold text-foreground">{overallAverage.toFixed(2)}</span>
+              <div className="flex items-center gap-2 text-xs lg:text-sm mt-2">
                 <span className="text-green-600 font-medium">↗ 2.80%</span>
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-xs lg:text-sm text-muted-foreground mt-1">
                 (คำนวณจากเดือนก่อนหน้า {(overallAverage - 0.1).toFixed(2)} คะแนน)
               </p>
             </CardContent>
@@ -499,9 +499,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
             <CardContent className="flex justify-center items-center">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={regionalSatisfactionData} margin={{ top: 40, bottom: 30 }} barCategoryGap="20%">
-                  <XAxis 
+                   <XAxis 
                     dataKey="name" 
-                    fontSize={12}
+                    fontSize={10}
                     tick={{ fill: 'hsl(var(--foreground))' }}
                     angle={-45}
                     textAnchor="end"
@@ -509,7 +509,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                   />
                   <YAxis 
                     domain={[0, 5]}            
-                    fontSize={12}
+                    fontSize={10}
                     tick={{ fill: 'hsl(var(--foreground))' }}
                     label={{ value: 'คะแนน', angle: -90, position: 'insideLeft' }}
                   />
@@ -548,7 +548,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
 
       {/* ข้อคิดเห็นของลูกค้า */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-foreground">ข้อคิดเห็นของลูกค้า</h2>
+        <h2 className="text-lg lg:text-xl font-semibold text-foreground">ข้อคิดเห็นของลูกค้า</h2>
         
         {/* Card 1: Sentiment Analysis & Categories */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -716,14 +716,14 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
               <BarChart data={regionalFeedbackData} margin={{ bottom: 40 }}>
                 <XAxis 
                   dataKey="region" 
-                  fontSize={12}
+                  fontSize={10}
                   angle={-45}
                   textAnchor="end"
                   height={80}
                 />
                 <YAxis 
                   label={{ value: 'ความถี่ (ครั้ง)', angle: -90, position: 'insideLeft' }}
-                  fontSize={12}
+                  fontSize={10}
                 />
                 <Tooltip 
                   formatter={(value, name) => {

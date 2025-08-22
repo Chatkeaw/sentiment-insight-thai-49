@@ -31,10 +31,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       <div className="flex items-center justify-between">
         {/* ด้านซ้าย - หัวข้อ Dashboard */}
         <div className="flex-1">
-          <h1 className="text-header-main font-bold text-foreground mb-1">
+          <h1 className="text-lg lg:text-xl font-bold text-foreground mb-1">
             Dashboard ข้อเสนอแนะ ข้อร้องเรียน การใช้บริการสาขา (Mockup)
           </h1>
-          <h2 className="text-header-sub text-muted-foreground">
+          <h2 className="text-sm lg:text-base text-muted-foreground">
             ระบบติดตามและวิเคราะห์ข้อร้องเรียนลูกค้าธนาคารออมสิน
           </h2>
         </div>
@@ -44,7 +44,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           {/* ข้อมูลอัพเดทล่าสุด */}
           <div className="text-right">
             <p className="text-sm text-muted-foreground">ข้อมูลอัพเดทล่าสุด</p>
-            <p className="text-body font-medium text-foreground">
+            <p className="text-sm font-medium text-foreground">
               {lastUpdate || getCurrentDateTime()}
             </p>
           </div>
@@ -74,11 +74,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-header-sub">
+                <DialogTitle className="text-lg">
                   เกี่ยวกับระบบ
                 </DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 text-body">
+              <div className="space-y-4 text-sm">
                 <div>
                   <h3 className="font-semibold mb-2">Customer Feedback Management System</h3>
                   <p className="text-muted-foreground">Version 2.1.0</p>
