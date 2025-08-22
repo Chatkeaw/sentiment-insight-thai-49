@@ -616,7 +616,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                 {top7MainCategories.map((item, index) => (
                   <div 
                     key={index}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card/50 hover:bg-card/80 transition-colors"
+                    className={`flex items-center justify-between p-3 rounded-lg border border-border/50 transition-colors ${getMainCategoryColor(item.name, index)}`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
@@ -624,22 +624,15 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                       </div>
                       <span className="font-medium text-sm">{item.name}</span>
                     </div>
-                    <div className="flex gap-4 text-sm">
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span className="font-medium">{item.positive}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                        <span className="font-medium">{item.negative}</span>
-                      </div>
+                    <div className="text-sm font-bold text-red-600">
+                      {item.negative}
                     </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
-
+          
           {/* หมวดหมู่ที่ลูกค้าร้องเรียน - Top 7 Sub Categories */}
           <Card className="border-0 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between">
@@ -657,7 +650,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                 {top7SubCategories.map((item, index) => (
                   <div 
                     key={index}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card/50 hover:bg-card/80 transition-colors"
+                    className={`flex items-center justify-between p-3 rounded-lg border border-border/50 transition-colors ${getSubCategoryColor(item.name, index)}`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
@@ -665,15 +658,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                       </div>
                       <span className="font-medium text-sm">{item.name}</span>
                     </div>
-                    <div className="flex gap-4 text-sm">
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span className="font-medium">{item.positive}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                        <span className="font-medium">{item.negative}</span>
-                      </div>
+                    <div className="text-sm font-bold text-red-600">
+                      {item.negative}
                     </div>
                   </div>
                 ))}
