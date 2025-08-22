@@ -11,7 +11,8 @@ import { DateRange } from 'react-day-picker';
 interface FeedbackEntry {
   id: string;
   region: string;
-  area: string;
+  province: string;
+  district: string;
   branch: string;
   service_type: string;
   timestamp: string;
@@ -24,9 +25,10 @@ interface FeedbackEntry {
 const mockFeedbackData: FeedbackEntry[] = [
   {
     id: '1',
-    region: 'ภาคกลาง',
-    area: 'กรุงเทพฯ',
-    branch: 'บางเขน',
+    region: "ภาค 1",
+    province: "กรุงเทพฯ",
+    district: "บางเขน",
+    branch: "ประชาชื่น",
     service_type: 'เปิดบัญชี',
     timestamp: '2024-07-01 09:30',
     raw_comment: 'พนักงานให้บริการดีมาก สุภาพและรวดเร็ว',
@@ -36,9 +38,10 @@ const mockFeedbackData: FeedbackEntry[] = [
   },
   {
     id: '2',
-    region: 'ภาคตะวันออกเฉียงเหนือ',
-    area: 'ขอนแก่น',
-    branch: 'เมืองขอนแก่น',
+    region: "ภาค 5",
+    province: "กาญจนบุรี",
+    district: "กาญจนบุรี",
+    branch: "กาญจนบุรี",
     service_type: 'สมัครแอป',
     timestamp: '2024-07-01 15:50',
     raw_comment: 'เข้าแอป MyMo ไม่ได้ และไม่มีใครให้คำตอบที่ชัดเจน',
@@ -48,9 +51,10 @@ const mockFeedbackData: FeedbackEntry[] = [
   },
   {
     id: '3',
-    region: 'ภาคใต้',
-    area: 'สงขลา',
-    branch: 'หาดใหญ่',
+    region: "ภาค 10",
+    province: "นครพนม",
+    district: "นครพนม",
+    branch: "นครพนม",
     service_type: 'ถอนเงิน',
     timestamp: '2024-07-01 13:20',
     raw_comment: 'พนักงานดี แต่เครื่องนับเงินเสีย รอคิวนาน',
