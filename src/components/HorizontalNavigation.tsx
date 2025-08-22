@@ -52,10 +52,7 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
           {/* Main Menu Items - Left Side */}
           <div className="flex items-center space-x-8 overflow-x-auto">
             {/* Main Menu Label */}
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-300 pr-6">
-              เมนูหลัก
-            </div>
-            
+
             {baseMenuItems.map((item) => {
               const IconComponent = item.icon;
               const isActive = activePage === item.id;
