@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import HorizontalNavigation from "@/components/HorizontalNavigation";
+import { AppSidebar } from "@/components/AppSidebar";
 import { RegionalPage } from "./RegionalPage";
 import { AnalyticsPage } from "./AnalyticsPage";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
@@ -23,10 +23,19 @@ const Index = () => {
   });
   const [timeFilter, setTimeFilter] = useState<TimeFilterType['value']>("1month");
   const [lastUpdate, setLastUpdate] = useState<string>("");
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    return localStorage.getItem('sidebarOpen') !== 'false';
+  });
 
   const handlePageChange = (page: string) => {
     setActivePage(page);
     localStorage.setItem('selectedMenuItem', page);
+  };
+
+  const handleSidebarToggle = () => {
+    const newState = !sidebarOpen;
+    setSidebarOpen(newState);
+    localStorage.setItem('sidebarOpen', newState.toString());
   };
 
   const scrollToTop = () => {
@@ -111,40 +120,45 @@ const Index = () => {
     <AuthProvider>
       <ProtectedRoute>
         <AnalyticsProvider>
-          <div className="min-h-screen w-full bg-white">
-            {/* Dashboard Header */}
-            <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-40">
-              <div className="container mx-auto px-6 py-3">
-                <DashboardHeader
-                  lastUpdate={lastUpdate}
-                  onRefresh={handleRefreshData}
-                />
-              </div>
-            </header>
-
-            {/* Horizontal Navigation */}
-            <HorizontalNavigation
+          <div className="min-h-screen w-full bg-white flex">
+            {/* Sidebar */}
+            <AppSidebar
               activePage={activePage}
               onPageChange={handlePageChange}
+              isOpen={sidebarOpen}
+              onToggle={handleSidebarToggle}
             />
 
-            {/* Main Content */}
-            <main className="w-full">
-              <div className="container mx-auto px-6 py-6 max-w-7xl">
-                {renderContent()}
-              </div>
-            </main>
+            {/* Main Content Area */}
+            <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-[72px]'}`}>
+              {/* Dashboard Header */}
+              <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-30">
+                <div className="container mx-auto px-6 py-3">
+                  <DashboardHeader
+                    lastUpdate={lastUpdate}
+                    onRefresh={handleRefreshData}
+                  />
+                </div>
+              </header>
 
-            {/* Scroll to Top Button - Hide on AI Agent page */}
-            {activePage !== "ai-agent" && (
-              <Button
-                onClick={scrollToTop}
-                className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0 shadow-lg bg-primary hover:bg-primary/90 z-50 transition-all duration-300 hover:scale-110"
-                aria-label="กลับสู่ด้านบน"
-              >
-                <ArrowUp className="w-5 h-5" />
-              </Button>
-            )}
+              {/* Main Content */}
+              <main className="flex-1 w-full">
+                <div className="container mx-auto px-6 py-6 max-w-7xl">
+                  {renderContent()}
+                </div>
+              </main>
+
+              {/* Scroll to Top Button - Hide on AI Agent page */}
+              {activePage !== "ai-agent" && (
+                <Button
+                  onClick={scrollToTop}
+                  className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0 shadow-lg bg-primary hover:bg-primary/90 z-50 transition-all duration-300 hover:scale-110"
+                  aria-label="กลับสู่ด้านบน"
+                >
+                  <ArrowUp className="w-5 h-5" />
+                </Button>
+              )}
+            </div>
           </div>
         </AnalyticsProvider>
       </ProtectedRoute>
