@@ -9,6 +9,33 @@ import { SentimentAnalysisModal } from './analytics/SentimentAnalysisModal';
 import { RegionalFeedbackModal } from './analytics/RegionalFeedbackModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+// Color functions for category rankings
+const getMainCategoryColor = (category: string, index: number): string => {
+  const colors = [
+    'hover:bg-red-50', 
+    'hover:bg-orange-50', 
+    'hover:bg-yellow-50', 
+    'hover:bg-blue-50', 
+    'hover:bg-purple-50', 
+    'hover:bg-pink-50', 
+    'hover:bg-gray-50'
+  ];
+  return colors[index] || 'hover:bg-gray-50';
+};
+
+const getSubCategoryColor = (category: string, index: number): string => {
+  const colors = [
+    'hover:bg-red-50', 
+    'hover:bg-orange-50', 
+    'hover:bg-yellow-50', 
+    'hover:bg-blue-50', 
+    'hover:bg-purple-50', 
+    'hover:bg-pink-50', 
+    'hover:bg-gray-50'
+  ];
+  return colors[index] || 'hover:bg-gray-50';
+};
+
 interface DashboardPageProps {
   onPageChange?: (page: string) => void;
 }
