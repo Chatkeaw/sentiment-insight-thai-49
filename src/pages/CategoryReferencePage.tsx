@@ -191,65 +191,52 @@ const CategoryReferencePage: React.FC = () => {
         {/* Filters */}
         <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl mb-6">
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div className="grid grid-cols-3 gap-x-4">
               {/* Topic Filter */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  หัวข้อ
-                </label>
-                <Select value={selectedTopic} onValueChange={handleTopicChange}>
-                  <SelectTrigger className="w-full border-pink-200 focus:border-pink-400 focus:ring-pink-400">
-                    <SelectValue placeholder="เลือกหัวข้อ" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-pink-200 shadow-lg z-50">
-                    <SelectItem value="all">เลือกทั้งหมด</SelectItem>
-                    {TOPICS.map((topic) => (
-                      <SelectItem key={topic.id} value={topic.id}>
-                        {topic.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select value={selectedTopic} onValueChange={handleTopicChange}>
+                <SelectTrigger className="h-10 border-pink-200 focus:border-pink-400 focus:ring-pink-400">
+                  <SelectValue placeholder="เลือกหัวข้อ" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-pink-200 shadow-lg z-50">
+                  <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                  {TOPICS.map((topic) => (
+                    <SelectItem key={topic.id} value={topic.id}>
+                      {topic.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
               {/* Category Filter */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  หมวดหมู่
-                </label>
-                <Select 
-                  value={selectedCategory} 
-                  onValueChange={setSelectedCategory}
-                  disabled={selectedTopic === "all"}
+              <Select 
+                value={selectedCategory} 
+                onValueChange={setSelectedCategory}
+                disabled={selectedTopic === "all"}
+              >
+                <SelectTrigger 
+                  className="h-10 border-pink-200 focus:border-pink-400 focus:ring-pink-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <SelectTrigger 
-                    className="w-full border-pink-200 focus:border-pink-400 focus:ring-pink-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <SelectValue placeholder={selectedTopic === "all" ? "เลือกทั้งหมด (ปิดการใช้งานจนกว่าจะเลือกหัวข้อ)" : "เลือกหมวดหมู่"} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-pink-200 shadow-lg z-50">
-                    <SelectItem value="all">เลือกทั้งหมด</SelectItem>
-                    {availableCategories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  <SelectValue placeholder={selectedTopic === "all" ? "เลือกทั้งหมด (ปิดการใช้งานจนกว่าจะเลือกหัวข้อ)" : "เลือกหมวดหมู่"} />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-pink-200 shadow-lg z-50">
+                  <SelectItem value="all">เลือกทั้งหมด</SelectItem>
+                  {availableCategories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
               {/* Reset Button */}
-              <div className="flex justify-start md:justify-end">
-                <Button
-                  onClick={handleReset}
-                  variant="outline"
-                  size="default"
-                  className="flex items-center gap-2 border-pink-200 hover:bg-pink-50 text-pink-600 px-6"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  รีเซ็ตตัวกรอง
-                </Button>
-              </div>
+              <Button
+                onClick={handleReset}
+                variant="outline"
+                className="h-10 flex items-center justify-center gap-2 border-pink-200 hover:bg-pink-50 text-pink-600"
+              >
+                <RotateCcw className="h-4 w-4" />
+                รีเซ็ตตัวกรอง
+              </Button>
             </div>
           </CardContent>
         </Card>
