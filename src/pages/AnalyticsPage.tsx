@@ -66,6 +66,55 @@ const CategoryRankings: React.FC = () => {
     return 'bg-gray-300';
   };
 
+    // ฟังก์ชันคำนวณสีพื้นหลังสำหรับหัวข้อหลัก
+  const getMainCategoryColor = (negative: number, name: string) => {
+    // Market Conduct ให้สีแดงเข้มที่สุด
+    if (name === 'Market Conduct') return 'bg-red-900/30';
+    
+    // ไล่สีแดงตามจำนวน negative (มากไปน้อย)
+    if (negative >= 100) return 'bg-red-800/30';
+    if (negative >= 80) return 'bg-red-700/30';
+    if (negative >= 60) return 'bg-red-600/30';
+    if (negative >= 40) return 'bg-red-500/30';
+    if (negative >= 20) return 'bg-red-400/30';
+    return 'bg-red-300/30';
+  };
+  
+  // ฟังก์ชันคำนวณสีพื้นหลังสำหรับหมวดหมู่ย่อย
+  const getSubCategoryColor = (negative: number, name: string) => {
+    // ไม่เอาเปรียบและไม่บังคับให้สีแดงเข้มที่สุด
+    if (name === 'ไม่เอาเปรียบ' || name === 'ไม่บังคับ') return 'bg-red-900/30';
+    
+    // ไล่สีแดงตามจำนวน negative (มากไปน้อย)
+    if (negative >= 80) return 'bg-red-800/30';
+    if (negative >= 60) return 'bg-red-700/30';
+    if (negative >= 40) return 'bg-red-600/30';
+    if (negative >= 20) return 'bg-red-500/30';
+    return 'bg-red-400/30';
+  };
+  
+  // ข้อมูลสำหรับหัวข้อที่ลูกค้าร้องเรียน
+  const top7MainCategories = [
+    { name: "พนักงานและบุคลากร", negative: 89 },
+    { name: "เทคโนโลยีและดิจิทัล", negative: 134 },
+    { name: "Market Conduct", negative: 12 },
+    { name: "สภาพแวดล้อมและสิ่งอำนวยความสะดวก", negative: 76 },
+    { name: "ระบบและกระบวนการให้บริการ", negative: 67 },
+    { name: "เงื่อนไขและผลิตภัณฑ์", negative: 45 },
+    { name: "อื่นๆ", negative: 34 }
+  ].sort((a, b) => b.negative - a.negative);
+  
+  // ข้อมูลสำหรับหมวดหมู่ที่ลูกค้าร้องเรียน
+  const top7SubCategories = [
+    { name: "ความสุภาพและมารยาทของพนักงาน", negative: 23 },
+    { name: "ความเอาใจใส่ในการให้บริการลูกค้า", negative: 23 },
+    { name: "ไม่เอาเปรียบ", negative: 12 },
+    { name: "ระบบ Core ของธนาคาร", negative: 87 },
+    { name: "ความรวดเร็วในการให้บริการ", negative: 56 },
+    { name: "ไม่บังคับ", negative: 34 },
+    { name: "พื้นที่และความคับคั่ง", negative: 89 }
+  ].sort((a, b) => b.negative - a.negative);
+
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
