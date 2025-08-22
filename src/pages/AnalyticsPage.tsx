@@ -79,7 +79,7 @@ const CategoryRankings: React.FC = () => {
                 className="text-white hover:bg-red-800 p-2 h-8"
                 onClick={() => handleViewDetails({name: 'ทั้งหมด', positive: 0, negative: 0, total: 0}, 'main')}
               >
-                <span className="text-sm mr-1">ดูรายละเอียด</span>
+
                 <ChevronRight size={16} />
               </Button>
             </div>
@@ -119,7 +119,6 @@ const CategoryRankings: React.FC = () => {
                 className="text-white hover:bg-orange-600 p-2 h-8"
                 onClick={() => handleViewDetails({name: 'ทั้งหมด', positive: 0, negative: 0, total: 0}, 'sub')}
               >
-                <span className="text-sm mr-1">ดูรายละเอียด</span>
                 <ChevronRight size={16} />
               </Button>
             </div>
