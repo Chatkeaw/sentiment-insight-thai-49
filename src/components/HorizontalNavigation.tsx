@@ -46,11 +46,16 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
   );
 
   return (
-    <nav className="border-b bg-white shadow-sm">
-      <div className="container mx-auto px-6">
-        <div className="flex items-center justify-between py-4">
+    <nav className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-pink-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
           {/* Main Menu Items - Left Side */}
-          <div className="flex items-center space-x-6 overflow-x-auto">
+          <div className="flex items-center space-x-8 overflow-x-auto">
+            {/* Main Menu Label */}
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider border-r border-gray-300 pr-6">
+              เมนูหลัก
+            </div>
+            
             {baseMenuItems.map((item) => {
               const IconComponent = item.icon;
               const isActive = activePage === item.id;
@@ -60,15 +65,14 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
                   key={item.id}
                   onClick={() => onPageChange(item.id)}
                   className={cn(
-                    "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 whitespace-nowrap text-sm",
+                    "flex items-center space-x-2 px-4 py-2.5 rounded-lg transition-all duration-200 whitespace-nowrap text-sm border border-transparent",
                     isActive 
-                      ? "bg-primary text-primary-foreground font-medium shadow-sm" 
-                      : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                      ? "bg-pink-600 text-white font-medium shadow-md hover:bg-pink-700" 
+                      : "text-gray-700 hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200"
                   )}
                 >
                   <IconComponent className={cn(
-                    "w-4 h-4", 
-                    isActive ? "text-primary-foreground" : "text-current"
+                    isActive ? "w-5 h-5" : "w-4 h-4"
                   )} />
                   <span>{item.label}</span>
                 </button>
@@ -76,52 +80,51 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
             })}
           </div>
 
-          {/* Divider and Admin Section - Right Side */}
+          {/* Vertical Divider */}
           {availableAdminItems.length > 0 && (
-            <div className="flex items-center space-x-4 ml-4">
-              {/* Vertical Divider */}
-              <div className="h-6 w-px bg-border"></div>
+            <>
+              <div className="h-8 w-px bg-gradient-to-b from-transparent via-gray-400 to-transparent"></div>
               
-              {/* Admin Label */}
-              <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-                จัดการระบบ
+              {/* Admin Section - Right Side */}
+              <div className="flex items-center space-x-6">
+                {/* Admin Label */}
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  จัดการระบบ
+                </div>
+                
+                {/* Admin Menu Items */}
+                <div className="flex items-center space-x-4">
+                  {availableAdminItems.map((item) => {
+                    const IconComponent = item.icon;
+                    const isActive = activePage === item.id;
+                    
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => onPageChange(item.id)}
+                        className={cn(
+                          "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 whitespace-nowrap text-sm relative",
+                          isActive 
+                            ? "bg-pink-600 text-white font-medium shadow-md hover:bg-pink-700" 
+                            : "text-gray-700 hover:bg-gray-100 hover:text-pink-600"
+                        )}
+                      >
+                        <IconComponent className="w-4 h-4" />
+                        <span>{item.label}</span>
+                        {item.isNew && (
+                          <Badge 
+                            variant="destructive" 
+                            className="ml-2 text-xs px-1.5 py-0.5 h-5 absolute -top-1 -right-1"
+                          >
+                            NEW
+                          </Badge>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              
-              {/* Admin Menu Items */}
-              <div className="flex items-center space-x-4">
-                {availableAdminItems.map((item) => {
-                  const IconComponent = item.icon;
-                  const isActive = activePage === item.id;
-                  
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => onPageChange(item.id)}
-                      className={cn(
-                        "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 whitespace-nowrap text-sm relative",
-                        isActive 
-                          ? "bg-primary text-primary-foreground font-medium shadow-sm" 
-                          : "text-muted-foreground hover:text-primary hover:bg-primary/5"
-                      )}
-                    >
-                      <IconComponent className={cn(
-                        "w-4 h-4", 
-                        isActive ? "text-primary-foreground" : "text-current"
-                      )} />
-                      <span>{item.label}</span>
-                      {item.isNew && (
-                        <Badge 
-                          variant="destructive" 
-                          className="ml-2 text-xs px-1.5 py-0.5 h-5 absolute -top-1 -right-1"
-                        >
-                          NEW
-                        </Badge>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            </>
           )}
         </div>
 
