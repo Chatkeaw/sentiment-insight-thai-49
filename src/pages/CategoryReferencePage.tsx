@@ -191,14 +191,14 @@ const CategoryReferencePage: React.FC = () => {
         {/* Filters */}
         <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl mb-6">
           <CardContent className="pt-6">
-            <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 lg:items-end">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               {/* Topic Filter */}
-              <div className="flex-1 lg:flex-none lg:w-64">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
                   หัวข้อ
                 </label>
                 <Select value={selectedTopic} onValueChange={handleTopicChange}>
-                  <SelectTrigger className="border-pink-200 focus:border-pink-400 focus:ring-pink-400">
+                  <SelectTrigger className="w-full border-pink-200 focus:border-pink-400 focus:ring-pink-400">
                     <SelectValue placeholder="เลือกหัวข้อ" />
                   </SelectTrigger>
                   <SelectContent className="bg-white border-pink-200 shadow-lg z-50">
@@ -213,8 +213,8 @@ const CategoryReferencePage: React.FC = () => {
               </div>
 
               {/* Category Filter */}
-              <div className="flex-1 lg:flex-none lg:w-64">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
                   หมวดหมู่
                 </label>
                 <Select 
@@ -223,7 +223,7 @@ const CategoryReferencePage: React.FC = () => {
                   disabled={selectedTopic === "all"}
                 >
                   <SelectTrigger 
-                    className="border-pink-200 focus:border-pink-400 focus:ring-pink-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full border-pink-200 focus:border-pink-400 focus:ring-pink-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <SelectValue placeholder={selectedTopic === "all" ? "เลือกทั้งหมด (ปิดการใช้งานจนกว่าจะเลือกหัวข้อ)" : "เลือกหมวดหมู่"} />
                   </SelectTrigger>
@@ -239,15 +239,17 @@ const CategoryReferencePage: React.FC = () => {
               </div>
 
               {/* Reset Button */}
-              <Button
-                onClick={handleReset}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 border-pink-200 hover:bg-pink-50 text-pink-600 lg:mb-0"
-              >
-                <RotateCcw className="h-4 w-4" />
-                รีเซ็ตตัวกรอง
-              </Button>
+              <div className="flex justify-start md:justify-end">
+                <Button
+                  onClick={handleReset}
+                  variant="outline"
+                  size="default"
+                  className="flex items-center gap-2 border-pink-200 hover:bg-pink-50 text-pink-600 px-6"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  รีเซ็ตตัวกรอง
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
