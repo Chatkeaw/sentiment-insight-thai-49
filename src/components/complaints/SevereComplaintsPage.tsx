@@ -13,6 +13,8 @@ interface SevereComplaint {
   id: string;
   date: string; // ISO-8601 (YYYY-MM-DD)
   region: string;
+  province: string; // Added missing province property
+  district: string; // Added missing district property
   area: string;
   branch: string;
   branch_code: string;
