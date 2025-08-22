@@ -214,33 +214,29 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
     clickable: false
   }];
 
-  // Color functions for categories
+    // Color functions for categories
   const getMainCategoryColor = (negativeCount: string, name: string) => {
-    const colors = [
+    const redGradients = [
       'bg-red-50 hover:bg-red-100',
-      'bg-orange-50 hover:bg-orange-100',
-      'bg-yellow-50 hover:bg-yellow-100',
-      'bg-green-50 hover:bg-green-100',
-      'bg-blue-50 hover:bg-blue-100',
-      'bg-purple-50 hover:bg-purple-100',
-      'bg-pink-50 hover:bg-pink-100'
+      'bg-red-100 hover:bg-red-200',
+      'bg-red-200 hover:bg-red-300',
+      'bg-red-300 hover:bg-red-400',
+      'bg-red-400 hover:bg-red-500'
     ];
-    const index = parseInt(negativeCount) % colors.length;
-    return colors[index];
+    const index = parseInt(negativeCount) % redGradients.length;
+    return redGradients[index];
   };
-
+  
   const getSubCategoryColor = (negativeCount: string, name: string) => {
-    const colors = [
-      'bg-slate-50 hover:bg-slate-100',
-      'bg-red-50 hover:bg-red-100',
-      'bg-orange-50 hover:bg-orange-100',
-      'bg-amber-50 hover:bg-amber-100',
-      'bg-lime-50 hover:bg-lime-100',
-      'bg-emerald-50 hover:bg-emerald-100',
-      'bg-teal-50 hover:bg-teal-100'
+    const pinkRedGradients = [
+      'bg-pink-50 hover:bg-pink-100',
+      'bg-red-100 hover:bg-red-200',
+      'bg-rose-100 hover:bg-rose-200',
+      'bg-red-200 hover:bg-red-300',
+      'bg-pink-200 hover:bg-pink-300'
     ];
-    const index = parseInt(negativeCount) % colors.length;
-    return colors[index];
+    const index = parseInt(negativeCount) % pinkRedGradients.length;
+    return pinkRedGradients[index];
   };
 
   const handleTopicClick = () => {
