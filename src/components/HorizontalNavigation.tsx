@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { 
   BarChart3, 
+  TrendingUp, 
   Search, 
   Globe, 
   MessageSquare, 
@@ -28,7 +29,7 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
 
   const baseMenuItems = [
     { id: "overview", label: "สรุปภาพรวมประจำเดือน", icon: BarChart3 },
-    { id: "analytics", label: "ติดตามผลดำเนินงาน", icon: Search },
+    { id: "analytics", label: "ติดตามผลดำเนินงาน", icon: TrendingUp },
     { id: "regional", label: "ศักยภาพรายพื้นที่", icon: Globe },
     { id: "feedback", label: "ความคิดเห็น", icon: MessageSquare },
     { id: "complaints", label: "ข้อร้องเรียน", icon: AlertTriangle },
@@ -36,8 +37,9 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
   ];
 
   const adminMenuItems = [
+    { id: "system-management", label: "จัดการระบบ", icon: Settings, permission: "system_management" },
     { id: "user-management", label: "ผู้ใช้งาน", icon: Users, permission: "manage_users" },
-    { id: "system-management", label: "ระบบ", icon: Settings, permission: "system_management" },
+    { id: "system", label: "ระบบ", icon: Settings, permission: "system_management" },
     { id: "ai-agent", label: "AI AGENT", icon: Bot, isNew: true, permission: "system_management" }
   ];
 
@@ -46,13 +48,12 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
   );
 
   return (
-    <nav className="bg-white border-b border-gray-200 shadow-sm">
+    <nav className="bg-card border-b border-border shadow-sm font-sarabun">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between px-6 py-3">
           
           {/* เมนูหลัก - ฝั่งซ้าย */}
-          <div className="flex items-center space-x-1">
-            
+          <div className="flex items-center space-x-2">
             {baseMenuItems.map((item, index) => {
               const IconComponent = item.icon;
               const isActive = activePage === item.id;
@@ -62,10 +63,10 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
                   <button
                     onClick={() => onPageChange(item.id)}
                     className={cn(
-                      "flex items-center space-x-2 px-4 py-2 rounded-md transition-colors whitespace-nowrap text-sm",
+                      "flex items-center space-x-2 px-4 py-2.5 rounded-md transition-all duration-200 whitespace-nowrap text-sm font-medium",
                       isActive 
-                        ? "bg-pink-600 text-white font-medium shadow-sm" 
-                        : "text-gray-600 hover:text-pink-600 hover:bg-pink-50"
+                        ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90" 
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     )}
                   >
                     <IconComponent className="w-4 h-4" />
@@ -74,7 +75,7 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
                   
                   {/* เส้นแบ่งเล็กๆ หลังเมนู active */}
                   {isActive && index < baseMenuItems.length - 1 && (
-                    <div className="h-6 w-px bg-gray-300 mx-3"></div>
+                    <div className="h-6 w-px bg-border mx-3"></div>
                   )}
                 </React.Fragment>
               );
@@ -84,12 +85,6 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
           {/* เมนูจัดการระบบ - ฝั่งขวา */}
           {availableAdminItems.length > 0 && (
             <div className="flex items-center space-x-4">
-              
-              {/* Label จัดการระบบ - ใส่ในกล่องเล็กๆ */}
-              <div className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-500 font-medium">
-                จัดการระบบ
-              </div>
-              
               {availableAdminItems.map((item) => {
                 const IconComponent = item.icon;
                 const isActive = activePage === item.id;
@@ -101,8 +96,8 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
                       key={item.id}
                       onClick={() => onPageChange(item.id)}
                       className={cn(
-                        "relative flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200",
-                        isActive && "ring-2 ring-purple-300"
+                        "relative flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-primary text-white px-4 py-2.5 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200",
+                        isActive && "ring-2 ring-primary/30"
                       )}
                     >
                       <IconComponent className="w-4 h-4" />
@@ -110,13 +105,13 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
                       
                       {/* NEW Badge */}
                       {item.isNew && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold animate-pulse">
+                        <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded-full font-bold animate-pulse">
                           NEW
                         </span>
                       )}
                       
                       {/* Glow effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg blur opacity-30 -z-10"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-primary/80 rounded-lg blur opacity-30 -z-10"></div>
                     </button>
                   );
                 }
@@ -126,10 +121,10 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
                     key={item.id}
                     onClick={() => onPageChange(item.id)}
                     className={cn(
-                      "flex items-center space-x-2 px-3 py-2 rounded-md transition-colors whitespace-nowrap text-sm",
+                      "flex items-center space-x-2 px-3 py-2 rounded-md transition-all duration-200 whitespace-nowrap text-sm",
                       isActive 
-                        ? "bg-pink-600 text-white font-medium shadow-sm" 
-                        : "text-gray-600 hover:text-pink-600 hover:bg-pink-50"
+                        ? "bg-primary text-primary-foreground font-medium shadow-sm" 
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     )}
                   >
                     <IconComponent className="w-4 h-4" />
@@ -142,56 +137,82 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
         </div>
 
         {/* Mobile Responsive - Hidden on desktop, shown on mobile */}
-        <div className="md:hidden flex items-center gap-2 pb-4 overflow-x-auto">
-          <div className="flex items-center gap-2 min-w-max">
-            {baseMenuItems.map((item) => {
-              const IconComponent = item.icon;
-              const isActive = activePage === item.id;
+        <div className="md:hidden border-t border-border">
+          <div className="flex items-center gap-2 px-4 py-3 overflow-x-auto">
+            <div className="flex items-center gap-2 min-w-max">
+              {baseMenuItems.map((item) => {
+                const IconComponent = item.icon;
+                const isActive = activePage === item.id;
+                
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => onPageChange(item.id)}
+                    className={cn(
+                      "text-xs px-3 py-2 whitespace-nowrap h-8",
+                      isActive ? "font-medium" : ""
+                    )}
+                  >
+                    <IconComponent className="w-3 h-3 mr-1.5" />
+                    {item.label}
+                  </Button>
+                );
+              })}
               
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => onPageChange(item.id)}
-                  className={cn(
-                    "text-xs px-3 py-2 whitespace-nowrap",
-                    isActive ? "font-medium" : ""
-                  )}
-                >
-                  <IconComponent className="w-3 h-3 mr-1.5" />
-                  {item.label}
-                </Button>
-              );
-            })}
-            {availableAdminItems.map((item) => {
-              const IconComponent = item.icon;
-              const isActive = activePage === item.id;
+              {/* Mobile divider */}
+              {availableAdminItems.length > 0 && (
+                <div className="h-6 w-px bg-border mx-2"></div>
+              )}
               
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => onPageChange(item.id)}
-                  className={cn(
-                    "text-xs px-3 py-2 whitespace-nowrap relative",
-                    isActive ? "font-medium" : ""
-                  )}
-                >
-                  <IconComponent className="w-3 h-3 mr-1.5" />
-                  {item.label}
-                  {item.isNew && (
-                    <Badge 
-                      variant="destructive" 
-                      className="ml-1 text-xs px-1 py-0 h-4 absolute -top-1 -right-1"
+              {availableAdminItems.map((item) => {
+                const IconComponent = item.icon;
+                const isActive = activePage === item.id;
+                
+                if (item.id === 'ai-agent') {
+                  return (
+                    <Button
+                      key={item.id}
+                      variant={isActive ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => onPageChange(item.id)}
+                      className={cn(
+                        "text-xs px-3 py-2 whitespace-nowrap h-8 relative bg-gradient-to-r from-purple-500 to-primary text-white border-0",
+                        isActive ? "font-medium" : ""
+                      )}
                     >
-                      NEW
-                    </Badge>
-                  )}
-                </Button>
-              );
-            })}
+                      <IconComponent className="w-3 h-3 mr-1.5" />
+                      {item.label}
+                      {item.isNew && (
+                        <Badge 
+                          variant="destructive" 
+                          className="ml-1 text-xs px-1 py-0 h-4 absolute -top-1 -right-1"
+                        >
+                          NEW
+                        </Badge>
+                      )}
+                    </Button>
+                  );
+                }
+                
+                return (
+                  <Button
+                    key={item.id}
+                    variant={isActive ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => onPageChange(item.id)}
+                    className={cn(
+                      "text-xs px-3 py-2 whitespace-nowrap h-8",
+                      isActive ? "font-medium" : ""
+                    )}
+                  >
+                    <IconComponent className="w-3 h-3 mr-1.5" />
+                    {item.label}
+                  </Button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
