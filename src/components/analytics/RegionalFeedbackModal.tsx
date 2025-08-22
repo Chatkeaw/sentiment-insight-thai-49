@@ -13,7 +13,7 @@ interface RegionalFeedbackModalProps {
 // Generate regions from 1-18
 const regions = Array.from({ length: 18 }, (_, i) => ({
   value: `${i + 1}`,
-  label: `ภาคที่ ${i + 1}`
+  label: `ภาค ${i + 1}`
 }));
 
 // Category options
