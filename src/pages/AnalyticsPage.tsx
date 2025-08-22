@@ -34,18 +34,18 @@ const CategoryRankings: React.FC = () => {
     { name: 'ระบบและกระบวนการให้บริการ', positive: 134, negative: 67, total: 156 },
     { name: 'เงื่อนไขและผลิตภัณฑ์', positive: 89, negative: 45, total: 134 },
     { name: 'อื่นๆ', positive: 67, negative: 34, total: 67 },
-  ].sort((a, b) => b.total - a.total);
+  ].sort((a, b) => b.negative - a.negative);
 
   // ข้อมูลหมวดหมู่ย่อย (หมวดหมู่ที่ลูกค้าร้องเรียน)
   const detailedCategories = [
     { name: 'ความสุภาพและมารยาทของพนักงาน', category: 'พนักงานและบุคลากร', positive: 189, negative: 45, total: 142 },
     { name: 'ความเอาใจใส่ในการให้บริการลูกค้า', category: 'พนักงานและบุคลากร', positive: 167, negative: 23, total: 128 },
-    { name: 'ไม่เอาประโยชน์', category: 'Market Conduct', positive: 145, negative: 12, total: 96 },
+    { name: 'ไม่เอาเปรียบ', category: 'Market Conduct', positive: 145, negative: 12, total: 96 },
     { name: 'ระบบ Core ของธนาคาร', category: 'เทคโนโลยีและดิจิทัล', positive: 98, negative: 87, total: 89 },
     { name: 'ความรวดเร็วในการให้บริการ', category: 'พนักงานและบุคลากร', positive: 123, negative: 56, total: 84 },
     { name: 'ไม่บังคับ', category: 'Market Conduct', positive: 78, negative: 34, total: 76 },
     { name: 'พื้นที่และความคับคั่ง', category: 'สภาพแวดล้อมและสิ่งอำนวยความสะดวก', positive: 67, negative: 89, total: 67 },
-  ].sort((a, b) => b.total - a.total);
+  ].sort((a, b) => b.negative - a.negative);
 
   const handleViewDetails = (category: CategoryData, type: 'main' | 'sub') => {
     setSelectedCategory(category);
@@ -66,7 +66,7 @@ const CategoryRankings: React.FC = () => {
     return 'bg-gray-300';
   };
 
-    // ฟังก์ชันคำนวณสีพื้นหลังสำหรับหัวข้อหลัก
+  // ฟังก์ชันคำนวณสีพื้นหลังสำหรับหัวข้อหลัก
   const getMainCategoryColor = (negative: number, name: string) => {
     // Market Conduct ให้สีแดงเข้มที่สุด
     if (name === 'Market Conduct') return 'bg-red-900/30';
@@ -92,28 +92,6 @@ const CategoryRankings: React.FC = () => {
     if (negative >= 20) return 'bg-red-500/30';
     return 'bg-red-400/30';
   };
-  
-  // ข้อมูลสำหรับหัวข้อที่ลูกค้าร้องเรียน
-  const top7MainCategories = [
-    { name: "พนักงานและบุคลากร", negative: 89 },
-    { name: "เทคโนโลยีและดิจิทัล", negative: 134 },
-    { name: "Market Conduct", negative: 12 },
-    { name: "สภาพแวดล้อมและสิ่งอำนวยความสะดวก", negative: 76 },
-    { name: "ระบบและกระบวนการให้บริการ", negative: 67 },
-    { name: "เงื่อนไขและผลิตภัณฑ์", negative: 45 },
-    { name: "อื่นๆ", negative: 34 }
-  ].sort((a, b) => b.negative - a.negative);
-  
-  // ข้อมูลสำหรับหมวดหมู่ที่ลูกค้าร้องเรียน
-  const top7SubCategories = [
-    { name: "ความสุภาพและมารยาทของพนักงาน", negative: 23 },
-    { name: "ความเอาใจใส่ในการให้บริการลูกค้า", negative: 23 },
-    { name: "ไม่เอาเปรียบ", negative: 12 },
-    { name: "ระบบ Core ของธนาคาร", negative: 87 },
-    { name: "ความรวดเร็วในการให้บริการ", negative: 56 },
-    { name: "ไม่บังคับ", negative: 34 },
-    { name: "พื้นที่และความคับคั่ง", negative: 89 }
-  ].sort((a, b) => b.negative - a.negative);
 
   return (
     <div className="space-y-8">
@@ -128,7 +106,7 @@ const CategoryRankings: React.FC = () => {
                 className="text-white hover:bg-red-800 p-2 h-8"
                 onClick={() => handleViewDetails({name: 'ทั้งหมด', positive: 0, negative: 0, total: 0}, 'main')}
               >
-
+                <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </CardHeader>
@@ -137,7 +115,7 @@ const CategoryRankings: React.FC = () => {
               {categoryTypes.map((item, index) => (
                 <div 
                   key={index}
-                  className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                  className={`flex items-center justify-between p-4 transition-colors ${getMainCategoryColor(item.negative, item.name)}`}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${getRankColor(index)}`}>
@@ -149,7 +127,7 @@ const CategoryRankings: React.FC = () => {
                     {item.name === 'Market Conduct' && (
                       <AlertTriangle size={16} className="text-red-600" />
                     )}
-                    <span className="font-bold text-gray-800">{item.total}</span>
+                    <span className="font-bold text-red-600">{item.negative}</span>
                   </div>
                 </div>
               ))}
@@ -167,6 +145,7 @@ const CategoryRankings: React.FC = () => {
                 className="text-white hover:bg-orange-600 p-2 h-8"
                 onClick={() => handleViewDetails({name: 'ทั้งหมด', positive: 0, negative: 0, total: 0}, 'sub')}
               >
+                <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </CardHeader>
@@ -175,7 +154,7 @@ const CategoryRankings: React.FC = () => {
               {detailedCategories.map((item, index) => (
                 <div 
                   key={index}
-                  className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                  className={`flex items-center justify-between p-4 transition-colors ${getSubCategoryColor(item.negative, item.name)}`}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${getRankColor(index)}`}>
@@ -184,10 +163,10 @@ const CategoryRankings: React.FC = () => {
                     <span className="font-medium text-gray-800">{item.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    {(item.name === 'ไม่เอาประโยชน์' || item.name === 'ไม่บังคับ') && (
+                    {(item.name === 'ไม่เอาเปรียบ' || item.name === 'ไม่บังคับ') && (
                       <TrendingUp size={16} className="text-red-600" />
                     )}
-                    <span className="font-bold text-gray-800">{item.total}</span>
+                    <span className="font-bold text-red-600">{item.negative}</span>
                   </div>
                 </div>
               ))}
@@ -205,14 +184,14 @@ const CategoryRankings: React.FC = () => {
               <div className="w-4 h-4 rounded-full bg-red-600"></div>
               <span className="font-semibold">หัวข้อร้องเรียนสูงสุด</span>
             </div>
-            <p className="text-gray-700">พนักงานและบุคลากร (425 รายการ)</p>
+            <p className="text-gray-700">เทคโนโลยีและดิจิทัล (134 รายการ)</p>
           </div>
           <div className="bg-orange-50 p-4 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-4 h-4 rounded-full bg-orange-500"></div>
               <span className="font-semibold">หมวดหมู่ร้องเรียนสูงสุด</span>
             </div>
-            <p className="text-gray-700">ความสุภาพและมารยาทของพนักงาน (142 รายการ)</p>
+            <p className="text-gray-700">พื้นที่และความคับคั่ง (89 รายการ)</p>
           </div>
           <div className="bg-blue-50 p-4 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
