@@ -111,14 +111,6 @@ export const CategoryRankings: React.FC = () => {
                         <span className="font-medium">{item.negative}</span>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs ml-2"
-                      onClick={() => handleViewDetails(item, 'main')}
-                    >
-                      ดูรายละเอียด
-                    </Button>
                   </div>
                 </div>
               ))}
@@ -158,14 +150,6 @@ export const CategoryRankings: React.FC = () => {
                         <span className="font-medium">{item.negative}</span>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs ml-2"
-                      onClick={() => handleViewDetails(item, 'sub')}
-                    >
-                      ดูรายละเอียด
-                    </Button>
                   </div>
                 </div>
               ))}
