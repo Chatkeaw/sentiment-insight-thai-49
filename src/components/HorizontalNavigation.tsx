@@ -85,9 +85,7 @@ const HorizontalNavigation: React.FC<HorizontalNavigationProps> = ({
               {/* Admin Section - Right Side */}
               <div className="flex items-center space-x-6">
                 {/* Admin Label */}
-                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  จัดการระบบ
-                </div>
+
                 
                 {/* Admin Menu Items */}
                 <div className="flex items-center space-x-4">
