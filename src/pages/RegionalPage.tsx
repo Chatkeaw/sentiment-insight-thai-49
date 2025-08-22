@@ -10,7 +10,7 @@ const generateRegionalData = (locationFilters: LocationFilters) => {
   if (locationFilters.regionId === "all") {
     // Show all regions
     return Array.from({ length: 18 }, (_, i) => ({
-      region: `ภาคที่ ${i + 1}`,
+      region: `ภาค ${i + 1}`,
       positive: Math.floor(Math.random() * 100) + 50,
       negative: Math.floor(Math.random() * 50) + 10,
       neutral: Math.floor(Math.random() * 30) + 5
@@ -19,7 +19,7 @@ const generateRegionalData = (locationFilters: LocationFilters) => {
     // Show selected region only
     const regionNumber = locationFilters.regionId.split('_')[1];
     return [{
-      region: `ภาคที่ ${regionNumber}`,
+      region: `ภาค ${regionNumber}`,
       positive: Math.floor(Math.random() * 100) + 50,
       negative: Math.floor(Math.random() * 50) + 10,
       neutral: Math.floor(Math.random() * 30) + 5

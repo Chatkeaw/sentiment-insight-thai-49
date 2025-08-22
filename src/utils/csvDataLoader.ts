@@ -11,7 +11,7 @@ import { LocationData } from '../types/locations';
 const mockLocationData: LocationData = {
   regions: Array.from({ length: 18 }, (_, i) => ({
     id: `region_${i + 1}`,
-    name: `ภาคที่ ${i + 1}`,
+    name: `ภาค ${i + 1}`,
   })),
   provinces: Array.from({ length: 77 }, (_, i) => ({
     id: `province_${i + 1}`,
