@@ -136,7 +136,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   // Data for customer sentiment donut chart
   const customerSentimentData = [
     { name: "เชิงบวก", value: 68, color: "#10B981" },
-    { name: "เชิงลบ", value: 27, color: "#EF4444" },
+    { name: "เชิงลบ", value: 32, color: "#EF4444" },
   ];
 
   // Data for top 7 main categories
