@@ -235,8 +235,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
       'bg-red-300 hover:bg-red-400',
       'bg-red-400 hover:bg-red-500'
     ];
-    const index = parseInt(negativeCount) % pinkRedGradients.length;
-    return pinkRedGradients[index];
+    const index = parseInt(negativeCount) % redGradients.length;
+    return redGradients[index];
   };
 
   const handleTopicClick = () => {
