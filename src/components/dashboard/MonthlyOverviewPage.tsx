@@ -156,18 +156,18 @@ export const MonthlyOverviewPage: React.FC = () => {
     feedback: Math.floor(Math.random() * 100) + 50,
   }));
 
-  // Helper function for category colors
-  const getMainCategoryColor = (negative: number, name: string) => {
-    // Market Conduct ให้สีแดงเข้มที่สุด
-    if (name === 'Market Conduct') return 'bg-red-900/30';
-    
-    // ไล่สีแดงตามจำนวน negative (มากไปน้อย)
-    if (negative >= 100) return 'bg-red-800/30';
-    if (negative >= 80) return 'bg-red-700/30';
-    if (negative >= 60) return 'bg-red-600/30';
-    if (negative >= 40) return 'bg-red-500/30';
-    if (negative >= 20) return 'bg-red-400/30';
-    return 'bg-red-300/30';
+  // Helper function for category colors by rank
+  const getRankColor = (index: number) => {
+    const redShades = [
+      'bg-red-800/30 border-red-800/50', // Rank 1 - darkest
+      'bg-red-700/30 border-red-700/50', // Rank 2
+      'bg-red-600/30 border-red-600/50', // Rank 3
+      'bg-red-500/30 border-red-500/50', // Rank 4
+      'bg-red-400/30 border-red-400/50', // Rank 5
+      'bg-red-300/30 border-red-300/50', // Rank 6
+      'bg-red-200/30 border-red-200/50', // Rank 7 - lightest
+    ];
+    return redShades[index] || 'bg-red-200/20 border-red-200/30';
   };
 
   return (
@@ -291,7 +291,7 @@ export const MonthlyOverviewPage: React.FC = () => {
               {complaintTopics.map((topic, index) => (
                 <div
                   key={topic.name}
-                  className={`w-full text-left px-3 py-2 rounded-md transition-colors border ${getMainCategoryColor(topic.negative, topic.name)}`}
+                  className={`w-full text-left px-3 py-2 rounded-md transition-colors ${getRankColor(index)}`}
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
@@ -358,10 +358,10 @@ export const MonthlyOverviewPage: React.FC = () => {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="ml-4 space-y-3">
+              <div className="ml-4 space-y-2">
                 {complaintCategories.slice(0, 7).map((item, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-gray-500 w-6">{index + 1}</span>
+                  <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-md ${getRankColor(index)}`}>
+                    <span className="text-sm font-bold text-gray-600 w-6">{index + 1}</span>
                     <div 
                       className="w-4 h-4 rounded-full" 
                       style={{ backgroundColor: item.color }}
