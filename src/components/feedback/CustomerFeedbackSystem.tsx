@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -90,7 +91,7 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
     return Array.from(new Set(
       mockFeedbackData
         .filter(f => f.region === selectedRegion)
-        .map(f => f.area)
+        .map(f => f.district)
     )).sort();
   }, [selectedRegion]);
 
@@ -98,7 +99,7 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
     if (selectedArea === 'all') return [];
     return Array.from(new Set(
       mockFeedbackData
-        .filter(f => f.region === selectedRegion && f.area === selectedArea)
+        .filter(f => f.region === selectedRegion && f.district === selectedArea)
         .map(f => f.branch)
     )).sort();
   }, [selectedRegion, selectedArea]);
@@ -146,7 +147,7 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
   const filteredFeedback = useMemo(() => {
     return mockFeedbackData.filter(feedback => {
       if (selectedRegion !== 'all' && feedback.region !== selectedRegion) return false;
-      if (selectedArea !== 'all' && feedback.area !== selectedArea) return false;
+      if (selectedArea !== 'all' && feedback.district !== selectedArea) return false;
       if (selectedBranch !== 'all' && feedback.branch !== selectedBranch) return false;
       if (serviceType !== 'all' && feedback.service_type !== serviceType) return false;
       if (sentiment !== 'all' && feedback.sentiment !== sentiment) return false;
@@ -365,7 +366,7 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
                 >
                   {/* Header Info */}
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-3">
-                    <span><strong>ภาค / เขต / สาขา:</strong> {feedback.region} / {feedback.area} / {feedback.branch}</span>
+                    <span><strong>ภาค / เขต / สาขา:</strong> {feedback.region} / {feedback.district} / {feedback.branch}</span>
                     <span><strong>ประเภทบริการ:</strong> {feedback.service_type}</span>
                     <span><strong>วันที่ - เวลา:</strong> {feedback.timestamp}</span>
                     <span><strong>หมวดหมู่ย่อย:</strong> {feedback.subcategory}</span>
