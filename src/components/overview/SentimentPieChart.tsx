@@ -12,7 +12,6 @@ const SentimentPieChart: React.FC<Props> = ({ data, title = "ทัศนคต�
   const base: SentimentItem[] = [
     { label: "เชิงบวก", value: 0, color: "#10B981" },
     { label: "เชิงลบ", value: 0, color: "#EF4444" },
-    { label: "ไม่มีนัยสำคัญ", value: 0, color: "#6B7280" },
   ];
   const merged = base.map(b => data.find(d => d.label === b.label) ?? b);
 

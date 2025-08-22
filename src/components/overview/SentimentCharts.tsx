@@ -23,7 +23,6 @@ export const SentimentCharts: React.FC<SentimentChartsProps> = ({ sentimentData 
   const donutData = [
     { name: 'เชิงบวก', value: sentimentData.positive.count, percentage: sentimentData.positive.percentage, color: '#10B981' },
     { name: 'เชิงลบ', value: sentimentData.negative.count, percentage: sentimentData.negative.percentage, color: '#EF4444' },
-    { name: 'ไม่มีนัยสำคัญ', value: sentimentData.neutral.count, percentage: sentimentData.neutral.percentage, color: '#6B7280' },
   ];
 
   // Regional sentiment data (18 regions x 3 bars each)

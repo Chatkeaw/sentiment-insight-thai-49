@@ -137,7 +137,6 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
   const customerSentimentData = [
     { name: "เชิงบวก", value: 68, color: "#10B981" },
     { name: "เชิงลบ", value: 27, color: "#EF4444" },
-    { name: "ไม่มีนัยสำคัญ", value: 5, color: "#6B7280" }
   ];
 
   // Data for top 7 main categories
