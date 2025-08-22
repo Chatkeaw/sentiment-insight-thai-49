@@ -97,6 +97,8 @@ export const MonthlyOverviewPage: React.FC = () => {
     saveAndBroadcast({ month: selectedMonth, year: y });
   };
 
+  
+
   // ---------------------------------------------------------------------------
 
   // Mock data based on selected month/year
@@ -153,6 +155,39 @@ export const MonthlyOverviewPage: React.FC = () => {
     complaints: Math.floor(Math.random() * 50) + 20,
     feedback: Math.floor(Math.random() * 100) + 50,
   }));
+
+  // ข้อมูลสำหรับหัวข้อที่ลูกค้าร้องเรียน (กราฟ)
+const complaintTopics = [
+  { name: "พนักงานและบุคลากร", value: 89, color: "#DC2626", positive: 245, negative: 89, category: "staff" },
+  { name: "เทคโนโลยีและดิจิทัล", value: 134, color: "#EF4444", positive: 156, negative: 134, category: "tech" },
+  { name: "Market Conduct", value: 12, color: "#7F1D1D", positive: 23, negative: 12, category: "conduct" },
+  { name: "สภาพแวดล้อมและสิ่งอำนวยความสะดวก", value: 76, color: "#F87171", positive: 198, negative: 76, category: "environment" },
+  { name: "ระบบและกระบวนการให้บริการ", value: 67, color: "#FCA5A5", positive: 134, negative: 67, category: "system" },
+  { name: "เงื่อนไขและผลิตภัณฑ์", value: 45, color: "#FECACA", positive: 89, negative: 45, category: "product" },
+  { name: "อื่นๆ", value: 34, color: "#FEE2E2", positive: 67, negative: 34, category: "other" }
+].sort((a, b) => b.value - a.value);
+
+// ฟังก์ชันคำนวณสีพื้นหลังสำหรับหัวข้อหลัก
+const getMainCategoryColor = (negative: number, name: string) => {
+  // Market Conduct ให้สีแดงเข้มที่สุด
+  if (name === 'Market Conduct') return 'bg-red-900/30';
+  
+  // ไล่สีแดงตามจำนวน negative (มากไปน้อย)
+  if (negative >= 100) return 'bg-red-800/30';
+  if (negative >= 80) return 'bg-red-700/30';
+  if (negative >= 60) return 'bg-red-600/30';
+  if (negative >= 40) return 'bg-red-500/30';
+  if (negative >= 20) return 'bg-red-400/30';
+  return 'bg-red-300/30';
+};
+
+// ฟังก์ชันสำหรับดึงชื่อเดือนปัจจุบัน
+const getCurrentMonthLabel = () => {
+  const now = new Date();
+  const monthTH = MONTHS.find(m => m.value === String(now.getMonth() + 1))?.label ?? "";
+  const yearBE = now.getFullYear() + 543;
+  return `${monthTH} ${yearBE}`;
+};
 
   return (
     <div className="space-y-6">
@@ -272,15 +307,16 @@ export const MonthlyOverviewPage: React.FC = () => {
               </ResponsiveContainer>
             </div>
             <div className="mt-4 space-y-2">
-              {complaintTopics.slice(0, 5).map((topic, index) => (
-                <button
+              {complaintTopics.map((topic, index) => (
+                <div
                   key={topic.name}
-                  onClick={() => handleNavigateToFeedback(topic.category)}
-                  className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 transition-colors border border-gray-200"
+                  className={`w-full text-left px-3 py-2 rounded-md transition-colors border ${getMainCategoryColor(topic.negative, topic.name)}`}
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold text-gray-500">{index + 1}</span>
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-bold ${index === 0 ? 'bg-red-600' : index === 1 ? 'bg-red-500' : index === 2 ? 'bg-orange-500' : 'bg-gray-400'}`}>
+                        {index + 1}
+                      </div>
                       <div 
                         className="w-3 h-3 rounded-full" 
                         style={{ backgroundColor: topic.color }}
@@ -290,12 +326,20 @@ export const MonthlyOverviewPage: React.FC = () => {
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-green-600">● {topic.positive}</span>
                       <span className="text-sm text-red-600">● {topic.negative}</span>
-                      <span className="text-xs text-muted-foreground">→ ดูความคิดเห็น</span>
+                      <button 
+                        onClick={() => handleNavigateToFeedback(topic.category)}
+                        className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        ดูความคิดเห็น
+                      </button>
                     </div>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      </div>
           </CardContent>
         </Card>
 
