@@ -94,7 +94,7 @@ export const RegionalPage: React.FC = () => {
                 <Tooltip 
                   formatter={(value, name) => [
                     `${value} ครั้ง`,
-                    name === 'positive' ? 'เชิงบวก' : name === 'negative' ? 'เชิงลบ'
+                    name === 'positive' ? 'เชิงบวก' : name === 'negative' ? 'เชิงลบ' : 'กลางๆ'
                   ]}
                   contentStyle={{
                     backgroundColor: 'hsl(var(--background))',
