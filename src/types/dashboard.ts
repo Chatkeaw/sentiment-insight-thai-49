@@ -6,7 +6,7 @@ export interface BranchData {
 }
 
 export interface ServiceType {
-  type: "การฝากเงิน/ถอนเงิน" | "การซื้อผลิตภัณฑ์" | "การชำระค่าบริการ/ค่าธรรมเนียม" | "อื่นๆ";
+  type: string; // Updated to accept new service type format
 }
 
 export interface SatisfactionRating {

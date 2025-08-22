@@ -60,10 +60,25 @@ function getInitialMonth(): MonthState {
 
 const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
   const serviceTypes = [
-    "การฝากเงิน/ถอนเงิน",
-    "การซื้อผลิตภัณฑ์",
-    "การชำระค่าบริการ/ค่าธรรมเนียม",
-    "อื่นๆ"
+    "1.1 เปิดบัญชีเงินฝาก - ออมทรัพย์",
+    "1.2 เปิดบัญชีเงินฝาก - กระแสรายวัน", 
+    "2.1 ฝากเงินสด - ผ่านเคาน์เตอร์",
+    "2.2 ฝากเงินสด - ผ่าน ATM",
+    "3.1 ถอนเงินสด - ผ่านเคาน์เตอร์",
+    "3.2 ถอนเงินสด - ผ่าน ATM",
+    "4.1 โอนเงิน - ในประเทศ",
+    "4.2 โอนเงิน - ต่างประเทศ",
+    "5.1 ชำระบิล - ค่าสาธารณูปโภค",
+    "5.2 ชำระบิล - ผ่าน MyMo Application",
+    "6.1 สินเชื่อบุคคล - ดอกเบี้ยคงที่",
+    "6.2 สินเชื่อบ้าน - ดอกเบี้ยผันแปร",
+    "7.1 บัตรเครดิต - ธนาคารกรุงไทย",
+    "7.2 บัตรเดบิต - KTB Visa Debit",
+    "8.1 ประกันภัย - ประกันชีวิต",
+    "8.2 กองทุนรวม - ตราสารหนี้",
+    "9.1 เงินฝากประจำ - 6 เดือน",
+    "9.2 เงินฝากประจำ - 12 เดือน",
+    "10.1 แลกเปลี่ยนเงินตรา - ดอลลาร์สหรัฐ"
   ];
 
   const timeRanges = [
@@ -154,28 +169,51 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
                   }
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-64 p-3">
-                <div className="space-y-2">
-                  {serviceTypes.map((type) => (
-                    <div key={type} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={type}
-                        checked={filters.serviceTypes.includes(type)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            updateFilters({
-                              serviceTypes: [...filters.serviceTypes, type]
-                            });
-                          } else {
-                            removeServiceType(type);
-                          }
-                        }}
-                      />
-                      <label htmlFor={type} className="text-sm font-medium cursor-pointer">
-                        {type}
-                      </label>
-                    </div>
-                  ))}
+              <PopoverContent className="w-80 p-3">
+                <div className="space-y-3">
+                  {/* Select All / Clear Selection Controls */}
+                  <div className="flex justify-between items-center pb-2 border-b border-border">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => updateFilters({ serviceTypes: serviceTypes })}
+                      disabled={filters.serviceTypes.length === serviceTypes.length}
+                    >
+                      เลือกทั้งหมด
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => updateFilters({ serviceTypes: [] })}
+                      disabled={filters.serviceTypes.length === 0}
+                    >
+                      ล้างการเลือก
+                    </Button>
+                  </div>
+
+                  {/* Service Type Checkboxes */}
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {serviceTypes.map((type) => (
+                      <div key={type} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={type}
+                          checked={filters.serviceTypes.includes(type)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              updateFilters({
+                                serviceTypes: [...filters.serviceTypes, type]
+                              });
+                            } else {
+                              removeServiceType(type);
+                            }
+                          }}
+                        />
+                        <label htmlFor={type} className="text-sm cursor-pointer flex-1">
+                          {type}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </PopoverContent>
             </Popover>
@@ -243,17 +281,23 @@ const GlobalFilters: React.FC<GlobalFiltersProps> = ({ onFiltersChange }) => {
 
         {/* Active Filters Display */}
         {filters.serviceTypes.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="text-sm font-medium text-muted-foreground">ประเภทบริการที่เลือก:</span>
-            {filters.serviceTypes.map((type) => (
-              <Badge key={type} variant="secondary" className="flex items-center gap-1">
-                {type}
-                <X 
-                  className="h-3 w-3 cursor-pointer" 
-                  onClick={() => removeServiceType(type)}
-                />
-              </Badge>
-            ))}
+          <div className="mt-4 space-y-2">
+            <span className="text-sm font-medium text-muted-foreground">
+              ประเภทบริการที่เลือก ({filters.serviceTypes.length} รายการ):
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {filters.serviceTypes.map((type) => (
+                <Badge key={type} variant="secondary" className="flex items-center gap-1 max-w-xs">
+                  <span className="truncate" title={type}>
+                    {type.length > 25 ? `${type.substring(0, 25)}...` : type}
+                  </span>
+                  <X 
+                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => removeServiceType(type)}
+                  />
+                </Badge>
+              ))}
+            </div>
           </div>
         )}
       </Card>
