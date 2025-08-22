@@ -643,7 +643,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                 {top7MainCategories.map((item, index) => (
                   <div 
                     key={index}
-                    className={`flex items-center justify-between p-3 rounded-lg border border-border/50 transition-colors ${getMainCategoryColor(item.name, index)}`}
+                    className={`flex items-center justify-between p-3 rounded-lg border border-border/50 transition-colors ${getMainCategoryColor(item.negative, item.name)}`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
@@ -677,7 +677,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onPageChange }) => {
                 {top7SubCategories.map((item, index) => (
                   <div 
                     key={index}
-                    className={`flex items-center justify-between p-3 rounded-lg border border-border/50 transition-colors ${getSubCategoryColor(item.name, index)}`}
+                    className={`flex items-center justify-between p-3 rounded-lg border border-border/50 transition-colors ${getSubCategoryColor(item.negative, item.name)}`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
