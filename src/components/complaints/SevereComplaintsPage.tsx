@@ -10,6 +10,7 @@ import { CalendarIcon, AlertTriangle, FileText } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import TimeFilter from '@/components/TimeFilter';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
+import FlowAgentModal from '@/components/FlowAgentModal';
 
 interface SevereComplaint {
   id: string;
@@ -159,6 +160,11 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
   const [timeRange, setTimeRange] = useState<TimeFilterType['value']>('1month');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
+  // Modal states
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedFeedbackId, setSelectedFeedbackId] = useState<string>('');
+  const [modalData, setModalData] = useState<any>(null);
+
   // Cascading filter options
   const regions = useMemo(() => {
     return Array.from(new Set(mockSevereComplaints.map(c => c.region))).sort();
@@ -270,31 +276,37 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
     setSelectedCategory(category);
   };
 
-  // Handle flow agent navigation
+  // Handle flow agent modal
   const handleFlowAgentClick = (complaint: SevereComplaint) => {
     const record = {
       id: complaint.id,
+      request_id: complaint.id,
       created_at: complaint.date,
+      submitted_at: complaint.date,
       area: complaint.area,
       province: complaint.province,
       district: complaint.district,
       service_type: complaint.service_type,
-      tags: [complaint.category, complaint.sub_category],
+      tags: [`${complaint.category}: ${complaint.sub_category} (เชิงลบ)`],
       scores: {
-        overall: Math.floor(Math.random() * 5) + 1, // Mock score
-        trust: Math.floor(Math.random() * 5) + 1,
-        consultation: Math.floor(Math.random() * 5) + 1,
-        speed: Math.floor(Math.random() * 5) + 1,
-        accuracy: Math.floor(Math.random() * 5) + 1,
-        equipment: Math.floor(Math.random() * 5) + 1,
-        environment: Math.floor(Math.random() * 5) + 1
+        overall: Math.floor(Math.random() * 3) + 1, // Mock low scores for severe complaints
+        trust: Math.floor(Math.random() * 3) + 1,
+        consultation: Math.floor(Math.random() * 3) + 1,
+        speed: Math.floor(Math.random() * 3) + 1,
+        accuracy: Math.floor(Math.random() * 3) + 1,
+        equipment: Math.floor(Math.random() * 3) + 1,
+        environment: Math.floor(Math.random() * 3) + 1
       },
-      comment: complaint.comment,
+      customer_comment: complaint.comment,
       branch: complaint.branch,
       sub_branch: complaint.branch,
-      region: complaint.region
+      region: complaint.region,
+      sentiment: 'negative'
     };
-    navigate(`/flow-agent/${complaint.id}`, { state: record });
+    
+    setSelectedFeedbackId(complaint.id);
+    setModalData(record);
+    setModalOpen(true);
   };
 
   return (
@@ -543,6 +555,14 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
         </CardContent>
       </Card>
       </div>
+
+      {/* Flow Agent Modal */}
+      <FlowAgentModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        feedbackId={selectedFeedbackId}
+        initialData={modalData}
+      />
     </TooltipProvider>
   );
 };

@@ -13,6 +13,15 @@ interface AppSidebarProps {
   onToggle: () => void;
 }
 
+interface MenuItem {
+  id: string;
+  title: string;
+  icon: React.ComponentType<any>;
+  url?: string;
+  disabled?: boolean;
+  message?: string;
+}
+
 export const AppSidebar: React.FC<AppSidebarProps> = ({
   activePage,
   onPageChange,
@@ -23,7 +32,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   const { state: authState } = useAuth();
 
   // Base menu items for all users
-  const baseMenuItems = [
+  const baseMenuItems: MenuItem[] = [
     {
       id: 'overview',
       title: 'สรุปภาพรวมประจำเดือน',
@@ -53,7 +62,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       id: 'flow-agent',
       title: 'Flow Agent',
       icon: FileText,
-      url: '/flow-agent/preview'
+      disabled: true, // Now modal-based, accessed through complaints
+      message: 'ใช้งานผ่านหน้าข้อร้องเรียน'
     },
     {
       id: 'category-reference',
@@ -124,25 +134,35 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           {baseMenuItems.map(item => {
             const isActive = activePage === item.id;
             const menuButton = (
-              <button 
-                onClick={() => {
-                  if (item.url) {
-                    window.location.href = item.url;
-                  } else {
-                    onPageChange(item.id);
-                  }
-                }} 
-                className={`
-                  w-11 h-11 rounded-2xl transition-all duration-300 grid place-items-center
-                  ${isActive 
-                    ? 'bg-gradient-to-b from-pink-500 to-rose-500 text-white shadow-md scale-[1.02]' 
-                    : 'bg-white/70 hover:bg-white shadow-sm backdrop-blur hover:scale-105'}
-                `} 
-                aria-label={item.title}
-              >
+                <button 
+                  onClick={() => {
+                    if (item.disabled) {
+                      // Show message for disabled items
+                      console.log(item.message || 'Feature not available');
+                      return;
+                    }
+                    if (item.url) {
+                      window.location.href = item.url;
+                    } else {
+                      onPageChange(item.id);
+                    }
+                  }} 
+                  className={`
+                    w-11 h-11 rounded-2xl transition-all duration-300 grid place-items-center
+                    ${item.disabled 
+                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                      : isActive 
+                        ? 'bg-gradient-to-b from-pink-500 to-rose-500 text-white shadow-md scale-[1.02]' 
+                        : 'bg-white/70 hover:bg-white shadow-sm backdrop-blur hover:scale-105'}
+                  `} 
+                  aria-label={item.title}
+                  disabled={item.disabled}
+                >
                 <item.icon className={`
                   w-5 h-5 transition-colors duration-300
-                  ${isActive ? 'text-white' : 'text-[#D81B60]'}
+                  ${item.disabled 
+                    ? 'text-gray-400'
+                    : isActive ? 'text-white' : 'text-[#D81B60]'}
                 `} />
               </button>
             );
@@ -155,6 +175,11 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   </TooltipTrigger>
                   <TooltipContent side="right" className="bg-pink-800 text-white border-pink-600">
                     {item.title}
+                    {item.disabled && item.message && (
+                      <div className="text-xs mt-1 text-pink-200">
+                        {item.message}
+                      </div>
+                    )}
                   </TooltipContent>
                 </Tooltip>
               );
@@ -163,8 +188,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             return (
               <div key={item.id} className="flex items-center gap-3 w-full">
                 {menuButton}
-                <span className={`text-sm font-medium text-pink-700 transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                <span className={`text-sm font-medium transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 w-0'} ${item.disabled ? 'text-gray-500' : 'text-pink-700'}`}>
                   {item.title}
+                  {item.disabled && item.message && (
+                    <div className="text-xs text-gray-400 mt-1">
+                      {item.message}
+                    </div>
+                  )}
                 </span>
               </div>
             );
