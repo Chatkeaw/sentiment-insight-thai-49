@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
+import FlowAgentFeedbackPage from "./pages/FlowAgentFeedbackPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredPermission="view_dashboard">
                   <Index />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/flow-agent/feedback/:id" 
+              element={
+                <ProtectedRoute requiredPermission="view_dashboard">
+                  <FlowAgentFeedbackPage />
                 </ProtectedRoute>
               } 
             />

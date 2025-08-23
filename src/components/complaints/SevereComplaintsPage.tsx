@@ -10,7 +10,6 @@ import { CalendarIcon, AlertTriangle, FileText } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import TimeFilter from '@/components/TimeFilter';
 import { TimeFilter as TimeFilterType } from '@/types/dashboard';
-import FlowAgentModal from '@/components/FlowAgentModal';
 
 interface SevereComplaint {
   id: string;
@@ -160,11 +159,6 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
   const [timeRange, setTimeRange] = useState<TimeFilterType['value']>('1month');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
-  // Modal states
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedFeedbackId, setSelectedFeedbackId] = useState<string>('');
-  const [modalData, setModalData] = useState<any>(null);
-
   // Cascading filter options
   const regions = useMemo(() => {
     return Array.from(new Set(mockSevereComplaints.map(c => c.region))).sort();
@@ -276,7 +270,7 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
     setSelectedCategory(category);
   };
 
-  // Handle flow agent modal
+  // Handle flow agent navigation
   const handleFlowAgentClick = (complaint: SevereComplaint) => {
     const record = {
       id: complaint.id,
@@ -304,9 +298,7 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
       sentiment: 'negative'
     };
     
-    setSelectedFeedbackId(complaint.id);
-    setModalData(record);
-    setModalOpen(true);
+    navigate(`/flow-agent/feedback/${complaint.id}`, { state: record });
   };
 
   return (
@@ -555,14 +547,6 @@ export const SevereComplaintsPage: React.FC<SevereComplaintsPageProps> = ({ clas
         </CardContent>
       </Card>
       </div>
-
-      {/* Flow Agent Modal */}
-      <FlowAgentModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        feedbackId={selectedFeedbackId}
-        initialData={modalData}
-      />
     </TooltipProvider>
   );
 };

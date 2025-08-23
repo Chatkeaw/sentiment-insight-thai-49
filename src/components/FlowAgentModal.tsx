@@ -39,7 +39,7 @@ interface FlowAgentModalProps {
   initialData?: any;
 }
 
-// Mock data function
+// Mock data function with more examples
 const getFlowAgentById = (id: string): FlowAgentData => {
   const mockData: Record<string, FlowAgentData> = {
     feedback_183: {
@@ -97,10 +97,44 @@ const getFlowAgentById = (id: string): FlowAgentData => {
         "สภาพแวดล้อม: ความสะอาด (เชิงบวก)"
       ],
       sentiment: 'positive'
+    },
+    feedback_19: {
+      id: "feedback_19",
+      request_id: "REQ-2025-019",
+      basic: {
+        submitted_at: "2025-01-01T09:15:00Z"
+      },
+      branch: "สาขาเซ็นทรัลลาดพร้าว",
+      sub_branch: "เซ็นทรัลลาดพร้าว",
+      district: "จตุจักร",
+      region: "ภาค 1",
+      province: "กรุงเทพฯ",
+      service_type: "โมบายแอป",
+      scores: {
+        trust: 5,
+        consultation: 5,
+        speed: 4,
+        accuracy: 5,
+        equipment: 5,
+        environment: 4,
+        overall: 5
+      },
+      customer_comment: "แอปใช้งานง่าย อัพเดทใหม่ทำให้เร็วขึ้น ประทับใจมาก UI สวยงามดี",
+      tags: [
+        "เทคโนโลยีและดิจิทัล: การใช้งานแอป (เชิงบวก)",
+        "เทคโนโลยีและดิจิทัล: ประสบการณ์ผู้ใช้ (เชิงบวก)"
+      ],
+      sentiment: 'positive'
     }
   };
 
-  return mockData[id] || mockData.feedback_183;
+  // If ID not found, return a random positive or negative example
+  if (!mockData[id]) {
+    const examples = Object.values(mockData);
+    return examples[Math.floor(Math.random() * examples.length)];
+  }
+
+  return mockData[id];
 };
 
 // Utility functions
@@ -231,10 +265,10 @@ const FlowAgentModal: React.FC<FlowAgentModalProps> = ({
 
   return (
     <TooltipProvider>
-      <div 
-        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-        onClick={handleBackdropClick}
-      >
+        <div 
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          onClick={handleBackdropClick}
+        >
         <div 
           className="bg-[#FFEAF2] border border-[#FAD1DE] rounded-3xl shadow-xl max-w-6xl w-full max-h-[85vh] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
