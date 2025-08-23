@@ -130,7 +130,13 @@ const resolveSubmittedAt = (state: any): string => {
 const formatThaiNumeric = (raw: string): string => {
   const d = new Date(raw);
   if (isNaN(d.getTime())) return formatThaiNumeric(new Date().toISOString());
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} | ${pad(d.getHours())}:${pad(d.getMinutes())} น.`;
+  
+  const monthNames = [
+    'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+    'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+  ];
+  
+  return `${pad(d.getDate())} ${monthNames[d.getMonth()]} ${d.getFullYear()} | ${pad(d.getHours())}:${pad(d.getMinutes())} น.`;
 };
 
 export const FlowAgentDetailPage: React.FC = () => {
@@ -175,164 +181,157 @@ export const FlowAgentDetailPage: React.FC = () => {
   };
 
   return (
-    <TooltipProvider>
-      <div className="space-y-6">
-        {/* Navbar */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBack}
-                  className="rounded-full w-10 h-10 p-0 border-[#F9CADF] hover:bg-[#F9CADF]"
-                >
-                  <ArrowLeft className="w-4 h-4 text-[#C0245E]" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>กลับสู่ข้อร้องเรียน</TooltipContent>
-            </Tooltip>
-            <h1 className="text-2xl font-bold text-[#7A3443]">ประวัติการประมวล Flow ด้วย Agent</h1>
-          </div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                className="rounded-full w-10 h-10 p-0 border-[#F9CADF] hover:bg-[#F9CADF]"
-              >
-                <RotateCcw className="w-4 h-4 text-[#C0245E]" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>รีเฟรช</TooltipContent>
-          </Tooltip>
-        </div>
-
-        {/* ข้อมูลพื้นฐาน Card */}
-        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-[#FFEAF2] p-5 md:p-6">
-          <CardHeader className="pb-4">
-            <CardTitle className="font-semibold text-[#7A3443]">ข้อมูลพื้นฐาน</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Request ID</label>
-                <p className="text-[#C0245E] font-medium">{pageData.request_id || pageData.id}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">เวลาที่ส่งข้อเสนอแนะ</label>
-                <p className="text-[#C0245E] font-medium">{submittedText}</p>
-              </div>
+    <div className="min-h-screen bg-white">
+      <TooltipProvider>
+        <div className="max-w-5xl mx-auto p-4 md:p-6">
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBack}
+                    className="rounded-full w-10 h-10 p-0 border-[#FAD1DE] hover:bg-[#FAD1DE]"
+                  >
+                    <ArrowLeft className="w-4 h-4 text-[#7A3443]" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>กลับสู่ข้อร้องเรียน</TooltipContent>
+              </Tooltip>
+              
+              <h1 className="text-xl md:text-2xl font-bold text-[#7A3443] text-center flex-1 mx-4">
+                ประวัติการประมวล Flow ด้วย Agent
+              </h1>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRefresh}
+                    className="rounded-full w-10 h-10 p-0 border-[#FAD1DE] hover:bg-[#FAD1DE]"
+                  >
+                    <RotateCcw className="w-4 h-4 text-[#7A3443]" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>รีเฟรช</TooltipContent>
+              </Tooltip>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* พื้นที่ให้บริการ Card */}
-        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-[#FFEAF2] p-5 md:p-6">
-          <CardHeader className="pb-4">
-            <CardTitle className="font-semibold text-[#7A3443]">พื้นที่ให้บริการ</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">สาขาธนาคาร</label>
-                <p className="text-[#7A3443]">{pageData.branch || 'ไม่ระบุ'}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">ภาค</label>
-                <p className="text-[#7A3443]">{pageData.region || 'ไม่ระบุ'}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">จังหวัด</label>
-                <p className="text-[#7A3443]">{pageData.province || 'ไม่ระบุ'}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">เขต</label>
-                <p className="text-[#7A3443]">{pageData.district || 'ไม่ระบุ'}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">สาขาย่อย</label>
-                <p className="text-[#7A3443]">{pageData.sub_branch || 'ไม่ระบุ'}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            {/* ข้อมูลพื้นฐาน Card */}
+            <Card className="rounded-2xl shadow-sm border border-[#FAD1DE] bg-[#FFEAF2] p-5 md:p-6">
+              <CardHeader className="pb-4">
+                <CardTitle className="font-semibold text-[#7A3443]">ข้อมูลพื้นฐาน</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">ID รายการ</label>
+                    <p className="font-semibold text-[#7A3443] break-all">{pageData.request_id || pageData.id}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">เวลาที่ส่งข้อเสนอแนะ</label>
+                    <p className="font-semibold text-[#7A3443]">{submittedText}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* ประเภทที่ใช้บริการ Card */}
-        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-[#FFEAF2] p-5 md:p-6">
-          <CardHeader className="pb-4">
-            <CardTitle className="font-semibold text-[#7A3443]">ประเภทที่ใช้บริการ</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-[#7A3443]">{pageData.service_type || 'ไม่ระบุ'}</p>
-          </CardContent>
-        </Card>
-
-        {/* ความพึงพอใจ Card */}
-        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-[#FFEAF2] p-5 md:p-6">
-          <CardHeader className="pb-4">
-            <CardTitle className="font-semibold text-[#7A3443]">ความพึงพอใจ</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-              {satisfactionLabels.map((label) => {
-                const score = getScoreValue(label);
-                return (
-                  <div key={label} className="text-center">
-                    <label className="text-xs font-medium text-muted-foreground block mb-2">
-                      {label}
-                    </label>
-                    <div className="text-lg font-bold">
-                      <span className="text-[#C0245E]">{score}</span>
-                      <span className="text-[#7A3443]">/5</span>
+            {/* พื้นที่ให้บริการ Card */}
+            <Card className="rounded-2xl shadow-sm border border-[#FAD1DE] bg-[#FFEAF2] p-5 md:p-6">
+              <CardHeader className="pb-4">
+                <CardTitle className="font-semibold text-[#7A3443]">พื้นที่ให้บริการ</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">สาขาบริการ</label>
+                      <p className="text-[#7A3443] font-semibold">{pageData.branch || 'ไม่ระบุ'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">เขต</label>
+                      <p className="text-[#7A3443] font-semibold">{pageData.district || 'ไม่ระบุ'}</p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ความคิดเห็นลูกค้า Card */}
-        <Card className="rounded-2xl shadow-sm border border-[#F9CADF] bg-[#FFEAF2] p-5 md:p-6">
-          <CardHeader className="pb-4">
-            <CardTitle className="font-semibold text-[#7A3443]">ความคิดเห็นลูกค้า</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Comment Box */}
-            <div className="p-4 bg-[#FFF0F4] rounded-lg border border-[#F9CADF]">
-              <p className="text-[#444] leading-relaxed">
-                {pageData.customer_comment || pageData.comment || 'ไม่มีความคิดเห็น'}
-              </p>
-            </div>
-            
-            {/* Tags */}
-            {(pageData.tags && pageData.tags.length > 0) && (
-              <div>
-                <label className="text-sm font-medium text-muted-foreground block mb-2">
-                  การจำแนกประเภทความคิดเห็น
-                </label>
-                <div className="flex flex-wrap">
-                  {pageData.tags.map((tag, index) => (
-                    <Badge
-                      key={index}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm mr-2 mb-2 bg-[#FDE2E4] border border-[#F9CADF] text-[#B91C1C] hover:bg-[#FDE2E4] relative"
-                    >
-                      {tag}
-                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">
-                        เชิงลบ
-                      </span>
-                    </Badge>
-                  ))}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">จังหวัด</label>
+                      <p className="text-[#7A3443] font-semibold">{pageData.province || 'ไม่ระบุ'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">ประเภทที่ใช้บริการ</label>
+                      <p className="text-[#7A3443] font-semibold">{pageData.service_type || 'ไม่ระบุ'}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </TooltipProvider>
+              </CardContent>
+            </Card>
+
+            {/* ความพึงพอใจ Card */}
+            <Card className="rounded-2xl shadow-sm border border-[#FAD1DE] bg-[#FFEAF2] p-5 md:p-6">
+              <CardHeader className="pb-4">
+                <CardTitle className="font-semibold text-[#7A3443]">ความพึงพอใจ</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
+                  {satisfactionLabels.map((label) => {
+                    const score = getScoreValue(label);
+                    return (
+                      <div key={label} className="text-center">
+                        <label className="text-sm font-medium text-gray-600 block mb-2">
+                          {label}
+                        </label>
+                        <div className="text-lg font-semibold">
+                          <span className="text-[#C0245E]">{score}</span>
+                          <span className="text-[#7A3443]">/5</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* ความคิดเห็นลูกค้า Card */}
+            <Card className="rounded-2xl shadow-sm border border-[#FAD1DE] bg-[#FFEAF2] p-5 md:p-6">
+              <CardHeader className="pb-4">
+                <CardTitle className="font-semibold text-[#7A3443]">ความคิดเห็นลูกค้า</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Comment Box */}
+                <div className="p-4 bg-white/60 rounded-lg border border-[#FAD1DE]">
+                  <p className="text-[#444] leading-relaxed">
+                    {pageData.customer_comment || pageData.comment || 'ไม่มีความคิดเห็น'}
+                  </p>
+                </div>
+                
+                {/* Tags */}
+                {(pageData.tags && pageData.tags.length > 0) && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 block mb-2">
+                      การจำแนกประเภทความคิดเห็น
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {pageData.tags.map((tag, index) => (
+                        <Badge
+                          key={index}
+                          className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-rose-200 text-rose-700 hover:bg-rose-200 border-0"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </TooltipProvider>
+    </div>
   );
 };
 
