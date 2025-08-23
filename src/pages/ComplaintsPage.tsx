@@ -1,6 +1,6 @@
 // pages/ComplaintsPage.tsx
 import React, { useMemo, useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -12,17 +12,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { FileText } from 'lucide-react';
+import { FileText } from "lucide-react";
 import { mockFeedbackData } from "@/data/mockData";
 import { FeedbackEntry } from "@/types/dashboard";
+import FlowAgentModal from "@/components/dashboard/FlowAgentModal"; // << เพิ่ม
 
 /* -------------------------------------------------------------------------- */
 /*                             1) CSV (แก้ตรงนี้ได้)                           */
 /* -------------------------------------------------------------------------- */
-/** วาง CSV ทั้งก้อนของคุณแทนที่ตัวแปรนี้ได้เลย
- *  รูปแบบคอลัมน์: ภาค\tเขต\tหน่วยให้บริการ
- *  (คั่นด้วย tab \t หรือจะใช้เครื่องหมายจุลภาคแล้วเปลี่ยนตัว split ด้านล่างก็ได้)
- */
 const CSV_TEXT = `ภาค\tเขต\tหน่วยให้บริการ
 ภาค 1\tบางเขน\tบางเขน
 ภาค 1\tราชวัตร\tนางเลิ้ง
@@ -48,12 +45,10 @@ const CSV_TEXT = `ภาค\tเขต\tหน่วยให้บริกา�
 ภาค 18\tนราธิวาส\tนราธิวาส
 `;
 
-/* parser CSV (tab-separated) -> Array<{region,district,branch}> */
 type CsvRow = { region: string; district: string; branch: string };
 function parseBranchCSV(txt: string): CsvRow[] {
   if (!txt?.trim()) return [];
   const lines = txt.trim().split(/\r?\n/);
-  // ตัดหัวตารางออกถ้าดูเหมือน header
   const startIdx =
     /ภาค\s*[\t,]\s*เขต\s*[\t,]\s*(หน่วยให้บริการ|สาขา)/.test(lines[0]) ? 1 : 0;
 
@@ -61,7 +56,6 @@ function parseBranchCSV(txt: string): CsvRow[] {
   for (let i = startIdx; i < lines.length; i++) {
     const raw = lines[i].trim();
     if (!raw) continue;
-    // รองรับทั้ง tab และ comma
     const parts = raw.split(/\t|,/).map((s) => s.trim());
     if (parts.length < 3) continue;
     rows.push({ region: parts[0], district: parts[1], branch: parts[2] });
@@ -69,7 +63,6 @@ function parseBranchCSV(txt: string): CsvRow[] {
   return rows;
 }
 
-/** index สำหรับดึงรายการตามลำดับ ภาค -> เขต -> สาขา */
 function buildBranchIndex(rows: CsvRow[]) {
   const regionSet = new Set<string>();
   const districtByRegion = new Map<string, Set<string>>();
@@ -106,13 +99,8 @@ function buildBranchIndex(rows: CsvRow[]) {
 /* -------------------------------------------------------------------------- */
 /*                      2) Mapping mock feedback -> CSV                       */
 /* -------------------------------------------------------------------------- */
-/** เลือก CSV ให้ feedback ใช้ เพื่อให้ตัวกรองทำงานกับข้อมูล CSV ได้จริง
- *   - ถ้าชื่อสาขาใน mock ตรงกับ CSV จะจับคู่ตรง ๆ
- *   - ถ้าไม่ตรง จะวนแจกสาขาจาก CSV ตามลำดับ (เพื่อให้มีข้อมูลให้กรอง)
- */
 function attachCsvBranchToFeedback(feedback: FeedbackEntry[], csv: CsvRow[]) {
   if (!csv.length) return feedback;
-  // map ชื่อสาขา -> แถว CSV (อย่างง่าย)
   const mapByBranch = new Map<string, CsvRow>();
   csv.forEach((r) => mapByBranch.set(r.branch, r));
 
@@ -247,9 +235,7 @@ const LABEL_BY_CODE = Object.fromEntries(
 );
 
 function pickTagCodes(f: FeedbackEntry): string[] {
-  const detailed = (f as any).detailedSentiment as
-    | Record<string, number>
-    | undefined;
+  const detailed = (f as any).detailedSentiment as Record<string, number> | undefined;
   if (!detailed) return [];
   const codes: string[] = [];
   for (const [k, v] of Object.entries(detailed)) {
@@ -279,54 +265,39 @@ const backRanges = [
 /* --------------------------------- Page ---------------------------------- */
 export default function ComplaintsPage() {
   const navigate = useNavigate();
-  
-  /* ---------- ใช้ CSV ทำ index + ผูก CSV ให้กับ mockFeedbackData ---------- */
+
+  // === คุมการเปิดโมดอลผ่าน query param ===
+  const [searchParams, setSearchParams] = useSearchParams();
+  const flowId = searchParams.get("flowId");
+  const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
+
+  // CSV index + data mapping
   const csvRows = useMemo(() => parseBranchCSV(CSV_TEXT), []);
   const idx = useMemo(() => buildBranchIndex(csvRows), [csvRows]);
-  const data = useMemo(
-    () => attachCsvBranchToFeedback(mockFeedbackData, csvRows),
-    [csvRows]
-  );
+  const data = useMemo(() => attachCsvBranchToFeedback(mockFeedbackData, csvRows), [csvRows]);
 
-  /* ---------------------------- header dropdowns ---------------------------- */
-  // ภาค
+  // header dropdowns
   const regions = idx.regions;
   const [region, setRegion] = useState<string>("ทั้งหมด");
-
-  // เขต (ขึ้นกับภาค)
   const districts = useMemo(() => idx.getDistricts(region), [idx, region]);
   const [district, setDistrict] = useState<string>("ทั้งหมด");
-
-  // สาขา (ขึ้นกับภาค + เขต)
-  const branches = useMemo(
-    () => idx.getBranches(region, district),
-    [idx, region, district]
-  );
+  const branches = useMemo(() => idx.getBranches(region, district), [idx, region, district]);
   const [branch, setBranch] = useState<string>("ทั้งหมด");
 
-  // เวลา
   const [timeType, setTimeType] = useState<TimeType>("all");
   const [monthKey, setMonthKey] = useState<string>("");
   const [backKey, setBackKey] = useState<string>("1m");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  // ประเภท/ทัศนคติ
   const [serviceType, setServiceType] = useState("ทั้งหมด");
-  const [sentiment, setSentiment] = useState<"all" | "positive" | "negative">(
-    "all"
-  );
+  const [sentiment, setSentiment] = useState<"all" | "positive" | "negative">("all");
 
-  // หมวด
   const [headCat, setHeadCat] =
     useState<(typeof HEAD_CATEGORIES)[number]["value"]>("all");
-  const subcatList = useMemo(
-    () => (headCat === "all" ? [] : SUBCATS[headCat] ?? []),
-    [headCat]
-  );
+  const subcatList = useMemo(() => (headCat === "all" ? [] : SUBCATS[headCat] ?? []), [headCat]);
   const [subCat, setSubCat] = useState<string>("all");
 
-  /* --------------------------------- time --------------------------------- */
   const monthOptions = useMemo(() => {
     const today = new Date();
     const list: { key: string; label: string }[] = [];
@@ -373,14 +344,12 @@ export default function ComplaintsPage() {
     return true;
   }
 
-  /* ------------------------------- filtering ------------------------------- */
   const filtered = useMemo(() => {
     return data
       .filter((f) => {
         if (region !== "ทั้งหมด" && f.branch.region !== region) return false;
         if (district !== "ทั้งหมด" && f.branch.district !== district) return false;
         if (branch !== "ทั้งหมด" && f.branch.branch !== branch) return false;
-
         if (serviceType !== "ทั้งหมด" && f.serviceType !== serviceType) return false;
 
         if (sentiment !== "all") {
@@ -421,31 +390,44 @@ export default function ComplaintsPage() {
     subCat,
   ]);
 
-  // Handle flow agent navigation
+  // === เปิดโมดอลแทนการนำทางไปหน้าใหม่ (กัน 404) ===
   const handleFlowAgentClick = (f: FeedbackEntry) => {
     const record = {
       id: f.id,
-      created_at: f.date,
-      area: f.branch.district,
-      province: f.branch.region,
-      district: f.branch.district,
-      service_type: f.serviceType,
-      tags: pickTagCodes(f),
+      createdAt: f.date,
+      area: {
+        region: f.branch.region,
+        district: f.branch.district,
+        branch: f.branch.branch,
+      },
+      province: f.branch.region, // NOTE: ถ้ามี province จริงค่อย map ใหม่
+      serviceType: f.serviceType,
       scores: {
         overall: f.satisfaction.overall,
-        trust: Math.floor(Math.random() * 5) + 1,
-        consultation: Math.floor(Math.random() * 5) + 1,
+        interest: Math.floor(Math.random() * 5) + 1,
+        consult: Math.floor(Math.random() * 5) + 1,
         speed: Math.floor(Math.random() * 5) + 1,
         accuracy: Math.floor(Math.random() * 5) + 1,
-        equipment: Math.floor(Math.random() * 5) + 1,
-        environment: Math.floor(Math.random() * 5) + 1
+        device: Math.floor(Math.random() * 5) + 1,
+        environment: Math.floor(Math.random() * 5) + 1,
       },
-      comment: f.comment,
-      branch: f.branch.branch,
-      sub_branch: f.branch.branch,
-      region: f.branch.region
+      comment: { text: f.comment },
+      tags: pickTagCodes(f),
+      sentiment: Object.values(f.sentiment).some((v) => v === -1) ? "negative" : "positive",
+      classifications: [], // เติมได้ถ้ามีข้อมูล
     };
-    navigate(`/flow-agent/${f.id}`, { state: record });
+
+    setSelectedRecord(record);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("flowId", f.id);
+    setSearchParams(newParams, { replace: false });
+  };
+
+  const handleCloseModal = () => {
+    setSelectedRecord(null);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("flowId");
+    setSearchParams(newParams, { replace: false });
   };
 
   function resetAll() {
@@ -467,361 +449,344 @@ export default function ComplaintsPage() {
   return (
     <TooltipProvider>
       <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">ข้อร้องเรียนลูกค้า</h1>
-        <p className="text-muted-foreground">ระบบสรุปข้อร้องเรียนสำคัญจากลูกค้า</p>
-      </div>
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">ข้อร้องเรียนลูกค้า</h1>
+          <p className="text-muted-foreground">ระบบสรุปข้อร้องเรียนสำคัญจากลูกค้า</p>
+        </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-xl">ตัวกรอง</CardTitle>
-          <Button variant="outline" onClick={resetAll}>
-            ล้างตัวกรอง
-          </Button>
-        </CardHeader>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-xl">ตัวกรอง</CardTitle>
+            <Button variant="outline" onClick={resetAll}>
+              ล้างตัวกรอง
+            </Button>
+          </CardHeader>
 
-        <CardContent className="space-y-6">
-          {/* พื้นที่ให้บริการ */}
-          <section>
-            <div className="mb-3 text-lg font-semibold">พื้นที่</div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {/* Region */}
-              <div className="space-y-2">
-                <label className="text-sm text-muted-foreground">ภาค</label>
-                <Select
-                  key={`region-${region}`}
-                  value={region}
-                  onValueChange={(v) => {
-                    setRegion(v);
-                    setDistrict("ทั้งหมด");
-                    setBranch("ทั้งหมด");
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกภาค" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {regions.map((r) => (
-                      <SelectItem key={r} value={r}>
-                        {r}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* District */}
-              <div className="space-y-2">
-                <label className="text-sm text-muted-foreground">เขต</label>
-                <Select
-                  key={`district-${region}-${district}`}
-                  value={district}
-                  onValueChange={(v) => {
-                    setDistrict(v);
-                    setBranch("ทั้งหมด");
-                  }}
-                  disabled={region === "ทั้งหมด"}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกเขต" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {districts.map((d) => (
-                      <SelectItem key={d} value={d}>
-                        {d}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Branch */}
-              <div className="space-y-2">
-                <label className="text-sm text-muted-foreground">หน่วยให้บริการ</label>
-                <Select
-                  key={`branch-${region}-${district}-${branch}`}
-                  value={branch}
-                  onValueChange={setBranch}
-                  disabled={region === "ทั้งหมด" || district === "ทั้งหมด"}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกหน่วยให้บริการ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {branches.map((b) => (
-                      <SelectItem key={b} value={b}>
-                        {b}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </section>
-
-          {/* ช่วงเวลาการประเมิน */}
-          <section>
-            <div className="mb-3 text-lg font-semibold">ช่วงเวลาการประเมิน</div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <label className="text-sm text-muted-foreground">ประเภท</label>
-                <Select value={timeType} onValueChange={(v: TimeType) => setTimeType(v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกประเภทเวลา" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">ทั้งหมด</SelectItem>
-                    <SelectItem value="monthly">รายเดือน</SelectItem>
-                    <SelectItem value="back">ช่วงเวลาย้อนหลัง</SelectItem>
-                    <SelectItem value="custom">กำหนดเอง</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {timeType === "monthly" && (
+          <CardContent className="space-y-6">
+            {/* พื้นที่ให้บริการ */}
+            <section>
+              <div className="mb-3 text-lg font-semibold">พื้นที่</div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                {/* Region */}
                 <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground">เดือน</label>
-                  <Select value={monthKey} onValueChange={setMonthKey}>
+                  <label className="text-sm text-muted-foreground">ภาค</label>
+                  <Select
+                    key={`region-${region}`}
+                    value={region}
+                    onValueChange={(v) => {
+                      setRegion(v);
+                      setDistrict("ทั้งหมด");
+                      setBranch("ทั้งหมด");
+                    }}
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder="เลือกเดือน" />
+                      <SelectValue placeholder="เลือกภาค" />
                     </SelectTrigger>
                     <SelectContent>
-                      {monthOptions.map((m) => (
-                        <SelectItem key={m.key} value={m.key}>
-                          {m.label}
+                      {regions.map((r) => (
+                        <SelectItem key={r} value={r}>
+                          {r}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              )}
 
-              {timeType === "back" && (
+                {/* District */}
                 <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground">ย้อนหลัง</label>
-                  <Select value={backKey} onValueChange={setBackKey}>
+                  <label className="text-sm text-muted-foreground">เขต</label>
+                  <Select
+                    key={`district-${region}-${district}`}
+                    value={district}
+                    onValueChange={(v) => {
+                      setDistrict(v);
+                      setBranch("ทั้งหมด");
+                    }}
+                    disabled={region === "ทั้งหมด"}
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder="เลือกช่วงเวลา" />
+                      <SelectValue placeholder="เลือกเขต" />
                     </SelectTrigger>
                     <SelectContent>
-                      {backRanges.map((r) => (
-                        <SelectItem key={r.value} value={r.value}>
-                          {r.label}
+                      {districts.map((d) => (
+                        <SelectItem key={d} value={d}>
+                          {d}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              )}
 
-              {timeType === "custom" && (
-                <>
+                {/* Branch */}
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">หน่วยให้บริการ</label>
+                  <Select
+                    key={`branch-${region}-${district}-${branch}`}
+                    value={branch}
+                    onValueChange={setBranch}
+                    disabled={region === "ทั้งหมด" || district === "ทั้งหมด"}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกหน่วยให้บริการ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {branches.map((b) => (
+                        <SelectItem key={b} value={b}>
+                          {b}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </section>
+
+            {/* ช่วงเวลาการประเมิน */}
+            <section>
+              <div className="mb-3 text-lg font-semibold">ช่วงเวลาการประเมิน</div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">ประเภท</label>
+                  <Select value={timeType} onValueChange={(v: TimeType) => setTimeType(v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกประเภทเวลา" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">ทั้งหมด</SelectItem>
+                      <SelectItem value="monthly">รายเดือน</SelectItem>
+                      <SelectItem value="back">ช่วงเวลาย้อนหลัง</SelectItem>
+                      <SelectItem value="custom">กำหนดเอง</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {timeType === "monthly" && (
                   <div className="space-y-2">
-                    <label className="text-sm text-muted-foreground">เริ่ม</label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    />
+                    <label className="text-sm text-muted-foreground">เดือน</label>
+                    <Select value={monthKey} onValueChange={setMonthKey}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="เลือกเดือน" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {monthOptions.map((m) => (
+                          <SelectItem key={m.key} value={m.key}>
+                            {m.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+                )}
+
+                {timeType === "back" && (
                   <div className="space-y-2">
-                    <label className="text-sm text-muted-foreground">สิ้นสุด</label>
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    />
+                    <label className="text-sm text-muted-foreground">ย้อนหลัง</label>
+                    <Select value={backKey} onValueChange={setBackKey}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="เลือกช่วงเวลา" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {backRanges.map((r) => (
+                          <SelectItem key={r.value} value={r.value}>
+                            {r.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                </>
-              )}
-            </div>
-          </section>
+                )}
 
-          {/* ประเภทการให้บริการและทัศนคติ */}
-          <section>
-            <div className="mb-3 text-lg font-semibold">
-              ประเภทการให้บริการ และทัศนคติ
-            </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm text-muted-foreground">บริการ</label>
-                <Select value={serviceType} onValueChange={setServiceType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกประเภทบริการ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {serviceTypeOptions.map((x) => (
-                      <SelectItem key={x} value={x}>
-                        {x}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {timeType === "custom" && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-sm text-muted-foreground">เริ่ม</label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm text-muted-foreground">สิ้นสุด</label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
+            </section>
 
-              <div className="space-y-2">
-                <label className="text-sm text-muted-foreground">ทัศนคติ</label>
-                <Select
-                  value={sentiment}
-                  onValueChange={(v: any) => setSentiment(v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกทัศนคติ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">ทั้งหมด</SelectItem>
-                    <SelectItem value="positive">เชิงบวก</SelectItem>
-                    <SelectItem value="negative">เชิงลบ</SelectItem>
-                  </SelectContent>
-                </Select>
+            {/* ประเภทการให้บริการและทัศนคติ */}
+            <section>
+              <div className="mb-3 text-lg font-semibold">ประเภทการให้บริการ และทัศนคติ</div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">บริการ</label>
+                  <Select value={serviceType} onValueChange={setServiceType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกประเภทบริการ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {serviceTypeOptions.map((x) => (
+                        <SelectItem key={x} value={x}>
+                          {x}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">ทัศนคติ</label>
+                  <Select value={sentiment} onValueChange={(v: any) => setSentiment(v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกทัศนคติ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">ทั้งหมด</SelectItem>
+                      <SelectItem value="positive">เชิงบวก</SelectItem>
+                      <SelectItem value="negative">เชิงลบ</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          {/* ประเภท / หมวดหมู่ ความคิดเห็น */}
-          <section>
-            <div className="mb-3 text-lg font-semibold">
-              ประเภท / หมวดหมู่ ความคิดเห็น
-            </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm text-muted-foreground">หัวข้อ</label>
-                <Select
-                  value={headCat}
-                  onValueChange={(v: any) => {
-                    setHeadCat(v);
-                    setSubCat("all");
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกหัวข้อการประเมิน" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {HEAD_CATEGORIES.map((c) => (
-                      <SelectItem key={c.value} value={c.value as string}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {/* ประเภท / หมวดหมู่ ความคิดเห็น */}
+            <section>
+              <div className="mb-3 text-lg font-semibold">ประเภท / หมวดหมู่ ความคิดเห็น</div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">หัวข้อ</label>
+                  <Select
+                    value={headCat}
+                    onValueChange={(v: any) => {
+                      setHeadCat(v);
+                      setSubCat("all");
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกหัวข้อการประเมิน" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HEAD_CATEGORIES.map((c) => (
+                        <SelectItem key={c.value} value={c.value as string}>
+                          {c.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">หมวดหมู่</label>
+                  <Select value={subCat} onValueChange={setSubCat} disabled={headCat === "all"}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกหมวดย่อย" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">ทั้งหมด</SelectItem>
+                      {subcatList.map((x) => (
+                        <SelectItem key={x.code} value={x.code}>
+                          {x.code} {x.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+            </section>
+          </CardContent>
+        </Card>
 
-              <div className="space-y-2">
-                <label className="text-sm text-muted-foreground">หมวดหมู่</label>
-                <Select
-                  value={subCat}
-                  onValueChange={setSubCat}
-                  disabled={headCat === "all"}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกหมวดย่อย" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">ทั้งหมด</SelectItem>
-                    {subcatList.map((x) => (
-                      <SelectItem key={x.code} value={x.code}>
-                        {x.code} {x.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </section>
-        </CardContent>
-      </Card>
+        {/* Results */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">
+            ผลการค้นหา <span className="text-muted-foreground">({filtered.length} รายการ)</span>
+          </h2>
+        </div>
 
-      {/* Results */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">
-          ผลการค้นหา{" "}
-          <span className="text-muted-foreground">({filtered.length} รายการ)</span>
-        </h2>
-      </div>
+        <div className="space-y-4">
+          {filtered.map((f) => {
+            const codes = pickTagCodes(f);
+            const severe =
+              Object.values(f.sentiment).some((v) => v === -1) || f.satisfaction.overall <= 2;
 
-      <div className="space-y-4">
-        {filtered.map((f) => {
-          const codes = pickTagCodes(f);
-          const severe =
-            Object.values(f.sentiment).some((v) => v === -1) ||
-            f.satisfaction.overall <= 2;
+            return (
+              <Card
+                key={f.id}
+                className={severe ? "border-red-200 bg-rose-50" : "border-border bg-background"}
+              >
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex-1">
+                      <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                        <span>
+                          <strong>รหัส:</strong> {f.id}
+                        </span>
+                        <span>
+                          <strong>วันที่:</strong> {f.date} {f.timestamp}
+                        </span>
+                        <span>
+                          <strong>พื้นที่:</strong> {f.branch.region} / {f.branch.district} / {f.branch.branch}
+                        </span>
+                        <span>
+                          <strong>บริการ:</strong> {f.serviceType}
+                        </span>
+                      </div>
 
-          return (
-            <Card
-              key={f.id}
-              className={
-                severe ? "border-red-200 bg-rose-50" : "border-border bg-background"
-              }
-            >
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1">
-                    <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                      <span>
-                        <strong>รหัส:</strong> {f.id}
-                      </span>
-                      <span>
-                        <strong>วันที่:</strong> {f.date} {f.timestamp}
-                      </span>
-                      <span>
-                        <strong>พื้นที่:</strong> {f.branch.region} / {f.branch.district} /{" "}
-                        {f.branch.branch}
-                      </span>
-                      <span>
-                        <strong>บริการ:</strong> {f.serviceType}
-                      </span>
+                      <p className="mb-3 leading-relaxed text-foreground">{f.comment}</p>
+
+                      {codes.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {codes.map((c) => (
+                            <Badge key={c} variant={severe ? "destructive" : "secondary"} className="text-xs">
+                              {c} {LABEL_BY_CODE[c] ?? ""}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
-                    <p className="mb-3 leading-relaxed text-foreground">{f.comment}</p>
-
-                    {codes.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {codes.map((c) => (
-                          <Badge
-                            key={c}
-                            variant={severe ? "destructive" : "secondary"}
-                            className="text-xs"
+                    {/* Action Button */}
+                    <div className="flex-shrink-0">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleFlowAgentClick(f)}
+                            className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-[#FCE7F3] border border-[#F9CADF] text-[#C0245E] hover:bg-[#F9CADF] transition-colors"
                           >
-                            {c} {LABEL_BY_CODE[c] ?? ""}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
+                            <FileText className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>ดู Flow Agent</TooltipContent>
+                      </Tooltip>
+                    </div>
                   </div>
-                  
-                  {/* Action Button */}
-                  <div className="flex-shrink-0">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleFlowAgentClick(f)}
-                          className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-[#FCE7F3] border border-[#F9CADF] text-[#C0245E] hover:bg-[#F9CADF] transition-colors"
-                        >
-                          <FileText className="w-4 h-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>ดู Flow Agent</TooltipContent>
-                    </Tooltip>
-                  </div>
-                </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+
+          {filtered.length === 0 && (
+            <Card>
+              <CardContent className="p-8 text-center text-muted-foreground">
+                ไม่พบข้อมูลที่ตรงกับตัวกรอง
               </CardContent>
             </Card>
-          );
-        })}
+          )}
+        </div>
+      </div>
 
-        {filtered.length === 0 && (
-          <Card>
-            <CardContent className="p-8 text-center text-muted-foreground">
-              ไม่พบข้อมูลที่ตรงกับตัวกรอง
-            </CardContent>
-          </Card>
-        )}
-      </div>
-      </div>
+      {/* ===== Modal อยู่ล่างสุดของหน้า ===== */}
+      <FlowAgentModal open={!!flowId} onClose={handleCloseModal} data={selectedRecord} />
     </TooltipProvider>
   );
 }
