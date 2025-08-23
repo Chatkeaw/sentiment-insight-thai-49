@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { FileText } from "lucide-react";
 import { mockFeedbackData } from "@/data/mockData";
 import { FeedbackEntry } from "@/types/dashboard";
-import FlowAgentModal from "@/components/dashboard/FlowAgentModal"; // << เพิ่ม
+import FlowAgentModal from "@/components/FlowAgentModal";
 
 /* -------------------------------------------------------------------------- */
 /*                             1) CSV (แก้ตรงนี้ได้)                           */
@@ -786,7 +786,7 @@ export default function ComplaintsPage() {
       </div>
 
       {/* ===== Modal อยู่ล่างสุดของหน้า ===== */}
-      <FlowAgentModal open={!!flowId} onClose={handleCloseModal} data={selectedRecord} />
+      <FlowAgentModal isOpen={!!flowId} onClose={handleCloseModal} initialData={selectedRecord} />
     </TooltipProvider>
   );
 }
