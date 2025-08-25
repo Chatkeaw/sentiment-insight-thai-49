@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BarChart3, MapPin, TrendingUp, MessageSquare, AlertTriangle, Bot, Home, Users, Settings, BookOpen, FileText } from 'lucide-react';
+import { BarChart3, MapPin, TrendingUp, MessageSquare, AlertTriangle, Bot, Home, Users, Settings, BookOpen } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { useAnalytics } from '@/contexts/AnalyticsContext';
@@ -57,13 +57,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       id: 'complaints',
       title: 'ข้อร้องเรียน',
       icon: AlertTriangle
-    },
-    {
-      id: 'flow-agent',
-      title: 'Flow Agent',
-      icon: FileText,
-      disabled: true, // Now modal-based, accessed through complaints
-      message: 'ใช้งานผ่านหน้าข้อร้องเรียน'
     },
     {
       id: 'category-reference',
