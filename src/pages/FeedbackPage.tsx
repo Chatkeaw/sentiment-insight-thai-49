@@ -526,71 +526,54 @@ export const FeedbackPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Service Type Filter */}
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">ประเภทการให้บริการ</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between">
-                    {selectedServiceTypes.length === 0
-                      ? "ทั้งหมด"
-                      : selectedServiceTypes.length === serviceTypes.length
-                      ? "ทั้งหมด"
-                      : `${selectedServiceTypes.length} รายการ`
-                    }
-                    <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64 p-0" align="start">
-                  <div className="p-3 space-y-2 max-h-60 overflow-y-auto">
-                    {/* Select All Option */}
-                    <div className="flex items-center space-x-2 pb-2 border-b">
-                      <input
-                        type="checkbox"
-                        id="select-all-services"
-                        checked={selectedServiceTypes.length === serviceTypes.length || selectedServiceTypes.length === 0}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedServiceTypes([...serviceTypes]);
+              <label className="text-sm font-medium text-foreground">ประเภทการให้บริการ</label>
+              <div className="max-h-60 overflow-y-auto border rounded-md p-3 bg-background">
+                {/* Select All Option */}
+                <div className="flex items-center space-x-2 pb-2 border-b mb-2">
+                  <Checkbox
+                    id="select-all-services"
+                    checked={selectedServiceTypes.length === serviceTypes.length || selectedServiceTypes.length === 0}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedServiceTypes([...serviceTypes]);
+                      } else {
+                        setSelectedServiceTypes([]);
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor="select-all-services"
+                    className="text-sm font-medium text-foreground cursor-pointer flex-1 select-none"
+                  >
+                    ทั้งหมด
+                  </label>
+                </div>
+                
+                {/* Individual Service Types */}
+                <div className="space-y-2">
+                  {serviceTypes.map(type => (
+                    <div key={type} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`service-${type}`}
+                        checked={selectedServiceTypes.includes(type)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedServiceTypes(prev => [...prev, type]);
                           } else {
-                            setSelectedServiceTypes([]);
+                            setSelectedServiceTypes(prev => prev.filter(t => t !== type));
                           }
                         }}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
                       <label
-                        htmlFor="select-all-services"
-                        className="text-sm font-medium text-foreground cursor-pointer flex-1"
+                        htmlFor={`service-${type}`}
+                        className="text-sm text-foreground cursor-pointer flex-1 select-none"
                       >
-                        ทั้งหมด
+                        {type}
                       </label>
                     </div>
-                    
-                    {/* Individual Service Types */}
-                    {serviceTypes.map(type => (
-                      <div key={type} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id={`service-${type}`}
-                          checked={selectedServiceTypes.includes(type)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedServiceTypes(prev => [...prev, type]);
-                            } else {
-                              setSelectedServiceTypes(prev => prev.filter(t => t !== type));
-                            }
-                          }}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <label
-                          htmlFor={`service-${type}`}
-                          className="text-sm text-foreground cursor-pointer flex-1"
-                        >
-                          {type}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
+                  ))}
+                </div>
+              </div>
             </div>
           
             {/* Sentiment Filter */}
