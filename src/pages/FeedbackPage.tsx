@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { X } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import { ExportButton } from "@/components/shared/ExportButton";
 import { mockFeedbackData } from "@/data/mockData";
 import { FeedbackEntry } from "@/types/dashboard";
@@ -523,7 +523,7 @@ export const FeedbackPage: React.FC = () => {
           </div>
 
           {/* Other Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-xs text-muted-foreground">ประเภทการให้บริการ</label>
               <Popover>
@@ -600,9 +600,6 @@ export const FeedbackPage: React.FC = () => {
                       </div>
                     )}
                   </div>
-                </PopoverContent>
-              </Popover>
-            </div>
                 </PopoverContent>
               </Popover>
               
