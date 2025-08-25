@@ -130,15 +130,14 @@ export const RegionalPage: React.FC = () => {
           </div>
           
           {/* Reset Filters Button */}
-          {isFiltersActive() && (
-            <Button
-              onClick={handleResetFilters}
-              variant="outline"
-              className="flex items-center gap-2 mb-6"
-            >
-              <RotateCcw className="w-4 h-4" />
-              ล้างตัวกรอง
-            </Button>
+          <Button
+            onClick={handleResetFilters}
+            variant="outline"
+            className="flex items-center gap-2 mb-6"
+          >
+            <RotateCcw className="w-4 h-4" />
+            ล้างตัวกรอง
+          </Button>
           )}
         </div>
 
