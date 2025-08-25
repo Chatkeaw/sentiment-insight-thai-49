@@ -363,6 +363,7 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
   const [timeType, setTimeType] = useState<'monthly' | 'retrospective' | 'custom'>('monthly');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [serviceType, setServiceType] = useState<string>('all');
+  const [selectedServiceTypes, setSelectedServiceTypes] = useState<string[]>([]);
   const [sentiment, setSentiment] = useState<'positive' | 'negative' | 'all'>('all');
   const [subcategory, setSubcategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
