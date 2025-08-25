@@ -522,64 +522,87 @@ export const FeedbackPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Other Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
-                ประเภทการให้บริการ
-              </label>
+              <label className="text-xs text-muted-foreground">ประเภทการให้บริการ</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start">
-                    {selectedServiceTypes.length === 0 
-                      ? "เลือกประเภทบริการ" 
+                  <Button variant="outline" className="w-full justify-between">
+                    {selectedServiceTypes.length === 0
+                      ? "เลือกประเภทบริการ"
+                      : selectedServiceTypes.length === serviceTypes.length
+                      ? "เลือกทั้งหมด"
                       : `เลือกแล้ว ${selectedServiceTypes.length} รายการ`
                     }
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-3">
-                  <div className="space-y-3">
-                    {/* Select All / Clear Selection Controls */}
-                    <div className="flex justify-between items-center pb-2 border-b border-border">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedServiceTypes(serviceTypes)}
-                        disabled={selectedServiceTypes.length === serviceTypes.length}
+                <PopoverContent className="w-full p-0" align="start">
+                  <div className="p-3 space-y-2 max-h-60 overflow-y-auto">
+                    {/* Select All Option */}
+                    <div className="flex items-center space-x-2 pb-2 border-b">
+                      <input
+                        type="checkbox"
+                        id="select-all-services"
+                        checked={selectedServiceTypes.length === serviceTypes.length}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedServiceTypes([...serviceTypes]);
+                          } else {
+                            setSelectedServiceTypes([]);
+                          }
+                        }}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <label
+                        htmlFor="select-all-services"
+                        className="text-sm font-medium text-foreground cursor-pointer flex-1"
                       >
                         เลือกทั้งหมด
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedServiceTypes([])}
-                        disabled={selectedServiceTypes.length === 0}
-                      >
-                        ล้างการเลือก
-                      </Button>
+                      </label>
                     </div>
-
-                    {/* Service Type Checkboxes */}
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {serviceTypes.map((type) => (
-                        <div key={type} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={type}
-                            checked={selectedServiceTypes.includes(type)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedServiceTypes([...selectedServiceTypes, type]);
-                              } else {
-                                setSelectedServiceTypes(selectedServiceTypes.filter(t => t !== type));
-                              }
-                            }}
-                          />
-                          <label htmlFor={type} className="text-sm cursor-pointer flex-1">
-                            {type}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
+                    
+                    {/* Individual Service Types */}
+                    {serviceTypes.map(type => (
+                      <div key={type} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={`service-${type}`}
+                          checked={selectedServiceTypes.includes(type)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedServiceTypes(prev => [...prev, type]);
+                            } else {
+                              setSelectedServiceTypes(prev => prev.filter(t => t !== type));
+                            }
+                          }}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <label
+                          htmlFor={`service-${type}`}
+                          className="text-sm text-foreground cursor-pointer flex-1"
+                        >
+                          {type}
+                        </label>
+                      </div>
+                    ))}
+                    
+                    {/* Clear All Button */}
+                    {selectedServiceTypes.length > 0 && (
+                      <div className="pt-2 border-t">
+                        <button
+                          onClick={() => setSelectedServiceTypes([])}
+                          className="text-xs text-muted-foreground hover:text-foreground w-full text-left"
+                        >
+                          ล้างการเลือกทั้งหมด
+                        </button>
+                      </div>
+                    )}
                   </div>
+                </PopoverContent>
+              </Popover>
+            </div>
                 </PopoverContent>
               </Popover>
               
