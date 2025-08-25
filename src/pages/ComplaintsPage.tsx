@@ -578,65 +578,233 @@ export default function ComplaintsPage() {
   return (
     <TooltipProvider>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">ข้อร้องเรียนลูกค้า</h1>
-          <p className="text-muted-foreground">ระบบสรุปข้อร้องเรียนสำคัญจากลูกค้า</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">ข้อร้องเรียนลูกค้า</h1>
+            <p className="text-muted-foreground">ระบบติดตามและวิเคราะห์ข้อร้องเรียนลูกค้า ธนาคารออมสิน</p>
+          </div>
+          <Button onClick={resetAll} variant="outline" size="sm">
+            ล้างตัวกรอง
+          </Button>
         </div>
 
-        {/* ฟิลเตอร์ (เหมือนเดิม) */}
-        {/* ... (คงโค้ดฟิลเตอร์และ results ของคุณตามเดิมทั้งหมด) ... */}
+        {/* Filters Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>ตัวกรองข้อมูล</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Location Filters */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-foreground">พื้นที่</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">ภาค</label>
+                  <Select value={region} onValueChange={(value) => {
+                    setRegion(value);
+                    setDistrict("ทั้งหมด");
+                    setBranch("ทั้งหมด");
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกภาค" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background">
+                      {regions.map(r => (
+                        <SelectItem key={r} value={r}>{r}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-        {/* Results */}
-        <div className="space-y-4">
-          {filtered.map((f) => {
-            const codes = pickTagCodes(f);
-            const severe = Object.values(f.sentiment).some((v) => v === -1) || f.satisfaction.overall <= 2;
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">เขต</label>
+                  <Select value={district} onValueChange={(value) => {
+                    setDistrict(value);
+                    setBranch("ทั้งหมด");
+                  }} disabled={region === "ทั้งหมด"}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกเขต" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background">
+                      {districts.map(d => (
+                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            return (
-              <Card key={f.id} className={severe ? "border-red-200 bg-rose-50" : "border-border bg-background"}>
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex-1">
-                      <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                        <span><strong>รหัส:</strong> {f.id}</span>
-                        <span><strong>วันที่:</strong> {f.date} {f.timestamp}</span>
-                        <span><strong>พื้นที่:</strong> {f.branch.region} / {f.branch.district} / {f.branch.branch}</span>
-                        <span><strong>บริการ:</strong> {f.serviceType}</span>
-                      </div>
-                      <p className="mb-3 leading-relaxed text-foreground">{f.comment}</p>
-                      {codes.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {codes.map((c) => (
-                            <Badge key={c} variant={severe ? "destructive" : "secondary"} className="text-xs">
-                              {c} {LABEL_BY_CODE[c] ?? ""}
-                            </Badge>
-                          ))}
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">หน่วยบริการ</label>
+                  <Select value={branch} onValueChange={setBranch} disabled={district === "ทั้งหมด"}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกหน่วยบริการ" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background">
+                      {branches.map(b => (
+                        <SelectItem key={b} value={b}>{b}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Service and Category Filters */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-foreground">ช่วงอายุการประเมิน</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">ประเภทบริการ</label>
+                  <Select value={serviceType} onValueChange={setServiceType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกประเภทบริการ" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background">
+                      {serviceTypeOptions.map(type => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Category Filters */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-foreground">ประเภทการให้บริการ และหัวข้อดี</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">บริการ</label>
+                  <Select value={headCat} onValueChange={(value: any) => {
+                    setHeadCat(value);
+                    setSubCat("all");
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกหมวดหมู่" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background">
+                      {HEAD_CATEGORIES.map(cat => (
+                        <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">หัวข้อดี</label>
+                  <Select value={subCat} onValueChange={setSubCat} disabled={headCat === "all"}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกหัวข้อย่อย" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background">
+                      <SelectItem value="all">ทั้งหมด</SelectItem>
+                      {subcatList.map(sub => (
+                        <SelectItem key={sub.code} value={sub.code}>{sub.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Sentiment Filter */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-foreground">ประเภท / หมวดหมู่ ความคิดเห็น</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">ทั่วไป</label>
+                  <Select value={sentiment} onValueChange={(value: any) => setSentiment(value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกประเภทความคิดเห็น" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background">
+                      <SelectItem value="all">ทั้งหมด</SelectItem>
+                      <SelectItem value="positive">เชิงบวก</SelectItem>
+                      <SelectItem value="negative">เชิงลบ</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">หมวดหมู่</label>
+                  <Select value="ทั้งหมด" disabled>
+                    <SelectTrigger>
+                      <SelectValue placeholder="ทั้งหมด" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background">
+                      <SelectItem value="ทั้งหมด">ทั้งหมด</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Results Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>ผลการค้นหา ({filtered.length} รายการ)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {filtered.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  ไม่พบข้อมูลที่ตรงกับเงื่อนไขการกรอง
+                </div>
+              ) : (
+                filtered.map((f) => {
+                  const codes = pickTagCodes(f);
+                  const severe = Object.values(f.sentiment).some((v) => v === -1) || f.satisfaction.overall <= 2;
+
+                  return (
+                    <Card key={f.id} className={severe ? "border-red-200 bg-rose-50" : "border-border bg-background"}>
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex-1">
+                            <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                              <span><strong>รหัส:</strong> {f.id}</span>
+                              <span><strong>วันที่:</strong> {f.date} {f.timestamp}</span>
+                              <span><strong>พื้นที่:</strong> {f.branch.region} / {f.branch.district} / {f.branch.branch}</span>
+                              <span><strong>บริการ:</strong> {f.serviceType}</span>
+                            </div>
+                            <p className="mb-3 leading-relaxed text-foreground">{f.comment}</p>
+                            {codes.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {codes.map((c) => (
+                                  <Badge key={c} variant={severe ? "destructive" : "secondary"} className="text-xs">
+                                    {c} {LABEL_BY_CODE[c] ?? ""}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action: เปิดโมดอล */}
+                          <div className="flex-shrink-0">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleFlowAgentClick(f)}
+                                  className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-[#FCE7F3] border border-[#F9CADF] text-[#C0245E] hover:bg-[#F9CADF] transition-colors"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>ดู Flow Agent</TooltipContent>
+                            </Tooltip>
+                          </div>
                         </div>
-                      )}
-                    </div>
-
-                    {/* Action: เปิดโมดอล */}
-                    <div className="flex-shrink-0">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleFlowAgentClick(f)}
-                            className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-[#FCE7F3] border border-[#F9CADF] text-[#C0245E] hover:bg-[#F9CADF] transition-colors"
-                          >
-                            <FileText className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>ดู Flow Agent</TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* โมดอลแปะท้ายไฟล์ */}
