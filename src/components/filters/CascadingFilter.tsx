@@ -7,7 +7,6 @@ import { LocationData, CascadingFilterOptions, LocationFilters } from '@/types/l
 
 interface CascadingFilterProps {
   options?: CascadingFilterOptions;
-  value?: LocationFilters; 
   onFiltersChange?: (filters: LocationFilters) => void;
   title?: string;
   className?: string;

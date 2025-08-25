@@ -130,7 +130,6 @@ export const RegionalPage: React.FC = () => {
               districtLabel: "เขต",
               branchLabel: "หน่วยบริการ"
             }}
-            value={locationFilters}  
             onFiltersChange={handleLocationFiltersChange}
           />
         </div>
