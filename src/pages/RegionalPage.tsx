@@ -120,17 +120,16 @@ export const RegionalPage: React.FC = () => {
               onFiltersChange={handleLocationFiltersChange}
               title="เลือกพื้นที่"
             />
+            {/* Reset Filters Button */}
+            <Button
+              onClick={handleResetFilters}
+              variant="outline"
+              className="flex items-center gap-2 mb-6"
+            >
+              <RotateCcw className="w-4 h-4" />
+              ล้างตัวกรอง
+            </Button>
           </div>
-          
-          {/* Reset Filters Button */}
-          <Button
-            onClick={handleResetFilters}
-            variant="outline"
-            className="flex items-center gap-2 mb-6"
-          >
-            <RotateCcw className="w-4 h-4" />
-            ล้างตัวกรอง
-          </Button>
         </div>
 
         {/* Bar Chart */}
