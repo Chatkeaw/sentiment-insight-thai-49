@@ -243,7 +243,7 @@ export const RegionalFeedbackModal: React.FC<RegionalFeedbackModalProps> = ({
           <div className="bg-card rounded-lg p-6 border">
             <h3 className="text-lg font-medium text-foreground mb-4">
               แนวโน้มความคิดเห็นลูกค้า
-              {selectedRegion !== "all" && ` - ภาคที่ ${selectedRegion}`}
+              {selectedRegion !== "all" && ` - ภาค ${selectedRegion}`}
               {selectedCategory !== "all" && ` - ${categories.find(c => c.value === selectedCategory)?.label}`}
             </h3>
             

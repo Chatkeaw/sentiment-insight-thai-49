@@ -12,7 +12,7 @@ const generateRegionalData = (locationFilters: LocationFilters) => {
   // Default: Show all regions when no filters are selected
   if (locationFilters.regionId === "all") {
     return Array.from({ length: 18 }, (_, i) => ({
-      name: `ภาคที่ ${i + 1}`,
+      name: `ภาค ${i + 1}`,
       positive: Math.floor(Math.random() * 100) + 50,
       negative: Math.floor(Math.random() * 50) + 10,
     }));
