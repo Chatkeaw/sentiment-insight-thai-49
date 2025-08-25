@@ -96,13 +96,6 @@ export const RegionalPage: React.FC = () => {
     return "ข้อคิดเห็นลูกค้า - รายภาค";
   };
 
-  const isFiltersActive = () => {
-    return locationFilters.regionId !== "all" || 
-           locationFilters.provinceId !== "all" || 
-           locationFilters.districtId !== "all" || 
-           locationFilters.branchId !== "all";
-  };
-
   return (
     <div className="min-h-screen p-6 space-y-6">
       <div className="flex flex-col space-y-4">
@@ -138,7 +131,6 @@ export const RegionalPage: React.FC = () => {
             <RotateCcw className="w-4 h-4" />
             ล้างตัวกรอง
           </Button>
-          )}
         </div>
 
         {/* Bar Chart */}
