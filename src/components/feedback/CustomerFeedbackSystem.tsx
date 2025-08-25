@@ -571,36 +571,48 @@ export const CustomerFeedbackSystem: React.FC<CustomerFeedbackSystemProps> = ({ 
           </div>
 
           {/* Other Filters */}
+          {/* Other Filters */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-xs text-muted-foreground">ประเภทการให้บริการ</label>
-              <Select value={serviceType} onValueChange={setServiceType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกประเภทบริการ" />
-                </SelectTrigger>
-                <SelectContent className="bg-background">
-                    <SelectItem value="all">ทั้งหมด</SelectItem>
+              <div className="border rounded-md p-3 max-h-40 overflow-y-auto bg-background">
+                <div className="space-y-2">
                   {serviceTypes.map(type => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                    <div key={type} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`service-${type}`}
+                        checked={selectedServiceTypes.includes(type)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedServiceTypes(prev => [...prev, type]);
+                          } else {
+                            setSelectedServiceTypes(prev => prev.filter(t => t !== type));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <label
+                        htmlFor={`service-${type}`}
+                        className="text-sm text-foreground cursor-pointer flex-1"
+                      >
+                        {type}
+                      </label>
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
+                </div>
+                {selectedServiceTypes.length > 0 && (
+                  <div className="mt-2 pt-2 border-t">
+                    <button
+                      onClick={() => setSelectedServiceTypes([])}
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      ล้างทั้งหมด
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">ความรู้สึก</label>
-              <Select value={sentiment} onValueChange={(value: 'positive' | 'negative' | 'all') => setSentiment(value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกความรู้สึก" />
-                </SelectTrigger>
-                <SelectContent className="bg-background">
-                    <SelectItem value="all">ทั้งหมด</SelectItem>
-                  <SelectItem value="positive">เชิงบวก</SelectItem>
-                  <SelectItem value="negative">เชิงลบ</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="space-y-2">
               <label className="text-xs text-muted-foreground">หมวดหมู่ย่อยที่ถูกกล่าวถึง</label>
               <Select value={subcategory} onValueChange={setSubcategory}>
