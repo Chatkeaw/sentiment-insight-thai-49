@@ -104,33 +104,36 @@ export const RegionalPage: React.FC = () => {
         </h1>
 
         {/* Location Filter */}
-        <div className="flex flex-col lg:flex-row lg:items-end gap-4">
-          <div className="flex-1">
-            <CascadingFilter
-              options={{
-                showRegion: true,
-                showProvince: true,
-                showDistrict: true,
-                showBranch: true,
-                regionLabel: "ภาค",
-                provinceLabel: "จังหวัด",
-                districtLabel: "เขต",
-                branchLabel: "หน่วยบริการ"
-              }}
-              onFiltersChange={handleLocationFiltersChange}
-              title="เลือกพื้นที่"
-            />
-            {/* Reset Filters Button */}
+        <div className="border rounded-lg p-4">
+          {/* Header: Title + Reset Button */}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">เลือกพื้นที่</h3>
             <Button
               onClick={handleResetFilters}
               variant="outline"
-              className="flex items-center gap-2 mb-6"
+              className="flex items-center gap-2"
             >
               <RotateCcw className="w-4 h-4" />
               ล้างตัวกรอง
             </Button>
           </div>
+        
+          {/* Cascading Filter */}
+          <CascadingFilter
+            options={{
+              showRegion: true,
+              showProvince: true,
+              showDistrict: true,
+              showBranch: true,
+              regionLabel: "ภาค",
+              provinceLabel: "จังหวัด",
+              districtLabel: "เขต",
+              branchLabel: "หน่วยบริการ"
+            }}
+            onFiltersChange={handleLocationFiltersChange}
+          />
         </div>
+
 
         {/* Bar Chart */}
         <Card>
